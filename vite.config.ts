@@ -1,14 +1,11 @@
-import { defineConfig, loadEnv } from 'vite'
+import { defineConfig } from 'vite'
 import react from '@vitejs/plugin-react'
 
 // https://vitejs.dev/config/
-export default defineConfig(({ mode }) => {
-  const env = loadEnv(mode, (process as any).cwd(), '');
-  return {
-    plugins: [react()],
-    define: {
-      // This ensures process.env.API_KEY works in the browser code
-      'process.env.API_KEY': JSON.stringify(env.API_KEY)
-    }
+export default defineConfig({
+  plugins: [react()],
+  define: {
+    // 這一行是關鍵：幫你騙過瀏覽器，讓它以為 process 存在，避免白屏當機
+    'process.env': {}
   }
 })
