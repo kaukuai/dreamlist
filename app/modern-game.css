@@ -1,0 +1,228 @@
+/* Modern life-sim art direction: bright toy-like scenery and tactile game HUD. */
+:root {
+  --game-font: "Arial Rounded MT Bold", "Trebuchet MS", "Microsoft JhengHei", sans-serif;
+  --background: #edf9f8; --foreground: #164c55;
+  --card: #fff; --card-foreground: #164c55; --popover: #fff; --popover-foreground: #164c55;
+  --primary: #047f82; --primary-foreground: #fff;
+  --secondary: #d8f3ed; --secondary-foreground: #175e63;
+  --muted: #e0f1ee; --muted-foreground: #51777c;
+  --accent: #d0f1e8; --accent-foreground: #175e63;
+  --border: #b7ded9; --input: #a9d2d0; --ring: #008f97; --radius: 1.25rem;
+}
+body {font-family: var(--game-font); background: #edf9f8;}
+button:focus-visible, a:focus-visible {outline-color: #007781; outline-offset: 4px;}
+.small-caps {color: #477d81; letter-spacing: 1.4px; font-weight: 800;}
+.game-header {height: 86px; padding-inline: 36px; background: #fff; border-bottom: 3px solid #d3eee8; gap: 16px;}
+.game-brand {gap: 10px; color: #0e767c;}
+.brand-icon {border: 0; background: #c6f3df; width: 45px; height: 45px; color: #078979; rotate: -8deg; border-radius: 16px; box-shadow: 0 3px 0 #8dddc6;}
+.game-brand strong {font: 900 32px/1.1 var(--game-font); letter-spacing: -1.5px;}
+.game-brand small {font: 800 12px/1.4 var(--game-font); color: #659b9b; margin-top: 3px; letter-spacing: 1.2px;}
+.game-nav {align-self: center; align-items: center; background: #edf7f5; border: 2px solid #e0f0eb; border-radius: 26px; padding: 5px; gap: 3px;}
+.game-nav button {display: flex; align-items: center; gap: 7px; padding: 9px 15px; border-radius: 20px; font-size: 14px; font-weight: 700; color: #567a7a; white-space: nowrap;}
+.game-nav button svg {width: 17px; height: 17px;}
+.game-nav button.current {color: #fff; background: #078c87; box-shadow: 0 3px 0 #00676b;}
+.game-nav button.current:after {display: none;}
+.game-nav button:hover:not(.current) {background: #dbf1eb; color: #09666c;}
+.currency-pill {background: #fff2b5; color: #855908; border: 2px solid #f9dc79; box-shadow: 0 3px 0 #eac76b; border-radius: 24px; padding: 7px 12px; gap: 7px;}
+.currency-pill strong {font: 800 20px/1.2 var(--game-font);}
+.currency-pill>span {font-size: 13px; font-weight: 700;}
+.save-state {color: #558287;}
+.primary-button {border: 2px solid #087a7a; border-radius: 16px; background: #079b90; box-shadow: 0 4px 0 #06636b; color: #fff; font-weight: 800;}
+.primary-button:hover {background: #10ad9d; transform: translateY(-2px);}
+.primary-button:active {transform: translateY(2px); box-shadow: 0 1px 0 #06636b;}
+.secondary-button {background: #e0f6ed; border: 2px solid #b6ded3; border-radius: 14px; font-weight: 700; color: #176b67; box-shadow: 0 2px 0 #b6ded3;}
+.text-button {color: #087f80; font-weight: 700;}
+.island-game {height: calc(100svh - 86px); min-height: 590px; background: #84dbe1;}
+.scene-region {top: 168px; bottom: 96px;}
+.island-diorama {width: min(980px, 100%, calc((100svh - 350px) * 1.5));}
+.island-sky {background: radial-gradient(ellipse at 25% 25%, #e8ffed80, transparent 55%), linear-gradient(160deg, #9be2f5 0%, #b8eee8 48%, #63d2d2 100%);}
+.island-sky:after {opacity: .12; background-size: 120px 160px;}
+.night .island-sky {background: radial-gradient(ellipse at 24% 30%, #5971ce80, transparent 60%), linear-gradient(160deg, #29487f, #367598 55%, #204d78);}
+.island-heading {top: 30px; left: 40px;}
+.island-kicker {font: 800 12px/1.5 var(--game-font); color: #316b79; letter-spacing: 1.5px;}
+.island-name h1 {font-family: var(--game-font); font-size: 38px; font-weight: 900!important; color: #165866; letter-spacing: 0; text-shadow: 0 2px 0 #fff6;}
+.island-heading>p {color: #396f79; letter-spacing: 0; font-weight: 600;}
+.island-name .round-button {background: #f5fffc9c; color: #246a70; border: 2px solid #fff9;}
+.stage-label {background: #fff7c8; border: 2px solid #fffbe3; box-shadow: 0 3px 0 #b4ceb15c; color: #597228; font-weight: 800; padding: 6px 13px; margin-top: 14px;}
+.stage-label span {color: #7e8545; font-size: 12px; font-weight: 800;}
+.night .island-name h1 {color: #fff; text-shadow: 0 3px 0 #172e6266;}
+.night .island-kicker, .night .island-heading>p {color: #d9f6ff;}
+.night .stage-label {background: #dcd8ff; color: #4e518a; border-color: #f1eeff;}
+.night .stage-label span {color: #6865a0;}
+.island-base {filter: drop-shadow(0 35px 18px #147c8d30);}
+.night .island-base {filter: brightness(.9) saturate(.95) drop-shadow(0 30px 24px #18366960);}
+.night .building-sprite {filter: brightness(.95);}
+.building-sprite {background-image: url('/art/objects-atlas-modern.webp');}
+.round-button {background: #ffffffd9; color: #286878; border: 2px solid #fff; box-shadow: 0 3px 0 #5ea5b53d; backdrop-filter: blur(12px);}
+.round-button:hover {background: #fff; transform: translateY(-2px);}
+.scene-tools {left: 36px; bottom: 29px; gap: 7px;}
+.zoom-controls {left: 36px; bottom: 82px; color: #236b7b; font-weight: 800;}
+.zoom-controls span {font: 800 12px/1.4 var(--game-font);}
+.night .zoom-controls {color: #e1f6ff;}
+.island-caption {color: #2f727d; font-weight: 600; letter-spacing: 0;}
+.night .island-caption {color: #d6eeff;}
+.island-dock {background: #ffffffec; border: 3px solid #fff; border-radius: 28px; padding: 8px; box-shadow: 0 6px 0 #4ca9ae4d, 0 12px 30px #197e9220;}
+.island-dock button {font-weight: 800; color: #226872; border-radius: 20px; gap: 8px;}
+.island-dock button svg {stroke-width: 2.3;}
+.island-dock button:hover, .island-dock button.active {background: #d5f4e7; color: #08746f;}
+.dock-divider {background: #dceee9;}
+.quest-journal {background: #fffffff2; border: 3px solid #fff; border-radius: 30px; box-shadow: 0 7px 0 #50adb04d, 0 16px 32px #1f839a18; padding: 24px; max-height: calc(100% - 104px); overflow-y: auto; scrollbar-width: thin; scrollbar-color: #a2d9ce transparent;}
+.journal-head {border-color: #d7eee7; color: #039c91; padding-bottom: 18px;}
+.journal-head h2 {font-family: var(--game-font); font-weight: 900; font-size: 24px; color: #1d6570; letter-spacing: 0; margin-top: 4px;}
+.journal-head .small-caps {color: #639697; font-size: 12px; font-weight: 800; letter-spacing: 1.3px;}
+.journal-quest {padding-block: 19px; border-color: #dfefea; gap: 9px;}
+.quest-number {font: 800 12px/1.5 var(--game-font); color: #428d89; padding: 4px 5px; background: #e8f6ee; border-radius: 8px;}
+.quest-copy small {font-size: 13px; color: #628586;}
+.quest-copy strong {font-weight: 800; color: #205d63;}
+.quest-copy>span {color: #99700b; font-weight: 700;}
+.journal-quest [data-slot=checkbox] {background: #f6fffb; border: 2px solid #83b6a9; border-radius: 8px; width: 25px; height: 25px; box-shadow: 0 3px 0 #d1e9dc;}
+.journal-quest [data-slot=checkbox]:hover {background: #cefae8; border-color: #168f83;}
+.journal-link {color: #247973; font-weight: 700;}
+.journal-link span {background: #daf4e8; color: #20847a; font-weight: 800;}
+.dream-journey-mini {border-color: #dbede7;}
+.dream-journey-mini>div:first-child, .island-growth-mini>div:first-child {color: #397a75;}
+.dream-journey-mini strong {font: 900 25px/1.2 var(--game-font); color: #187a78;}
+.dream-journey-mini>small, .island-growth-mini small {color: #5b807d;}
+.dream-journey-mini [data-slot=progress], .island-growth-mini [data-slot=progress] {height: 8px; background: #e0f3e9; border-radius: 8px;}
+.dream-journey-mini [data-slot=progress-indicator] {background: #08a692;}
+.island-growth-mini [data-slot=progress-indicator] {background: #9ccb51;}
+.island-growth-mini {border-color: #c1dfd1;}
+.island-growth-mini b {font: 800 12px/1.4 var(--game-font); color: #599443;}
+.journal-empty h3 {color: #1b6972; font-weight: 800;}
+.journal-empty p {color: #5e8583;}
+.placed-building {filter: drop-shadow(0 5px 4px #136c7940);}
+.building-name, .move-pin {background: #fff; color: #126e74; font-weight: 800; border: 2px solid #d2efe7;}
+.build-lot {background: #ffffffbf; color: #078781; border: 2px dashed #068681; box-shadow: 0 4px 0 #4cbea960;}
+.swap-lot {background: #fff5c5; border-color: #a67d19; color: #7e601b;}
+.selected-building, .placement-notice {background: #fffdf6f5; border: 3px solid #fff; border-radius: 22px; color: #226e73; box-shadow: 0 6px 0 #258caa40, 0 12px 30px #176c9a20;}
+.selected-building strong {font-weight: 800; color: #226e73;}
+.building-info>span, .selected-building .building-dreams>span {color: #658b88;}
+.building-dreams {border-color: #d3eae5;}
+.building-dreams button {color: #278076;}
+.building-dreams small {font-family: var(--game-font); color: #548d88;}
+.island-reward {background: #fff7bf; color: #79602a; border-radius: 28px; border: 3px solid #fff; box-shadow: 0 5px 0 #e5b768;}
+.journal-page {background: radial-gradient(circle at 90% 5%, #caf2ea, transparent 40%), #edf9f8; min-height: calc(100svh - 86px);}
+.page-intro h1 {font-family: var(--game-font); font-weight: 900; color: #176570; letter-spacing: 0;}
+.page-intro p {color: #527f81;}
+.journal-summary {border-color: #b8ded6;}
+.journal-summary strong {font-family: var(--game-font); font-weight: 900; color: #087f7c;}
+.journal-summary>span {color: #588c88; font-weight: 700;}
+.dream-tab-list {background: #d9eee7!important; border: 2px solid #cfe9e1; border-radius: 20px!important; padding: 5px!important;}
+.dream-tab-list [data-slot=tabs-trigger] {color: #4e7c78!important; font-weight: 700; border-radius: 15px!important;}
+.dream-tab-list [data-slot=tabs-trigger][data-state=active] {background: #fff!important; color: #078c80!important; box-shadow: 0 3px 0 #b9dcd0!important;}
+.dream-card {background: #fff; border: 2px solid #cae7df; border-radius: 26px; box-shadow: 0 5px 0 #c3e6db;}
+.dream-card:hover {border-color: #64bfad; box-shadow: 0 7px 0 #9fd6c6, 0 15px 24px #2b958319; transform: translateY(-3px);}
+.dream-card h3 {font-family: var(--game-font); font-weight: 900; font-size: 26px; line-height: 1.5; color: #226775; letter-spacing: 0;}
+.dream-card>p {color: #6a9290;}
+.dream-index {font-family: var(--game-font); color: #6c9d98; font-weight: 800;}
+.dream-top>svg, .category-label {color: #17a58d;}
+.card-progress strong, .dream-bottom {color: #4b9691;}
+.card-progress>div>span {color: #648f89;}
+.card-progress [data-slot=progress] {background: #e1f1e9; height: 8px;}
+.card-progress [data-slot=progress-indicator] {background: #14a993;}
+.dream-bottom {border-color: #e0efe8;}
+.complete-card {background: #fffbe7; border-color: #f1dd96; box-shadow: 0 5px 0 #e9d798;}
+.new-chapter, .inspiration-dreams {border-radius: 24px; background: #dff5eb; border-color: #a3dac7; color: #398a7c;}
+.new-chapter strong {color: #217b73; font-weight: 800;}
+.journal-footer {color: #559087; border-color: #cfe7df;}
+.achievement-card {background: #f6fbf9; border: 2px solid #d7eae3; border-radius: 26px; box-shadow: 0 5px 0 #d1e6df;}
+.achievement-card.unlocked {background: linear-gradient(135deg, #fff, #fff3ba); border-color: #efd988; box-shadow: 0 5px 0 #e9d183;}
+.achievement-icon {background: #e3f3ed; color: #639a8d; border: 3px solid #fff; box-shadow: 0 4px 0 #d2e8e0;}
+.unlocked .achievement-icon {background: #ffdf76; color: #96701b; border-color: #fff3bd; box-shadow: 0 4px 0 #eac55c;}
+.achievement-card h3 {font-family: var(--game-font); font-weight: 900; color: #42776c; letter-spacing: 0;}
+.unlocked h3 {color: #6f651f;}
+.achievement-card p {color: #739389;}
+.achievement-card [data-slot=progress] {background: #dbece3;}
+.achievement-card [data-slot=progress-indicator] {background: #13a38c;}
+.island-collection {background: #fff; border-radius: 26px; border: 2px solid #cbe9de; box-shadow: 0 5px 0 #c0e4d5;}
+.island-collection h2 {font-family: var(--game-font); font-weight: 900; color: #217a74;}
+.island-collection p, .collection-grid span, .collection-grid small {color: #648f85;}
+.dream-editor, .island-shop, .growth-dialog, .rename-dialog, .dream-detail {background: #fff!important; border: 3px solid #d3ede7!important; border-radius: 28px!important; box-shadow: 0 8px 0 #59bba77a, 0 30px 70px #0b5e6940!important;}
+.dream-detail {border-radius: 28px 0 0 28px!important;}
+.dream-editor [data-slot=dialog-title], .island-shop [data-slot=dialog-title], .growth-dialog [data-slot=dialog-title], .rename-dialog [data-slot=dialog-title], .dream-detail [data-slot=sheet-title] {font-family: var(--game-font); font-weight: 900; color: #236f75; letter-spacing: 0;}
+.dream-editor [data-slot=dialog-description], .island-shop [data-slot=dialog-description], .growth-dialog [data-slot=dialog-description], .rename-dialog [data-slot=dialog-description], .dream-detail [data-slot=sheet-description] {color: #638b86;}
+.dream-editor label, .rename-dialog label, .detail-category {color: #367e73!important; font-weight: 700;}
+.dream-editor input, .dream-editor textarea, .dream-detail input, .rename-dialog input {background: #f5fcf9; border: 2px solid #bdded2; color: #285e60; border-radius: 13px;}
+.category-choice {border: 2px solid #cee6dc; border-radius: 14px; background: #f3fbf6; color: #5c8c7c;}
+.category-choice.chosen {border-color: #39ac91; background: #d4f6e6; color: #167c70;}
+.editor-task-list>div, .task-row {background: #f1fbf6; border: 2px solid #d3eade; border-radius: 15px;}
+.task-label label {color: #386f62;}
+.task-done {background: #e4f6e9; border-color: #c0e6ce;}
+.detail-progress {background: #e8f8ef; border: 2px solid #c4e7d1; border-radius: 19px;}
+.detail-progress strong {font-family: var(--game-font); font-weight: 800; color: #148871;}
+.shop-wallet {background: #fff3be; border: 2px solid #f5dc8b; border-radius: 18px; color: #95701d;}
+.shop-wallet strong {font-family: var(--game-font); font-weight: 900;}
+.shop-item {background: #edf9f4; border: 2px solid #c9eadd; border-radius: 22px;}
+.shop-item h3 {font-weight: 800; color: #28756d;}
+.shop-item p, .shop-note {color: #648f83;}
+.shop-item button {background: #d4f2e4; color: #176f61; border: 2px solid #a8d9c5; border-radius: 13px; font-weight: 800; box-shadow: 0 3px 0 #abd6c5;}
+.shop-item button:hover:not(:disabled) {background: #b7efd9; transform: translateY(-1px);}
+.shop-art>span:not(.building-sprite) {background: #dbece6; color: #5a857a; border-radius: 10px;}
+.growth-timeline h3, .growth-timeline .reached h3 {font-weight: 800; color: #297769;}
+.growth-timeline .reached>span {background: #d0f3df; border: 2px solid #a7dfc2; color: #138a73;}
+.growth-rules {background: #fff3c4; border-radius: 20px; color: #957626;}
+@media(max-width:1200px) {
+  .game-header {padding-inline: 24px;} .game-nav button {padding-inline: 12px;}
+  .island-heading {left: 28px;} .scene-tools {left: 27px;} .zoom-controls {left: 27px;}
+}
+@media(max-width:980px) {
+  .game-brand strong {font-size: 28px;} .game-header {gap: 12px;}
+  .game-nav button {padding-inline: 10px; gap: 5px;} .game-nav button svg {width: 15px;}
+  .game-header-actions {gap: 10px;} .quest-journal {padding: 20px 17px; border-radius: 26px;}
+  .journal-head h2 {font-size: 22px;} .journal-head .small-caps {font-size: 12px;}
+  .island-dock button {font-size: 14px;} .zoom-controls {left: 27px;}
+}
+@media(max-width:767px) {
+  .game-header {height: 132px; padding: 12px 16px 0; gap: 0;}
+  .game-brand {height: 48px;} .game-brand strong {font-size: 28px; letter-spacing: -1px;}
+  .game-brand small {font-size: 12px; letter-spacing: 1px;} .brand-icon {display: none;}
+  .currency-pill {min-width: 84px; padding: 6px 9px; gap: 5px;} .currency-pill strong {font-size: 18px;} .currency-pill>span {font-size: 12px;}
+  .add-dream {padding: 8px 10px; border-radius: 13px;}
+  .game-nav {width: 100%; margin-top: 13px; height: 47px; justify-content: space-around; gap: 2px; padding: 4px;}
+  .game-nav button {font-size: 14px; padding: 7px 9px; gap: 5px;}
+  .game-nav button svg {width: 16px; height: 16px;}
+  .island-game {height: auto; background: #7ed8d6;}
+  .island-sky {height: 700px; background: linear-gradient(160deg, #aae9f7, #b8eee8 45%, #7ed8d6);}
+  .night.island-game {background: #275d86;}
+  .night .island-sky {height: 700px; background: linear-gradient(160deg, #354f92, #367d9d 50%, #275d86);}
+  .island-heading {top: auto; left: auto; padding: 22px 22px 0;}
+  .island-name h1 {font-size: 30px; letter-spacing: 0; max-width: calc(100vw - 92px);}
+  .island-kicker {font-size: 12px; letter-spacing: .8px; max-width: 205px!important;}
+  .island-heading>p {font-size: 14px; line-height: 1.6;}
+  .stage-label {font-size: 13px; padding: 5px 11px; margin-top: 10px;}
+  .scene-tools {top: 22px; right: 15px; left: auto; bottom: auto; gap: 5px;}
+  .scene-tools .round-button {width: 33px; height: 33px;}
+  .scene-region {inset: auto; height: 255px; margin-top: 10px;}
+  .island-diorama {width: 100%;}
+  .zoom-controls {left: auto; bottom: auto; margin-bottom: 21px; color: #276e7e;}
+  .zoom-controls span {color: #276e7e;} .night .zoom-controls span {color: #e1f6ff;}
+  .quest-journal {margin-inline: 16px; padding: 21px 20px; border-radius: 26px; max-height: none; overflow: visible;}
+  .journal-head h2 {font-size: 23px;} .journal-head .small-caps {font-size: 12px; letter-spacing: 1.1px;}
+  .quest-copy small {font-size: 13px; max-width: calc(100vw - 143px);}
+  .quest-copy strong {font-size: 16px;} .quest-copy>span {font-size: 13px;}
+  .island-dock {border-radius: 25px; padding: 6px 7px; width: 340px;}
+  .island-dock button {font-size: 14px; gap: 4px; padding: 7px 7px;}
+  .selected-building {top: 408px; border-radius: 20px;}
+  .placement-notice {top: 187px; font-size: 14px; border-radius: 18px;}
+  .journal-page {min-height: calc(100svh - 132px);}
+  .page-intro {display: block;}
+  .page-intro h1 {font-size: 24px; font-weight: 900; max-width: none; line-height: 1.5;}
+  .page-intro .small-caps {font-size: 12px; letter-spacing: 1px;}
+  .page-intro p {font-size: 16px; max-width: none;}
+  .journal-summary {display: flex; align-items: baseline; gap: 10px; border: 0; padding: 0; margin-top: 15px;}
+  .journal-summary strong {font-size: 28px;}
+  .journal-summary>span {font-size: 14px; max-width: none;}
+  .dream-card h3 {font-size: 25px;} .achievement-card h3 {font-size: 21px;}
+  .achievement-card .small-caps {font-size: 12px; letter-spacing: .5px;}
+  .dream-editor, .island-shop, .growth-dialog, .rename-dialog {border-radius: 24px!important;}
+  .shop-item {border-radius: 18px;} .shop-item p {font-size: 13px;}
+}
+@media(max-width:380px) {
+  .game-nav button {padding-inline: 6px; gap: 4px;} .game-nav button svg {display: none;}
+  .game-header-actions {gap: 8px;} .game-brand small {font-size: 12px; letter-spacing: .8px;}
+  .island-heading .island-kicker {max-width: 175px!important; font-size: 12px;}
+  .island-name h1 {font-size: 27px;}
+  .scene-region {height: 245px;}
+  .selected-building {top: 405px;}
+  .achievement-card h3 {font-size: 18px;}
+}

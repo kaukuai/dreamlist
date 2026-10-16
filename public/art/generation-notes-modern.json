@@ -1,0 +1,167 @@
+{
+  "mode": "built-in image_gen",
+  "generation": "Exactly two NEW asset calls issued together in one parallel batch. No variants, retries, edits, or regenerations. Prior assets preserved.",
+  "assets": [
+    {
+      "file": "floating-island.png",
+      "source": "C:/Users/user/.codex/generated_images/01a0fbc6-f605-7223-9546-c22e1f358351/exec-b7fef159-525b-4013-ad4f-43eb5834c7ea.png",
+      "size": [
+        1536,
+        1024
+      ],
+      "prompt": "Use case: stylized-concept.\nAsset type: original transparent PNG game environment cutout, 1536x1024 landscape canvas.\nPrimary request: A single isolated floating island base for a modern cozy life simulation game, inspired by the clean, rounded, colorful 3D visual qualities of Animal Crossing: New Horizons and Kirby and the Forgotten Land. Original environment only, no copyrighted characters, logos or UI.\nStyle/medium: Premium contemporary console game asset with smooth matte simplified materials, bold clean silhouettes, very sparse large details, soft ambient occlusion and playful polished 3D forms. Bright lime and emerald grass, aqua water, cream and warm light tan terrain, teal and coral accents. Not photographic, not traditional fantasy.\nSubject: Broad bright grassy top with SIX OPEN BUILDABLE LAWNS, spacious and clearly empty to accept purchased structures. Open lawn areas approximately centered at relative canvas positions x34% y30%, x45% y31%, x58% y38%, x25% y42%, x70% y47%, and x83% y45%. Simple curved pale paths between areas. Warm light tan cliff with smooth rounded strata and a compact floating underside; no long jagged roots. A small turquoise pool with a front waterfall. Exactly one small modern cozy cream cottage with a rounded coral roof at rear-left, and exactly one rounded green tree at rear-right. Keep all other lawn areas unoccupied and broad.\nComposition/framing: Three-quarter isometric camera, looking down about 30 degrees. Entire island silhouette fully visible, including underside and waterfall. Landscape 1536x1024. Island fills frame with about 5% clean transparent margin on all four sides. Wide grassy top occupies the upper-middle of the canvas with compact underside below.\nLighting/mood: Clean sunny lighting from upper-left, bright friendly optimistic atmosphere, soft gentle shadows contained on the island.\nConstraints: Genuine alpha-transparent background outside the isolated island; no sky, no scenery, no backdrop, no horizon, no painted checkerboard. No text, no UI, no labels, no border, no watermark. No realistic weathered stone, no fine moss, no medieval architecture, no painterly texture, no dense foliage. No extra buildings, characters or objects on the six open buildable lawns.",
+      "inspection": {
+        "mode": "RGBA",
+        "alphaRange": [
+          0,
+          254
+        ],
+        "fullyTransparentPixelCount": 609392,
+        "alphaAbove8BoundingBox": [
+          34,
+          24,
+          1503,
+          1004
+        ],
+        "wholeSilhouetteVisible": true
+      },
+      "notes": [
+        "Six broad buildable lawns visible, one coral-roof cream cottage rear-left, one rounded green tree rear-right, turquoise pool and front waterfall.",
+        "Canvas margins are about 2–3%, tighter than the requested 5%, but whole silhouette is inside frame.",
+        "Much simpler and brighter than prior art; some mild clay surface texture, grass edge leaves, and small decorative flowers remain.",
+        "Suggested lawn anchors based on visible lawn centers, in approximate percent canvas coordinates: [34,29], [61,25], [54,36], [19,40], [68,48], [83,40]. Adjust consuming placement geometry to these actual regions."
+      ],
+      "suggestedBuildAnchorsPercent": [
+        [
+          34,
+          29
+        ],
+        [
+          61,
+          25
+        ],
+        [
+          54,
+          36
+        ],
+        [
+          19,
+          40
+        ],
+        [
+          68,
+          48
+        ],
+        [
+          83,
+          40
+        ]
+      ]
+    },
+    {
+      "file": "objects-atlas.png",
+      "source": "C:/Users/user/.codex/generated_images/01a0fbc6-f605-7223-9546-c22e1f358351/exec-0a900b57-15b3-4f87-99f2-b2f6c49fcaa9.png",
+      "size": [
+        1536,
+        1024
+      ],
+      "prompt": "Use case: stylized-concept.\nAsset type: original genuine-transparent PNG game sprite atlas, 1536x1024 landscape canvas, exactly 3 columns and 2 rows of equal 512x512 cells.\nPrimary request: Six isolated cozy-game miniature objects, one per equal cell, in the exact reading order specified below. Same modern clean rounded colorful 3D visual language as a premium cozy floating-island life simulation inspired by the visual qualities of Animal Crossing: New Horizons and Kirby and the Forgotten Land. Original objects only; no copyrighted characters, logos or UI.\nTop-left cell: round pink cherry tree with a very simple puff canopy.\nTop-center cell: squat cozy cream library with a rounded aqua roof and one small book emblem containing no writing.\nTop-right cell: chunky playful cream windmill with a coral roof and exactly four simple blades.\nBottom-left cell: small luminous cyan and lilac crystal garden on a simple rounded green pedestal.\nBottom-center cell: squat sunny greenhouse with a rounded coral frame, broad glass panels, and exactly two broad-leaf plants.\nBottom-right cell: cute short cream observatory with a round indigo dome and a yellow crescent ornament.\nStyle/materials: Smooth matte simplified forms, bold clean silhouettes, very sparse large details, soft ambient occlusion, playful polished contemporary console game assets. Bright cheerful colors, cream architecture, aqua/coral roofs, lime/emerald green pedestals. No realistic weathered stone, fine moss, medieval architecture, painterly texture or dense foliage.\nPerspective/lighting: All objects share a three-quarter isometric camera looking down about 30 degrees, consistent miniature scale, clean sunny upper-left lighting, soft shadows contained within each object or its small pedestal.\nComposition/framing: Precise 3-column by 2-row atlas. Each equal cell is exactly 512x512. Each object centered horizontally and sharing a common relative baseline at about 84% of cell height, 430 pixels from that cell's top. Generous completely transparent padding around the entire object. Limit each object to roughly 70% of its cell width and height. Whole object visible within its own cell. Do not cross cell boundaries or overlap objects. Library, greenhouse and observatory are short and squat. Exactly six objects, no additions.\nConstraints: Genuine alpha transparency everywhere outside the six isolated objects. No background, sky, scenery, extra backdrop, horizon, drawn checkerboard, gridlines, dividers, labels, writing, UI, border or watermark. No extra decorative objects between the cells.",
+      "grid": {
+        "columns": 3,
+        "rows": 2,
+        "cellWidth": 512,
+        "cellHeight": 512,
+        "order": [
+          "cherry tree",
+          "library",
+          "windmill",
+          "crystal garden",
+          "greenhouse",
+          "observatory"
+        ]
+      },
+      "inspection": {
+        "mode": "RGBA",
+        "alphaRange": [
+          0,
+          254
+        ],
+        "fullyTransparentPixelCount": 839432,
+        "alphaAbove8BoundingBox": [
+          72,
+          27,
+          1487,
+          978
+        ],
+        "cellAlphaAbove128Bounds": [
+          {
+            "col": 0,
+            "row": 0,
+            "box": [
+              85,
+              71,
+              435,
+              484
+            ]
+          },
+          {
+            "col": 1,
+            "row": 0,
+            "box": [
+              32,
+              96,
+              490,
+              488
+            ]
+          },
+          {
+            "col": 2,
+            "row": 0,
+            "box": [
+              88,
+              28,
+              438,
+              486
+            ]
+          },
+          {
+            "col": 0,
+            "row": 1,
+            "box": [
+              73,
+              79,
+              447,
+              461
+            ]
+          },
+          {
+            "col": 1,
+            "row": 1,
+            "box": [
+              37,
+              52,
+              486,
+              465
+            ]
+          },
+          {
+            "col": 2,
+            "row": 1,
+            "box": [
+              72,
+              22,
+              462,
+              465
+            ]
+          }
+        ]
+      },
+      "notes": [
+        "All six subjects appear in correct order, isolated, and remain within their respective 512x512 cells, with no gridlines or writing.",
+        "Baselines align within 4 pixels per row: 484/488/486 in top row and 461/465/465 in bottom row. They sit lower than requested 430px and differ between rows.",
+        "Horizontal padding is smallest on library and greenhouse (22–37px); other cells have approximately 50–90px.",
+        "Greenhouse contains two broad-leaf plants; windmill has four blades. Library has a book emblem without writing."
+      ]
+    }
+  ]
+}

@@ -1,20 +1,38 @@
-<div align="center">
-<img width="1200" height="475" alt="GHBanner" src="https://github.com/user-attachments/assets/0aa67016-6eaf-458a-adb2-6e31a0763ed6" />
-</div>
+# reverie 夢嶼 · DREAM ORBIT
 
-# Run and deploy your AI Studio app
+繁體中文的人生目標 App。記錄夢想、拆解小目標，讓每一次真實行動滋養一座奇幻小島。
 
-This contains everything you need to run your app locally.
+## 已提供的功能
 
-View your app in AI Studio: https://ai.studio/apps/drive/1BB_Csva4MIpWjfnZUzcQ2KLIFIf5D4tM
+- 隨時新增夢想，編輯名稱、原因、類型與預定日期。
+- 新增、改名與調整小目標，完成後勾選，也可取消完成。
+- 首頁可互動的漂浮島、夢想總進度與今天的小冒險。
+- 起始 100 星露；小目標首次完成獲得 25 星露，夢想首次全數完成另獲 100 星露。取消、重複勾選不會重複領取。
+- 累積獲得的星露每 150 點讓小島升一階，最高五階；購買建設不會倒退成長。
+- 六種建設、等級解鎖、預覽選位、自由移動與交換位置；購買價格與餘額由伺服器驗證。
+- 六枚成就徽章、晨光／月夜、漂浮與微光動畫、可選獎勵音效、暫停與減少動態效果支援。
+- 響應式桌機與手機介面，Radix 元件提供鍵盤操作與焦點管理。
+- D1 持續儲存；依平台登入身分隔離資料，使用版本檢查避免不同視窗互相覆寫。
 
-## Run Locally
+## 開發
 
-**Prerequisites:**  Node.js
+使用 Node.js 22.13 以上與 npm：
 
+```sh
+npm ci
+npm run dev
+```
 
-1. Install dependencies:
-   `npm install`
-2. Set the `GEMINI_API_KEY` in [.env.local](.env.local) to your Gemini API key
-3. Run the app:
-   `npm run dev`
+第一次建立本機資料庫，需將 drizzle/ 下的 SQL 遷移套用至預覽的 D1。
+本機預覽登入透過 /signin-with-chatgpt，正式網站使用平台的私密存取與登入。
+
+```sh
+npx tsc --noEmit --incremental false
+npm run build
+```
+
+資料模型：db/schema.ts。API：app/api/dreams 與 app/api/island。主要介面：app/dream-app.tsx、app/island-game.tsx。
+夢想、星露收據、小島名稱與建設保存在 D1；只有晨光／月夜、動畫與音效偏好保存在裝置上。
+既有夢想與已完成的小目標保留，第一次載入會補發尚未領取的完成獎勵。
+美術與畫面檢查紀錄見 DESIGN_REVIEW.md。
+本機驗證資料、開發狀態與工具檔案不會包含在正式部署中。

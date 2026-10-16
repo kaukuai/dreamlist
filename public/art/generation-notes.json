@@ -1,0 +1,37 @@
+{
+  "mode": "built-in image_gen",
+  "assets": [
+    {
+      "file": "floating-island.png",
+      "size": [
+        1536,
+        1024
+      ],
+      "prompt": "Use case: stylized-concept.\nAsset type: transparent PNG game environment cutout, a large floating island base for a premium whimsical life-goal simulation.\nPrimary request: A single floating island in a three-quarter isometric view, rich cinematic storybook 3D clay and painterly diorama. Lush jade and moss grass terraces over warm sandstone rock, twisting roots underneath, one waterfall and a small pond, winding cream stone path. Keep several clearly open grassy building areas across the top of the island for placing purchased structures. Only one tiny teal-roof cottage at rear-left and one big ancient tree at rear-right; all other building areas remain open.\nComposition/framing: Wide island silhouette, island fills almost the entire frame while its full silhouette, roots and waterfall remain inside the image with a small clean transparent margin. Camera looks down at about 30 degrees, a coherent isometric miniature diorama. The island's grassy top is wide and spacious with the empty buildable areas prominently visible.\nLighting/mood: Warm optimistic fantasy morning, soft upper-left key light, subtle shadows contained on the island.\nMaterials/textures: Thick velvety moss, lush grass, softly sculpted clay forms, painterly surface texture, rounded carved sandstone shelves, turquoise pond and gently falling water, warm cream stone.\nConstraints: Genuine alpha-transparent background. Isolated island only. No sky, no horizon, no background, no backdrop, no checkerboard drawn into pixels, no text, no UI, no border, no watermark. No extra houses or buildings. No people. Cohesive premium whimsical life-simulation art.",
+      "notes": "RGBA with actual alpha 0–254. 529,023 fully transparent pixels. Subject nearly fills frame; alpha >8 bounding box [7,0,1530,1022]. One cottage rear-left, ancient tree rear-right, broad open grass terraces."
+    },
+    {
+      "file": "objects-atlas.png",
+      "size": [
+        1536,
+        1024
+      ],
+      "grid": {
+        "columns": 3,
+        "rows": 2,
+        "cellWidth": 512,
+        "cellHeight": 512
+      },
+      "prompt": "Use case: stylized-concept.\nAsset type: genuine transparent PNG sprite atlas containing exactly six isolated isometric miniature game objects for a premium whimsical life-goal simulation.\nPrimary request: A precisely organized atlas of 3 columns and 2 rows with six equal rectangular cells. Produce exactly one object in each cell in this exact order: top-left cherry blossom tree with rounded pale pink canopy; top-center ivory little library with a teal roof and inviting warm doorway; top-right rustic wooden windmill; bottom-left tiny glowing crystal garden with several aqua and violet crystals on a mossy pedestal; bottom-center cozy greenhouse with an orange roof and glass walls; bottom-right crescent observatory tower with a crescent moon ornament.\nStyle/medium: Rich cinematic storybook 3D clay and painterly diorama, premium whimsical life-simulation art. Rounded sculpted forms, textured ivory stone, warm wood, lush moss, subtle painterly surfaces. Camera matches a floating island viewed from three-quarter isometric angle looking down about 30 degrees.\nComposition/framing: Landscape canvas, exactly 3 columns by 2 rows of equally sized cells. Each object centered horizontally within its cell and anchored at the same relative baseline near the lower portion of its cell. Generous empty transparent padding on every side within each cell so objects never cross or touch cell boundaries. All six objects are entire, isolated, non-overlapping cutouts. Library a little larger than tree while every object easily fits within its own cell. Consistent miniature scale and coherent perspective. Do not depict a grid.\nLighting/mood: Optimistic warm fantasy morning, soft upper-left light source on every object. Very subtle contact shadows contained within each individual object pedestal.\nConstraints: Genuine alpha transparency outside the objects. No background, no backdrop, no sky, no drawn checkerboard, no labels, no text, no UI, no gridlines, no dividers, no border, no watermark, no characters. Exactly six objects and no extra decorative objects between cells.",
+      "order": [
+        "cherry blossom tree",
+        "library",
+        "windmill",
+        "crystal garden",
+        "greenhouse",
+        "observatory"
+      ],
+      "notes": "RGBA with actual alpha 0–254. 716,996 fully transparent pixels. Baselines align within ~6 px per row; lower cell padding is tighter than requested. Objects remain inside their cells."
+    }
+  ]
+}
