@@ -10,6 +10,7 @@ const nextConfig: NextConfig = isVercel ? {
   typescript: { tsconfigPath: "tsconfig.vercel.json" },
   env: {
     DREAMLIST_BUILD_SHA: process.env.VERCEL_GIT_COMMIT_SHA ?? process.env.DREAMLIST_BUILD_SHA ?? "workspace",
+    NEXT_PUBLIC_DREAMLIST_MODE: process.env.DREAMLIST_MODE === "cloud" ? "cloud" : "browser",
   },
 } : {};
 

@@ -19,7 +19,8 @@
     "dev:vercel": "node scripts/run-vercel.mjs dev",
     "start:vercel": "node scripts/run-vercel.mjs start",
     "db:migrate:vercel": "node --experimental-strip-types scripts/migrate-vercel.mjs",
-    "test:vercel": "node --experimental-strip-types --test tests/vercel-runtime.test.mjs"
+    "test:vercel": "node --experimental-strip-types --test tests/vercel-runtime.test.mjs",
+    "test:preview": "node --experimental-strip-types --test tests/browser-preview.test.mjs"
   },
   "dependencies": {
     "@base-ui/react": "^1.7.0",

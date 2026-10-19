@@ -3,6 +3,7 @@ import GoogleProvider from "next-auth/providers/google";
 import type { NextRequest } from "next/server";
 import { assertVercelConfiguration, canSignIn, ownerEmail } from "../vercel-config";
 import type { ChatGPTUser } from "./user";
+import { browserPreview } from "../app-mode";
 
 function options(): NextAuthOptions {
   assertVercelConfiguration(process.env);
@@ -36,6 +37,7 @@ function options(): NextAuthOptions {
 }
 
 export async function getAuthenticatedUser(): Promise<ChatGPTUser | null> {
+  if (browserPreview) return null;
   const session = await getServerSession(options());
   const user = session?.user as { ownerId?: string; email?: string; name?: string } | undefined;
   if (!user?.ownerId || !user.email) return null;
@@ -46,5 +48,6 @@ export const signInPath = (returnTo: string) => `/api/auth/signin?callbackUrl=${
 export const signOutPath = (returnTo: string) => `/api/auth/signout?callbackUrl=${encodeURIComponent(returnTo)}`;
 
 export async function authHandler(request: NextRequest, context: { params: Promise<{ nextauth: string[] }> }) {
+  if (browserPreview) return new Response("Not found", { status: 404 });
   return NextAuth(options())(request, context);
 }

@@ -1,4 +1,4 @@
-import { createClient } from "@libsql/client";
+import { createClient } from "@libsql/client/web";
 import { databaseConfig } from "../lib/vercel-config.ts";
 import { applyVercelMigrations } from "./vercel-migrations.mjs";
 

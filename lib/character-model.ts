@@ -1,4 +1,5 @@
-/** The first life-RPG ruleset. Rewards are recorded by the server, never submitted by clients. */
+/** Shared RPG rules. Cloud rewards use server receipts; the browser preview
+ * keeps its own local receipts and does not submit progress to the server. */
 export const skillIds = ["knowledge", "mindfulness", "fitness", "craft", "expression", "exploration"] as const;
 export type SkillId = typeof skillIds[number];
 export const attributeIds = ["intellect", "vitality", "agility", "spirit", "charisma", "luck"] as const;

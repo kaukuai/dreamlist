@@ -53,7 +53,8 @@ export const questOf = (id: string) => questTemplates.find(quest => quest.id ===
 export const questStepTitle = (step: QuestStep) => step.title + (step.alternative ? `（或${step.alternative}）` : "");
 export const questCategory = (skill: SkillId) => ({fitness: "health", knowledge: "growth", mindfulness: "life", exploration: "travel", craft: "career", expression: "growth"})[skill];
 
-/** One shared server clock: Taipei 04:00. No client-supplied date can reroll offers. */
+/** Taipei 04:00 boundary. Cloud uses its server clock; browser preview uses
+ * the local device clock and stores its own daily selection. */
 export function questDay(now: Date) {
   const shifted = new Date(now.getTime() + 4 * 3600000);
   const dayKey = shifted.toISOString().slice(0, 10);

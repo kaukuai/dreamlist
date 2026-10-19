@@ -8,4 +8,4 @@ iPhone PWA 安裝功能目前尚未實作，需依使用者後續需求安排。
 
 沒有自訂夢想的玩家也要能從每日輕量委託與 NPC 初識修練開始成長。接取不發獎，跨日保留任務，既有收據與職業進度不可清空。
 
-使用者要求串接現有 Vercel 專案 https://kaukuai-dreamlist.vercel.app/，並明確選擇先保留私人使用。閱讀 VERCEL_DEPLOYMENT.md。Vercel 以標準 Next.js、指定 Google 信箱與 Turso 運作，`tsconfig.vercel.json` 選取專用認證與資料庫；本機／Sites 保留原綁定。不要在 Vercel 信任 Sites 身分標頭或開放試玩假登入。維持原 Vercel 專案、網址及原 Sites 資料；新 Turso 不等於已移轉 D1。確認網路、專案授權、設定與遷移後才更新正式部署，不因本機成功宣稱已上線。
+使用者最新明確要求 Vercel 只用於檢視開發中的 app：不綁 Google、不需要跨裝置資料。這取代先前私人 Google／Turso 部署方向。閱讀 VERCEL_DEPLOYMENT.md。原 Vercel 網址 https://kaukuai-dreamlist.vercel.app/ 採免登入瀏覽器試看模式（DREAMLIST_MODE=browser，預設值），資料只存於各瀏覽器的獨立 localStorage，不上傳伺服器；介面要清楚標示，不宣稱雲端同步或提供假玩家排名。此模式公開的是 app 介面，每個瀏覽器有自己的進度，不是共享假帳號。原 Sites 認證與 D1 仍保留；未來只有在使用者要求正式雲端版時才設定 DREAMLIST_MODE=cloud 與 Google／Turso。不要再要求試看版建立那些服務。

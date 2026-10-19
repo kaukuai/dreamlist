@@ -35,7 +35,7 @@ def main():
     live = request(SITE + "/api/version")
     report["live"] = {key: value for key, value in live.items() if key != "data"}
     if isinstance(live.get("data"), dict):
-        report["live"]["version"] = {key: live["data"].get(key) for key in ["application", "release", "commit", "features"]}
+        report["live"]["version"] = {key: live["data"].get(key) for key in ["application", "release", "mode", "commit", "features"]}
         report["commit_matches"] = live["data"].get("commit") == head
 
     token = os.environ.get("VERCEL_TOKEN")
@@ -50,6 +50,10 @@ def main():
             data = result["data"]
             link = data.get("link") or {}
             production = (data.get("targets") or {}).get("production") or {}
+            runtime_mode = next((entry.get("value") for entry in data.get("env", [])
+                if entry.get("key") == "DREAMLIST_MODE" and entry.get("type") == "plain"), "browser")
+            required_names = {"TURSO_DATABASE_URL", "TURSO_AUTH_TOKEN", "GOOGLE_CLIENT_ID", "GOOGLE_CLIENT_SECRET",
+                "NEXTAUTH_SECRET", "NEXTAUTH_URL", "DREAMLIST_OWNER_EMAIL"} if runtime_mode == "cloud" else set()
             report["project"] = {
                 "id": data.get("id"), "name": data.get("name"),
                 "framework": data.get("framework"), "rootDirectory": data.get("rootDirectory"),
@@ -57,9 +61,9 @@ def main():
                 "git": {key: link.get(key) for key in ["type", "org", "repo", "productionBranch"]},
                 "production_state": production.get("readyState"),
                 "production_commit": (production.get("meta") or {}).get("githubCommitSha"),
+                "runtime_mode": runtime_mode,
                 "required_runtime_variables_present": sorted({entry.get("key") for entry in data.get("env", [])
-                    if entry.get("key") in {"TURSO_DATABASE_URL", "TURSO_AUTH_TOKEN", "GOOGLE_CLIENT_ID",
-                        "GOOGLE_CLIENT_SECRET", "NEXTAUTH_SECRET", "NEXTAUTH_URL", "DREAMLIST_OWNER_EMAIL"}}),
+                    if entry.get("key") in required_names}),
             }
         else:
             report["project"] = result

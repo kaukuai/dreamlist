@@ -1,6 +1,8 @@
 "use client";
 import {useState,useEffect,useLayoutEffect,useRef,useCallback,type FormEvent} from "react";
 import {flushSync} from "react-dom";
+import {appFetch} from "@/lib/client-api";
+import {browserPreview} from "@/lib/app-mode";
 import {Sparkles,Trophy,Plus,Compass,Globe2,BookOpen,Heart,BriefcaseBusiness,House,Star,Zap,Target,Pencil,X,Check,LoaderCircle,CloudCheck,LockKeyhole,CalendarDays,Milestone,Leaf,UserRound,Swords,Shield,Menu,Settings2,ScrollText} from "lucide-react";
 import {Progress} from "@/components/ui/progress";
 import {Dialog,DialogContent,DialogHeader,DialogTitle,DialogDescription,DialogClose} from "@/components/ui/dialog";
@@ -28,7 +30,7 @@ const blankDraft=():Draft=>({title:"",description:"",category:"growth",targetDat
 const newTask=(title:string,category="growth"):Task=>({id:crypto.randomUUID(),title,done:false,completedAt:null,training:defaultTraining(category)});
 const dateLabel=(value:string)=>value?new Date(value+"T00:00:00").toLocaleDateString("zh-TW",{year:"numeric",month:"short",day:"numeric"}):"不限時間，持續靠近";
 async function request<T>(url:string,options?:RequestInit):Promise<T>{
- const response=await fetch(url,{...options,headers:{"Content-Type":"application/json",...options?.headers}});
+ const response=await appFetch(url,{...options,headers:{"Content-Type":"application/json",...options?.headers}});
  const data=await response.json() as T & {error?:string};
  if(!response.ok)throw new Error(data.error??"目前無法儲存，請稍後重試");
  return data as T;
@@ -74,6 +76,7 @@ export default function DreamApp(){
   .catch((e:unknown)=>setError(e instanceof Error?e.message:"暫時無法載入任務"))
   .finally(()=>setLoading(false)),[]);
  useEffect(()=>{void load();},[load]);
+ useEffect(()=>{if(!browserPreview)return;const refresh=(event:StorageEvent)=>{if(event.key==="dreamlist:browser-preview:v1")void load();};window.addEventListener("storage",refresh);return()=>window.removeEventListener("storage",refresh);},[load]);
  useEffect(()=>{if(!celebration)return;const timer=setTimeout(()=>setCelebration(0),2200);return()=>clearTimeout(timer);},[celebration]);
  function changeView(next:string){setView(next);setFilter("all");setMore(false);window.scrollTo({top:0,behavior:"instant"});}
  function start(d?:Dream){
@@ -152,7 +155,8 @@ export default function DreamApp(){
  async function mutateCharacter(data:object){if(!lock())return false;try{const result=await request<{character:CharacterState;island:IslandState}>('/api/character',{method:'POST',body:JSON.stringify(data)});flushSync(()=>{setCharacter(result.character);setIsland(result.island);});const action=(data as {action?:string}).action;toast.success(action==='advance'?'職業進化！'+jobTitle(result.character.profession,result.character.advancements[result.character.profession]):action==='profession'?'轉職成功 · '+jobTitle(result.character.profession,result.character.advancements[result.character.profession]):action==='talent'?'天賦已點亮':action==='purchase'?'新裝備已加入收藏，可自由穿戴':action==='equip'?'角色裝備已更新':'角色設定已保存');return true;}catch(e){toast.error(e instanceof Error?e.message:'角色儲存失敗');return false;}finally{unlock();}}
 
  return <div className="rpg-shell" data-view={view}>
- <header className="game-header"><button className="game-brand" onClick={()=>changeView('quests')} aria-label="夢嶼任務大廳"><Swords size={24}/><div><strong>夢嶼</strong><small>REVERIE · LIFE RPG</small></div></button><div className="game-header-actions"><span className="save-state" aria-label={busy?'保存中':error?'連線待恢復':'已保存'}>{busy?<LoaderCircle size={15} className="spin"/>:<CloudCheck size={15}/>}</span><div className="currency-pill" aria-label={'星露餘額 '+(island?.balance??0)}><Sparkles size={15}/><strong>{island?.balance??'—'}</strong></div><button className="rpg-icon-button" aria-label="更多選單" onClick={()=>setMore(true)}><Menu size={23}/></button></div></header>
+ <header className="game-header"><button className="game-brand" onClick={()=>changeView('quests')} aria-label="夢嶼任務大廳"><Swords size={24}/><div><strong>夢嶼</strong><small>REVERIE · LIFE RPG</small></div></button><div className="game-header-actions"><span className="save-state" aria-label={busy?'保存中':error?'保存待恢復':browserPreview?'已保存至此瀏覽器':'已保存'}>{busy?<LoaderCircle size={15} className="spin"/>:browserPreview?<Check size={15}/>:<CloudCheck size={15}/>}</span><div className="currency-pill" aria-label={'星露餘額 '+(island?.balance??0)}><Sparkles size={15}/><strong>{island?.balance??'—'}</strong></div><button className="rpg-icon-button" aria-label="更多選單" onClick={()=>setMore(true)}><Menu size={23}/></button></div></header>
+ {browserPreview&&<div className="preview-mode-note"><strong>開發試玩版</strong><span>免登入 · 進度只存於此瀏覽器</span></div>}
  <nav className="game-nav" aria-label="主要導覽">{[{id:'quests',name:'任務',Icon:BookOpen},{id:'character',name:'角色',Icon:UserRound},{id:'equipment',name:'裝備',Icon:Shield},{id:'talents',name:'天賦',Icon:Star},{id:'professions',name:'職業',Icon:Swords}].map(item=><button key={item.id} aria-label={item.name} aria-pressed={view===item.id} className={view===item.id?'current':''} onClick={()=>changeView(item.id)}><item.Icon aria-hidden="true"/><span>{item.name}</span>{item.id==='talents'&&!!character?.availableTalentPoints&&<i aria-hidden="true">{character.availableTalentPoints}</i>}</button>)}</nav>
  {error&&<div className="error-banner" role="alert"><p>{error}</p><button onClick={()=>void load()}>重新載入</button></div>}
  {view==='quests'?<QuestBoard dreams={dreams} character={character} loading={loading} busy={busy} onStart={()=>start()} onSelect={select} onToggle={(d,t,done)=>void toggle(d,t,done).catch(()=>{})} onCharacter={()=>changeView('character')} onProfessions={()=>changeView('professions')} onAccept={acceptQuest}/>:['character','equipment','professions','talents','skills','leaderboard','settings'].includes(view)?<CharacterJourney panel={view as CharacterPanel} character={character} island={island} busy={busy} loading={loading} onMutation={mutateCharacter} onTrain={startTraining} onNavigate={changeView}/>:view==='camp'?<IslandGame island={island} character={character} onCharacter={()=>changeView('character')} dreams={dreams} busy={busy} loading={loading} celebration={celebration} onStart={()=>start()} onSelect={select} onToggle={(d,t,done)=>void toggle(d,t,done).catch(()=>{})} onMutation={mutateIsland} onJournal={()=>changeView('journal')}/>:<main className="journal-page">
@@ -180,7 +184,7 @@ export default function DreamApp(){
    <div className="detail-reminder"><Sparkles size={17}/><p>每完成一步，你都在成為更靠近理想的自己。</p></div>
   </>}</SheetContent></Sheet>
   {celebration>0&&<div className="confetti" aria-hidden="true" key={celebration}>{Array.from({length:24},(_,i)=><span key={i} style={{"--i":i,"--x":((i*37)%100)+"vw","--angle":((i*73)%360)+"deg","--color":["#84e8ca","#e6cf91","#b7a0ff","#7bb6ff"][i%4]} as React.CSSProperties}/>)}</div>}
-  <Dialog open={more} onOpenChange={setMore}><DialogContent className="rpg-more-dialog"><DialogHeader><DialogTitle>冒險者選單</DialogTitle><DialogDescription>你的技能、紀錄與營地。</DialogDescription></DialogHeader><div className="more-menu-grid">{[{id:'skills',label:'生活技能',Icon:Zap},{id:'leaderboard',label:'成長排行榜',Icon:Trophy},{id:'achievements',label:'成就紀錄',Icon:Milestone},{id:'journal',label:'目標旅誌',Icon:BookOpen},{id:'camp',label:'營地與小島',Icon:House},{id:'settings',label:'角色設定',Icon:Settings2}].map(item=><button key={item.id} onClick={()=>changeView(item.id)}><item.Icon size={23}/><span>{item.label}</span></button>)}</div></DialogContent></Dialog>
+  <Dialog open={more} onOpenChange={setMore}><DialogContent className="rpg-more-dialog"><DialogHeader><DialogTitle>冒險者選單</DialogTitle><DialogDescription>你的技能、紀錄與營地。</DialogDescription></DialogHeader><div className="more-menu-grid">{[{id:'skills',label:'生活技能',Icon:Zap},{id:'leaderboard',label:browserPreview?'成長紀錄':'成長排行榜',Icon:Trophy},{id:'achievements',label:'成就紀錄',Icon:Milestone},{id:'journal',label:'目標旅誌',Icon:BookOpen},{id:'camp',label:'營地與小島',Icon:House},{id:'settings',label:'角色設定',Icon:Settings2}].map(item=><button key={item.id} onClick={()=>changeView(item.id)}><item.Icon size={23}/><span>{item.label}</span></button>)}</div></DialogContent></Dialog>
   <Toaster position="bottom-right" offset="104px" mobileOffset={{bottom:"calc(88px + env(safe-area-inset-bottom, 0px))",left:"16px",right:"16px"}} theme="dark" richColors closeButton/>
  </div>;
 }

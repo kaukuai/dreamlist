@@ -1,5 +1,13 @@
 # 夢嶼 reverie — 雲端開發交接
 
+## 最新要求：免登入的 Vercel 試看版
+
+使用者已取消這階段的 Google 綁定與跨裝置儲存，只要原 Vercel 網址方便檢視開發 app。此要求取代下方先前的私人 Google／Turso 設定計畫。Vercel 的 DREAMLIST_MODE=browser（亦為預設）使用 localStorage，無需任何 Google／Turso 憑證；原 Sites 模式維持認證及 D1，未操作正式資料。只有明確選 cloud 模式才需要先前的七個設定與遷移。
+
+瀏覽器試玩有真實的每日／NPC 接取、首次獎勵、共享錢包、六裝備欄、天賦與職業進化，沿用原成長模型；不做假跨玩家排行。資料鍵 dreamlist:browser-preview:v1，各瀏覽器隔離；Web Locks 序列化跨分頁寫入、revision 保護舊任務，儲存失敗不覆寫先前進度。頁面顯示只存此瀏覽器。瀏覽器不會把任務內容送至 API，預覽模式伺服器也不啟動雲端身分或資料庫。
+
+網路與 VERCEL_TOKEN 現已可用，已讀取原專案並修正 Dashboard 框架為 Next.js、建置 npm run build:vercel、輸出 .next-vercel、Node 24。專案 Git 已連 kaukuai/dreamlist main。曾建立的三個 Google 登入相關變數已依新要求移除，現在 Production／Preview 只需 DREAMLIST_MODE=browser。不要繼續聲稱 Vercel 仍遭代理 403 或要求使用者再提供同一個 token。真正部署結果依後續原網域的 /api/version 和瀏覽器驗證判定。
+
 ## 2026-10-19 Vercel 接續
 
 使用者現在要求更新原 Vercel 網址 https://kaukuai-dreamlist.vercel.app/，且選擇先保留私人使用。閱讀 VERCEL_DEPLOYMENT.md；此要求授權增加 Vercel 相容流程，原 Sites 與正式資料仍保留。已新增標準 Next.js 建置、Google 單帳號登入與 Turso D1 相容介面；兩套建置成功，原 18 項及新 3 項規則測試通過，Next.js 正式 server 的 24 項 HTTP 驗證通過。真正 Google／遠端 Turso／Vercel 上線仍待正式設定。

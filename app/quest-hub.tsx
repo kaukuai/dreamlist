@@ -6,6 +6,7 @@ import {SkillIcon} from "./character-avatar";
 import {skillOf} from "@/lib/character-model";
 import {npcOf, npcs, type Npc, type NpcId, type QuestBoardState, type QuestOffer} from "@/lib/quest-model";
 import type {Dream} from "@/lib/dream-model";
+import {appFetch} from "@/lib/client-api";
 
 type Props = {dreams: Dream[]; busy: boolean; loading: boolean; onAccept: (offerId: string) => Promise<Dream | undefined>; onSelect: (dream: Dream) => void};
 const statusText = {available: "可以接取", active: "修練中", complete: "已完成", archived: "已收起"};
@@ -20,7 +21,7 @@ export default function QuestHub({dreams, busy, loading, onAccept, onSelect}: Pr
   const [selected, setSelected] = useState<{npcId: NpcId; offerId?: string} | null>(null);
   useEffect(() => {
     const controller = new AbortController();
-    void fetch("/api/quests", {signal: controller.signal}).then(async response => {
+    void appFetch("/api/quests", {signal: controller.signal}).then(async response => {
       const body = await response.json() as QuestBoardState & {error?: string};
       if (!response.ok) throw new Error(body.error ?? "暫時無法讀取冒險委託");
       setData(body); setError("");

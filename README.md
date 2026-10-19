@@ -2,7 +2,7 @@
 
 繁體中文的生活 RPG。把現實中的閱讀、學習、運動與創作化為角色成長；還沒想好個人目標，也能從每日委託與 NPC 的小修練開始。
 
-Vercel 原專案 `kaukuai-dreamlist.vercel.app` 的相容建置、私人 Google 登入與 Turso 設定見 [VERCEL_DEPLOYMENT.md](VERCEL_DEPLOYMENT.md)。Vercel 使用 `npm run build:vercel`；本機／Sites 仍使用下方原流程。相容程式完成不等於正式網域已更新。
+Vercel 原專案 `kaukuai-dreamlist.vercel.app` 現在以**免登入試看版**為目標，不需要 Google 或 Turso。角色、任務、裝備與天賦只保存在目前瀏覽器；重新整理保留，更換裝置／網域或清除網站資料則有不同進度。詳見 [VERCEL_DEPLOYMENT.md](VERCEL_DEPLOYMENT.md)。Vercel 使用 `npm run build:vercel`；本機／Sites 仍使用下方原流程。建置成功不等於正式網域已更新。
 
 ## 目前可以玩
 

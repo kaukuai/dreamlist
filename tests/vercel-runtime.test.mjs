@@ -1,9 +1,27 @@
 import assert from "node:assert/strict";
 import { test } from "node:test";
+import { spawnSync } from "node:child_process";
 import { createClient } from "@libsql/client";
 import { createLibsqlDatabase } from "../db/libsql-adapter.ts";
 import { applyVercelMigrations, verifyVercelMigrations } from "../scripts/vercel-migrations.mjs";
-import { assertVercelConfiguration, canSignIn, databaseConfig } from "../lib/vercel-config.ts";
+import { assertVercelConfiguration, canSignIn, databaseConfig, vercelConfigurationIssues, vercelRequiredVariables } from "../lib/vercel-config.ts";
+
+test("deployment preflight lists all missing configuration without exposing supplied secret values", () => {
+  const issues = vercelConfigurationIssues({});
+  assert.equal(issues.length, 7);
+  for (const name of vercelRequiredVariables) assert.ok(issues.some(issue => issue.startsWith(name + ":")));
+  const environment = { ...process.env, VERCEL: "1", DREAMLIST_MODE: "cloud" };
+  for (const name of vercelRequiredVariables) delete environment[name];
+  const result = spawnSync(process.execPath, ["--experimental-strip-types", "scripts/build-vercel.mjs"], {
+    cwd: new URL("../", import.meta.url), env: environment, encoding: "utf8",
+  });
+  assert.equal(result.status, 1);
+  for (const name of vercelRequiredVariables) assert.match(result.stderr, new RegExp(name));
+  assert.match(result.stderr, /Production.*Preview/);
+  assert.doesNotMatch(result.stdout, /Creating an optimized production build/);
+  const secret = "private-test-value-not-for-logs";
+  assert.ok(!vercelConfigurationIssues({ TURSO_DATABASE_URL: secret, TURSO_AUTH_TOKEN: secret, NEXTAUTH_SECRET: secret }).join("\n").includes(secret));
+});
 
 test("private Google access requires the exact verified owner account", () => {
   const environment = { DREAMLIST_OWNER_EMAIL: "owner@example.test" };
