@@ -1,3 +1,3 @@
-import {env} from "cloudflare:workers";
-export function getD1(){ if(!env.DB) throw new Error("Dream database is unavailable");return env.DB; }
+// Vercel resolves this binding to db/vercel.ts; Sites keeps its native D1 binding.
+export { getD1 } from "@dreamlist/database";
 

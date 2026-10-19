@@ -1,0 +1,88 @@
+{
+  "tool": "built-in image_gen",
+  "originalAssets": true,
+  "thirdPartyGameAssetsUsed": false,
+  "conversion": {
+    "tool": "Sharp",
+    "format": "WebP",
+    "quality": 94,
+    "operations": "Format conversion only; character and item designs generated with image_gen."
+  },
+  "promptRecord": "The generation briefs below summarize the original requests; they are not a verbatim prompt transcript.",
+  "assets": [
+    {
+      "file": "profession-atlas.webp",
+      "size": [
+        1536,
+        1024
+      ],
+      "alpha": true,
+      "layout": {
+        "columns": 4,
+        "rows": 2,
+        "cellAspectRatio": "3:4",
+        "order": [
+          "wanderer",
+          "warrior",
+          "mage",
+          "ranger",
+          "bard",
+          "artisan",
+          "healer",
+          "unused-dark-knight"
+        ]
+      },
+      "source": "exec-1126d6a5-0e44-4bb9-bf35-ba4e8d7641a1.png",
+      "generationBrief": "Original mature fantasy mobile RPG class illustration atlas on a transparent background. Eight isolated full-body adults, normal approximately seven-head anatomy, clear combat silhouettes and readable weapons. Four columns by two rows, consistent cell framing, no text or game logos. Novice in teal leather coat with blade; silver-armored female warrior with burgundy cape, sword and shield; male navy battle mage with pale hair, golden crystal staff and floating book; female green-hooded ranger with longbow; male plum battle bard with lute and rapier; female bronze-armored artisan with heavy hammer; male ivory/navy healer with sun staff; extra advanced dark knight. Detailed painted materials, steel, leather, cloth, adult facial features, determined stance."
+    },
+    {
+      "file": "profession-evolved-atlas.webp",
+      "size": [
+        1536,
+        1024
+      ],
+      "alpha": true,
+      "layout": "Same 4x2 positions and class identities as profession-atlas.webp. Eighth cell unused.",
+      "source": "exec-42256752-fb6b-42d6-b2de-d168fe5b1094.png",
+      "generationBrief": "Edit the original profession atlas using image_gen. Preserve adult identities, positions, class weapons, full-body framing and transparent layout. Upgrade the same classes with more ornate layered armor, stronger magical effects, richer metalwork and mature advanced-class outfits. No text, logos or copied game characters.",
+      "limitations": "Stages I, II and III currently share this evolved atlas; stage names, aura intensity and gameplay bonuses differ."
+    },
+    {
+      "file": "equipment-atlas.webp",
+      "size": [
+        1254,
+        1254
+      ],
+      "alpha": false,
+      "layout": {
+        "columns": 4,
+        "rows": 4,
+        "order": [
+          "training-sword",
+          "oak-staff",
+          "trail-bow",
+          "linen-cloak",
+          "craft-apron",
+          "lucky-pin",
+          "crescent-brooch",
+          "sentinel-helm",
+          "iron-buckler",
+          "wind-boots",
+          "runic-orb",
+          "vanguard-cuirass",
+          "astral-crown",
+          "unused-hammer",
+          "unused-crystal",
+          "unused-pouch"
+        ]
+      },
+      "source": "exec-f5cd254a-9af0-46a9-bd16-b6a8673bc437.png",
+      "generationBrief": "Original realistic fantasy RPG inventory icon atlas, 4 columns by 4 rows on dark navy, centered isolated item in each cell with generous boundaries and no text or UI. Steel sword, blue crystal staff, longbow, dark cloak, armored artisan apron, emerald clover brooch, crescent moon brooch, steel helmet, round shield, leather armored boots, arcane orb, heavy cuirass, astral crown, hammer, crystal and pouch. Detailed metal, leather, fabric and jewel materials; consistent lighting and scale."
+    }
+  ],
+  "displayNotes": [
+    "Class and evolution change the portrait. Equipment remains represented by live slots and attributes; individual equipment does not change the illustrated outfit yet.",
+    "Soul color changes portrait aura rather than repainting the illustration.",
+    "Unused atlas cells are not displayed as available professions or purchasable inventory."
+  ]
+}

@@ -1,0 +1,151 @@
+/* A village noticeboard for players who want a small place to start. */
+.quest-main-tabs {width:100%;}
+.quest-main-tabs button {flex:1; padding-inline:8px;}
+.quest-status-tabs {display:flex; gap:9px; margin:0 0 18px;}
+.quest-status-tabs button {min-height:38px; padding:7px 17px; border:1px solid #4d627164; background:#1b2b38; color:#94a9b6; font-size:12px; border-radius:20px;}
+.quest-status-tabs button[aria-pressed=true] {color:#d5c6a2; border-color:#aa986675; background:#97815b1c;}
+.quest-discovery-note {display:flex; gap:13px; align-items:center; padding:15px 16px; border:1px solid #8caa9660; background:linear-gradient(110deg,#42594c40,#243a4440); color:#adc4aa; margin-bottom:25px;}
+.quest-discovery-note>svg {flex-shrink:0;}
+.quest-discovery-note strong {display:block; color:#d3d7c2; font-size:13px; font-weight:500; line-height:1.7;}
+.quest-discovery-note p {font-size:11px; color:#9fb2b6; line-height:1.8; margin-top:5px;}
+.quest-hub .rpg-block-heading h2 {margin-top:4px; font-size:19px; font-family:"Songti TC","Noto Serif TC",serif; letter-spacing:.8px; color:#e1d9c5;}
+.daily-section-heading {margin-bottom:8px;}
+.daily-section-heading>span {border:1px solid #718b8050; padding:5px 9px; color:#a9baa3; font-size:10px; white-space:nowrap;}
+.daily-refresh-note {display:flex; align-items:center; gap:5px; color:#8fa4b2; font-size:10px; margin:0 0 16px;}
+.daily-refresh-note>span {margin-left:auto; color:#a9b59a; font-size:9px;}
+.daily-offer-list {display:flex; flex-direction:column; gap:11px;}
+.daily-offer-card {display:flex; align-items:center; gap:13px; width:100%; min-height:112px; padding:13px; text-align:left; background:linear-gradient(110deg,#263843,#1c2b38); border:1px solid #667d855e; border-left:2px solid var(--npc-color); border-radius:4px;}
+.daily-offer-card:hover {background:linear-gradient(110deg,#30434b,#233440); border-color:#9aa88a;}
+.daily-portrait-frame {position:relative; display:block; width:65px; height:76px; flex-shrink:0; background:radial-gradient(ellipse at 50% 30%,#a5a38130,transparent 70%),#1a2933; border:1px solid #79907e50; border-radius:4px;}
+.npc-portrait {display:block; width:150px; aspect-ratio:1; background-image:url('/art/npc-townsfolk-atlas.webp'); background-size:300% 200%; background-repeat:no-repeat;}
+.daily-portrait-frame .npc-portrait {position:absolute; width:77px; bottom:0; left:-6px; mask-image:linear-gradient(#000 85%,transparent);}
+.daily-portrait-frame>span:last-child:not(.npc-portrait) {position:absolute; bottom:-4px; right:-4px; display:grid; place-items:center; width:24px; height:24px; border:1px solid #9eb69a90; color:#bed0b8; border-radius:50%; background:#253a37;}
+.daily-offer-copy {display:flex; flex-direction:column; flex:1; min-width:0;}
+.daily-offer-author {display:flex; flex-wrap:wrap; gap:4px 9px; align-items:center; font-size:10px; color:var(--npc-color);}
+.daily-offer-author>span {color:#9cb0ba; font-size:9px;}
+.daily-offer-copy>strong {font-size:15px; line-height:1.7; color:#e1e2d6; margin:5px 0 7px; font-weight:500; overflow-wrap:anywhere;}
+.daily-offer-rewards {display:flex; flex-wrap:wrap; align-items:center; gap:8px; font-size:9px; color:#9db6a3; line-height:1.7;}
+.daily-offer-rewards>b {font-size:11px; font-weight:500; color:#bdd2d7;}
+.daily-offer-rewards>span {display:inline-flex; align-items:center; gap:3px; color:#c0ad82;}
+.daily-offer-rewards>span:last-child {font-size:8px; color:#99adb6;}
+.offer-status {display:flex; align-items:center; flex-direction:column; gap:4px; color:#c4b17f; font-size:10px; flex-shrink:0; width:32px;}
+.offer-status.active {color:#a3bed0;}
+.offer-status.complete {color:#adc9ad;}
+.offer-status.archived {color:#8a9da8;}
+.daily-offer-card.is-complete {background:linear-gradient(110deg,#273d3938,#1d2b35); border-left-color:#99b19a;}
+.npc-section-heading {margin-top:32px; margin-bottom:9px;}
+.npc-section-heading>svg {color:#b6b392;}
+.npc-section-note {font-size:11px; line-height:1.9; color:#9cb0bd; margin:0 0 17px;}
+.npc-grid {display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); gap:13px;}
+.npc-card {position:relative; display:flex; flex-direction:column; padding:0; min-width:0; text-align:left; background:#1d2d3b; border:1px solid #80948361; border-radius:5px; overflow:hidden;}
+.npc-card:hover {border-color:var(--npc-color); box-shadow:0 4px 20px #0003;}
+.npc-card-art {position:relative; display:block; width:100%; height:155px; overflow:hidden; background:radial-gradient(ellipse at 50% 40%,color-mix(in srgb,var(--npc-color) 30%,transparent),transparent 75%),linear-gradient(135deg,#33434150,#1b2938);}
+.npc-card-art>.npc-portrait {position:absolute; bottom:-4px; width:100%; left:0; mask-image:linear-gradient(#000 85%,transparent);}
+.npc-card-copy {display:block; width:100%; padding:11px 12px 12px; border-top:1px solid #5e736847;}
+.npc-card-copy>strong {display:block; font:500 19px/1.4 "Songti TC","Noto Serif TC",serif; color:#e0dcc9;}
+.npc-card-copy small {display:block; font:10px/1.7 var(--game-font); color:var(--npc-color); margin-top:3px;}
+.npc-card-copy>span {display:flex; align-items:center; gap:4px; margin-top:9px; font-size:9px; color:#afbf9d;}
+.npc-card>svg {position:absolute; right:10px; bottom:15px; color:#adbb9a;}
+.npc-card.complete .npc-card-copy>span {color:#95b89f;}
+.quest-service-error {border:1px solid #986b5870; background:#503c2d20; padding:20px; color:#cbb39e; font-size:12px;}
+.quest-service-error button {margin-top:14px;}
+/* The same NPC offers a short introduction and any current daily assignment. */
+.npc-dialog {width:min(670px,calc(100vw - 28px))!important; max-width:none!important; max-height:calc(100svh - 40px)!important; padding:0!important; gap:0!important; overflow-y:auto; overscroll-behavior:contain; background:#1b2b39!important; border:1px solid #9eaa8260!important; border-radius:7px!important; color:#d2d9d8; box-shadow:0 24px 80px #0009!important;}
+.npc-dialog-scene {position:relative; display:grid; grid-template-columns:185px 1fr; align-items:center; gap:18px; min-height:208px; padding:23px 25px 0 12px; overflow:hidden; background:radial-gradient(ellipse at 20% 65%,color-mix(in srgb,var(--npc-color) 33%,transparent),transparent 65%),linear-gradient(110deg,#32434766,#192a38); border-bottom:1px solid #7b8c6a4a;}
+.npc-dialog-scene>.npc-portrait {width:190px; align-self:end; mask-image:linear-gradient(#000 90%,transparent);}
+.npc-dialog-scene [data-slot=dialog-header] {padding:12px 0 24px; text-align:left; gap:8px; min-width:0;}
+.npc-dialog-scene .eyebrow {font-size:9px; letter-spacing:1px; color:#adb7a5;}
+.npc-dialog-scene [data-slot=dialog-title] {font:500 28px/1.4 "Songti TC","Noto Serif TC",serif; color:#e9dec3;}
+.npc-dialog-scene [data-slot=dialog-title]>small {display:block; font:11px/1.8 var(--game-font); color:var(--npc-color); margin-top:4px;}
+.npc-dialog-scene [data-slot=dialog-description] {color:#c0c9c6; font-size:12px; line-height:1.9;}
+.npc-dialog-body {padding:20px 26px 24px;}
+.npc-lore {margin:0 0 19px; padding:0 0 13px; border-bottom:1px solid #6a7f7450;}
+.npc-lore summary {cursor:pointer; color:#c7bc9c; font-size:11px;}
+.npc-lore p {font-size:11px; color:#a8b8bd; line-height:1.9; margin-top:10px;}
+.npc-offer-choices {display:flex; gap:8px; margin-bottom:20px;}
+.npc-offer-choices button {display:flex; align-items:center; gap:7px; min-height:39px; padding:8px 14px; font-size:11px; border:1px solid #65807766; background:#223744; color:#a1b5b8; border-radius:3px;}
+.npc-offer-choices button[aria-pressed=true] {border-color:#b5b58c; background:#a1a06d19; color:#d2cba4;}
+.npc-quest-title {display:flex; align-items:center; justify-content:space-between; gap:12px;}
+.quest-difficulty {display:inline-flex; align-items:center; gap:5px; color:#b3c4a0; font-size:10px;}
+.npc-quest-title h3 {font-size:19px; font-weight:500; line-height:1.7; color:#e1dbc7; margin-top:7px;}
+.npc-skill-tag {display:flex; gap:6px; align-items:center; color:#b7c7b7; font-size:10px; padding:8px; background:#3f534141; border:1px solid #7c967852; white-space:nowrap;}
+.npc-quest-description {font-size:12px; line-height:1.9; color:#a6b8c2; margin:13px 0 19px;}
+.npc-quest-steps {display:flex; flex-direction:column; gap:9px; list-style:none; padding:0; margin:0 0 21px;}
+.npc-quest-steps li {display:flex; align-items:flex-start; gap:12px; background:#142532; border:1px solid #6e87714a; padding:13px;}
+.npc-quest-steps li>span {color:#baaf89; font:12px/1.8 Georgia,serif;}
+.npc-quest-steps li>div {min-width:0;}
+.npc-quest-steps strong {color:#cbd8d7; font-size:12px; font-weight:400; line-height:1.8;}
+.npc-quest-steps small {display:block; color:#9fb3a5; font-size:10px; margin-top:6px; line-height:1.8;}
+.npc-quest-rewards {display:flex; align-items:center; flex-wrap:wrap; gap:16px; padding:14px 0; border-top:1px solid #74896e50; border-bottom:1px solid #74896e50;}
+.npc-quest-rewards>span {font-size:10px; color:#a7b2b9; margin-right:auto;}
+.npc-quest-rewards strong {display:flex; align-items:center; gap:5px; font-size:17px; font-weight:500; color:#d7bd83;}
+.npc-quest-rewards strong:first-of-type {color:#b9d1d9;}
+.npc-quest-rewards small {font-size:9px; color:#a7b9bd; font-weight:400;}
+.npc-quest-reward-note {font-size:10px; line-height:1.9; color:#91a7b5; margin:12px 0 17px;}
+.accept-offer-button {width:100%; min-height:46px;}
+.npc-dialog .accept-offer-button {position:sticky; bottom:0; z-index:2; box-shadow:0 -10px 18px #1b2b39e6;}
+.accept-offer-button>svg:last-child {margin-left:auto;}
+.quest-source-note {display:flex; align-items:center; gap:9px; padding:12px; margin-bottom:19px; color:#b0c1a5; border:1px solid #81946b60; background:#31483860; font-size:11px; line-height:1.8;}
+@media(min-width:700px) {
+ .daily-offer-list {display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); gap:12px;}
+ .daily-offer-card {position:relative; flex-wrap:wrap; gap:10px; align-content:flex-start; min-height:228px; padding:15px;}
+ .daily-portrait-frame {margin-bottom:4px;}
+ .daily-offer-copy {flex-basis:100%;}
+ .daily-offer-copy>strong {font-size:14px;}
+ .offer-status {position:absolute; top:20px; right:14px;}
+}
+@media(max-width:600px) {
+ .quest-page .quest-hero {height:190px; margin-bottom:12px;}
+ .quest-page .quest-hero-copy {padding-top:15px;}
+ .quest-page .quest-hero-copy h2 {font-size:21px; line-height:1.5; margin:8px 0;}
+ .quest-page .quest-hero>.profession-art {width:173px; right:-12px; top:-7px;}
+ .quest-page .quest-hero-xp {bottom:12px;}
+ .quest-page .quest-overview {margin-bottom:17px;}
+ .quest-page .quest-overview>div,.quest-page .quest-overview>button {padding-block:11px;}
+ .quest-page .quest-overview strong {font-size:20px;}
+ .quest-discovery-note {padding:12px; gap:9px; margin-bottom:22px;}
+ .quest-discovery-note strong {font-size:12px;}
+ .quest-discovery-note p {font-size:10px;}
+ .quest-hub .eyebrow {font-size:8px; letter-spacing:1.5px;}
+ .quest-hub .rpg-block-heading h2 {font-size:18px;}
+ .daily-offer-card {gap:11px; padding:12px 10px; min-height:113px;}
+ .daily-portrait-frame {width:58px; height:70px;}
+ .daily-portrait-frame .npc-portrait {width:70px;}
+ .daily-offer-author {font-size:9px;}
+ .daily-offer-copy>strong {font-size:14px;}
+ .daily-offer-rewards {gap:6px;}
+ .npc-grid {grid-template-columns:repeat(2,minmax(0,1fr)); gap:11px;}
+ .npc-card-art {height:145px;}
+ .npc-card-copy {padding:10px 11px 12px;}
+ .npc-dialog-scene {grid-template-columns:42% 1fr; padding:20px 19px 0 0; gap:6px; min-height:204px;}
+ .npc-dialog-scene>.npc-portrait {width:100%; max-width:178px; margin-left:0;}
+ .npc-dialog-scene [data-slot=dialog-title] {font-size:25px;}
+ .npc-dialog-scene [data-slot=dialog-description] {font-size:11px;}
+ .npc-dialog-scene .eyebrow {font-size:8px; letter-spacing:0;}
+ .npc-dialog-body {padding:18px;}
+ .npc-quest-title {align-items:flex-start; gap:8px;}
+ .npc-quest-title h3 {font-size:17px;}
+ .npc-skill-tag {font-size:9px; padding:6px; margin-top:3px;}
+ .npc-skill-tag>svg {display:none;}
+ .npc-quest-rewards {gap:12px;}
+ .npc-quest-rewards strong {font-size:16px;}
+}
+@media(max-width:350px) {
+ .quest-discovery-note>svg {width:20px;}
+ .quest-discovery-note strong {font-size:11px;}
+ .daily-offer-card {gap:9px;}
+ .daily-portrait-frame {width:46px; height:65px;}
+ .daily-portrait-frame .npc-portrait {width:61px; left:-8px;}
+ .daily-offer-copy>strong {font-size:12px;}
+ .offer-status {width:26px; font-size:9px;}
+ .daily-offer-rewards>span:last-child {display:none;}
+ .daily-refresh-note {font-size:9px;}
+ .npc-card-art {height:125px;}
+ .npc-card-copy>strong {font-size:18px;}
+ .npc-card-copy small {font-size:9px;}
+ .npc-dialog-scene {grid-template-columns:40% 1fr; min-height:193px; padding-right:16px;}
+ .npc-dialog-scene>.npc-portrait {width:100%; margin-left:0;}
+ .npc-dialog-body {padding:16px;}
+ .npc-quest-rewards {gap:10px;}
+ .npc-quest-rewards>span {flex-basis:100%;}
+}

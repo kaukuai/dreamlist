@@ -23,6 +23,8 @@
       }
     ],
     "paths": {
+      "@dreamlist/database": ["./db/cloudflare.ts"],
+      "@dreamlist/auth": ["./lib/auth/sites.ts"],
       "@/*": [
         "./*"
       ]
@@ -42,6 +44,8 @@
   ],
   "exclude": [
     "node_modules",
-    "examples"
+    "examples",
+    ".next",
+    ".next-vercel"
   ]
 }

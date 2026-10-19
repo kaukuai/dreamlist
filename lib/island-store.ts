@@ -19,13 +19,15 @@ export async function islandState(ownerId:string):Promise<IslandState>{
  const results=await db.batch([
  db.prepare("SELECT COALESCE(SUM(amount),0) earned,COALESCE(SUM(CASE WHEN kind='step' THEN 1 ELSE 0 END),0) steps,COALESCE(SUM(CASE WHEN kind='dream' THEN 1 ELSE 0 END),0) fulfilled FROM island_rewards WHERE owner_id=?").bind(ownerId),
  db.prepare('SELECT id,kind,slot,cost FROM island_items WHERE owner_id=? ORDER BY slot').bind(ownerId),
- db.prepare('SELECT name FROM island_profiles WHERE owner_id=?').bind(ownerId)
+ db.prepare('SELECT name FROM island_profiles WHERE owner_id=?').bind(ownerId),
+ db.prepare('SELECT COALESCE(SUM(cost),0) spent FROM character_inventory WHERE owner_id=?').bind(ownerId)
  ]);
  const totals=results[0].results[0] as {earned?:number;steps?:number;fulfilled?:number}|undefined;
  const profile=results[2].results[0] as {name?:string}|undefined;
  const earned=Number(totals?.earned??0);
  const items=results[1].results as IslandState['items'];
- return{earned,balance:100+earned-items.reduce((n,i)=>n+i.cost,0),level:islandLevel(earned),name:String(profile?.name??'曙光小島'),steps:Number(totals?.steps??0),dreamsFulfilled:Number(totals?.fulfilled??0),items};
+ const equipmentSpent=Number((results[3].results[0] as {spent?:number}|undefined)?.spent??0);
+ return{earned,balance:100+earned-items.reduce((n,i)=>n+i.cost,0)-equipmentSpent,level:islandLevel(earned),name:String(profile?.name??'曙光小島'),steps:Number(totals?.steps??0),dreamsFulfilled:Number(totals?.fulfilled??0),items};
 }
 export async function moveItem(ownerId:string,id:string,slot:number){
  const db=prepared();

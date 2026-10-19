@@ -1,0 +1,489 @@
+/* Reverie, chapter II: a portrait-oriented RPG shell. All illustrations are original. */
+:root {color-scheme: dark; --background:#101721; --foreground:#e6e5e1; --card:#192330; --card-foreground:#e6e5e1; --popover:#192330; --popover-foreground:#e6e5e1; --primary:#c8a56b; --primary-foreground:#171b23; --secondary:#25303e; --secondary-foreground:#d4d8dc; --muted:#263140; --muted-foreground:#9aabba; --accent:#303b49; --accent-foreground:#e7d7b4; --border:#384452; --input:#425060; --ring:#c8a56b; --radius:.35rem; --game-font:"Trebuchet MS","Microsoft JhengHei",sans-serif; --rpg-gold:#d3b47f; --rpg-blue:#8fb8d1; --rpg-dim:#99a6b5;}
+html {scroll-padding-top:84px;}
+body {background:#101721; color:var(--foreground); font-family:var(--game-font);}
+.rpg-shell {min-height:100svh; padding-top:calc(66px + env(safe-area-inset-top,0px)); padding-bottom:calc(104px + env(safe-area-inset-bottom,0px)); background:radial-gradient(ellipse at 50% 0,#25334560,transparent 650px),#101721;}
+.rpg-shell button {cursor:pointer;}
+.rpg-shell button:disabled {cursor:not-allowed;}
+button:focus-visible,a:focus-visible,select:focus-visible {outline:2px solid #d3b47f; outline-offset:4px;}
+.rpg-shell>.game-header {position:fixed; inset:0 0 auto; z-index:40; height:calc(66px + env(safe-area-inset-top,0px)); padding:env(safe-area-inset-top,0px) max(22px,calc((100vw - 920px)/2)) 0; display:flex; align-items:center; justify-content:space-between; gap:12px; background:#111924ed; backdrop-filter:blur(18px); border:0; border-bottom:1px solid #9b85523b;}
+.rpg-shell>.game-header {flex-wrap:nowrap; align-content:center;}
+.rpg-shell .game-brand {display:flex; align-items:center; align-self:center; gap:11px; background:none; text-align:left; color:var(--rpg-gold); padding:0; height:auto;}
+.rpg-shell .game-brand>svg {flex-shrink:0; stroke-width:1.3;}
+.rpg-shell .game-brand strong {display:block; font:600 25px/1.1 "Songti TC","Noto Serif TC",serif; letter-spacing:3px; color:#e8dbc3;}
+.rpg-shell .game-brand small {display:block; font:9px/1.5 var(--game-font); letter-spacing:1.9px; color:#9d937e; margin-top:4px;}
+.rpg-shell .game-header-actions {display:flex; align-items:center; gap:12px; margin:0; height:auto;}
+.rpg-shell .save-state {display:flex; color:#8ea7ae;}
+.rpg-shell .currency-pill {display:flex; align-items:center; gap:6px; min-width:0; background:#b99b5c0a; padding:7px 10px; border:1px solid #9e824940; border-radius:3px; color:#d6bb87; box-shadow:none;}
+.rpg-shell .currency-pill strong {font:600 15px/1.2 var(--game-font); font-variant-numeric:tabular-nums;}
+.rpg-icon-button {display:grid; place-items:center; width:40px; height:40px; border:1px solid #61708450; border-radius:3px; color:#bac5d0; background:#1b2734; flex-shrink:0;}
+.rpg-icon-button:hover {background:#293848; color:#f4e4c7;}
+.rpg-shell>.game-nav {position:fixed; z-index:45; inset:auto auto 16px 50%; transform:translateX(-50%); display:grid; grid-template-columns:repeat(5,minmax(0,1fr)); width:min(600px,calc(100vw - 32px)); height:70px; margin:0; padding:0 9px; gap:0; border:1px solid #8c744349; border-radius:8px; background:#151f2bef; backdrop-filter:blur(18px); box-shadow:0 8px 30px #0007;}
+.rpg-shell>.game-nav button {position:relative; display:flex; flex-direction:column; align-items:center; justify-content:center; gap:5px; padding:9px 2px; font-size:11px; line-height:1.3; font-weight:500; border:0; border-radius:0; color:#8f9cad; background:transparent; box-shadow:none; min-width:0;}
+.rpg-shell>.game-nav button svg {display:block; width:22px; height:22px; stroke-width:1.5;}
+.rpg-shell>.game-nav button.current {color:#e0bd80; background:linear-gradient(#b9975d16,transparent); box-shadow:none;}
+.rpg-shell>.game-nav button.current:before {content:''; position:absolute; left:30%; right:30%; top:0; height:2px; background:#d7b378; box-shadow:0 0 9px #d7b37866;}
+.rpg-shell>.game-nav button.current:after {display:none;}
+.rpg-shell>.game-nav button:hover {color:#dfc79c; background:#ffffff05;}
+.rpg-shell>.game-nav button i {position:absolute; top:9px; left:calc(50% + 8px); min-width:14px; height:14px; padding-inline:3px; line-height:14px; font-style:normal; font-size:9px; color:#14202c; background:#ceb07b; border-radius:7px;}
+.rpg-page,.quest-page {width:min(100%,760px); margin:auto; padding:26px 24px 12px; min-height:calc(100svh - 170px); background:transparent;}
+.rpg-panel-heading {display:flex; justify-content:space-between; align-items:center; gap:14px; margin-bottom:22px;}
+.eyebrow,.rpg-shell .small-caps {font:500 10px/1.6 var(--game-font); letter-spacing:2.2px; color:#a89674;}
+.rpg-panel-heading h1 {font:600 29px/1.4 "Songti TC","Noto Serif TC",serif; color:#e5ddcf; letter-spacing:1px; margin:5px 0 0;}
+.panel-description {font-size:13px; line-height:1.9; color:var(--rpg-dim); margin:-5px 0 22px;}
+.resource-tag {display:flex; align-items:center; gap:7px; padding:8px 12px; border:1px solid #9d865245; background:#9e81450d; color:#d0b47f; font-size:13px; font-weight:600; white-space:nowrap;}
+.primary-button {display:flex; align-items:center; justify-content:center; gap:8px; min-height:44px; border:1px solid #d0ad72; border-radius:3px; background:linear-gradient(135deg,#d3b580,#b69761); color:#18202a; box-shadow:inset 0 1px #fff3; padding:11px 17px; font-weight:700; font-size:13px; line-height:1.5;}
+.primary-button:hover {background:linear-gradient(135deg,#e3c894,#c2a36b); transform:none; box-shadow:inset 0 1px #fff3;}
+.primary-button:active {transform:translateY(1px);}
+.primary-button:disabled,.secondary-button:disabled {opacity:.45;}
+.secondary-button {display:flex; justify-content:center; align-items:center; gap:7px; min-height:42px; padding:10px 15px; border:1px solid #526074; color:#bec8d4; background:#26313f; border-radius:3px; font-size:12px; box-shadow:none;}
+.text-button {display:inline-flex; justify-content:center; align-items:center; gap:6px; color:#c7ad7e; font-size:12px; font-weight:500; background:none; min-height:32px; padding:4px 0;}
+.rpg-shell .loading-panel {min-height:260px; color:#a6b0bc; font-size:14px; gap:12px;}
+.rpg-empty {display:flex; flex-direction:column; align-items:center; justify-content:center; gap:12px; text-align:center; padding:42px 20px; border:1px solid #52607350; background:radial-gradient(ellipse at 50% 0,#3b465825,transparent),#16202c; color:#b89d70;}
+.rpg-empty h3 {font-size:18px; font-weight:600; color:#ded8cc; line-height:1.6; margin:3px 0 0;}
+.rpg-empty p {font-size:12px; line-height:1.9; color:#99a6b6; margin:0;}
+.rpg-empty .primary-button {margin-top:7px;}
+.rpg-footnote {color:#8996a5; font-size:11px; line-height:1.9; text-align:center; margin:22px 6px 5px;}
+.rpg-block-heading {display:flex; align-items:center; justify-content:space-between; gap:10px; margin-bottom:15px;}
+.rpg-block-heading h2,.rpg-block-heading h3 {font-size:15px; font-weight:600; color:#dfd8ca; margin:0;}
+.rpg-block-heading>span {font-size:10px; color:#8e9bad;}
+.rpg-segmented {display:flex; gap:0; border-bottom:1px solid #465366;}
+.rpg-segmented button {position:relative; color:#8998ab; background:none; min-height:43px; padding:10px 16px; font-size:12px; font-weight:500; white-space:nowrap;}
+.rpg-segmented button[aria-pressed=true] {color:#dec28c; background:#c0a1600a;}
+.rpg-segmented button[aria-pressed=true]:after {content:''; position:absolute; left:14px; right:14px; bottom:-1px; height:2px; background:#d0af76;}
+.rpg-segmented small {font-size:10px; margin-left:5px; color:#97a3b0;}
+/* Character art and paper-doll slots */
+.character-avatar.profession-art {display:block; width:280px; height:auto; aspect-ratio:3/4; max-width:none; background-repeat:no-repeat; background-size:400% 200%; filter:drop-shadow(0 4px 12px #0005);}
+.character-avatar.profession-art {filter:drop-shadow(0 4px 12px #0005) drop-shadow(0 0 12px color-mix(in srgb,var(--portrait-aura,#87b2ca) 22%,transparent));}
+.character-avatar.stage-1 {filter:drop-shadow(0 0 11px color-mix(in srgb,var(--portrait-aura,#87b2ca) 40%,transparent));}
+.character-avatar.stage-2 {filter:drop-shadow(0 0 15px color-mix(in srgb,var(--portrait-aura,#87b2ca) 60%,transparent));}
+.character-avatar.stage-3 {filter:drop-shadow(0 0 20px color-mix(in srgb,var(--portrait-aura,#87b2ca) 80%,transparent));}
+.character-nameplate {display:flex; justify-content:space-between; align-items:center; gap:14px; padding:0 3px; margin-bottom:4px;}
+.job-insignia {display:inline-flex; align-items:center; gap:6px; color:#c1a373; font-size:11px; line-height:1.6;}
+.character-nameplate h2 {color:#eee4d3; font-size:22px; font-weight:600; letter-spacing:.7px; margin:6px 0 0; overflow-wrap:anywhere;}
+.character-level {font-size:12px; color:#9aabba; white-space:nowrap;}
+.character-level b {font:500 35px/1.1 Georgia,serif; color:#e2d2b6; margin-left:3px;}
+.paper-doll {position:relative; isolation:isolate; height:428px; overflow:hidden; margin-top:7px; border-top:1px solid #4d596840; border-bottom:1px solid #4d596840; background:linear-gradient(90deg,#121b26,#202b3966 50%,#121b26);}
+.portrait-backdrop {position:absolute; z-index:-1; inset:0; background:radial-gradient(ellipse at 50% 53%,#7b827633,transparent 61%),repeating-linear-gradient(90deg,transparent,transparent 63px,#71818c08 64px);}
+.portrait-backdrop:after {content:''; position:absolute; height:80%; aspect-ratio:1; left:50%; top:9%; transform:translateX(-50%); border:1px solid #b4a37618; border-radius:50%; box-shadow:0 0 0 18px #aa986a05,0 0 0 19px #aa986a0d;}
+.paper-doll>.profession-art {position:absolute; width:310px; left:50%; top:5px; transform:translateX(-50%); z-index:1; mask-image:linear-gradient(90deg,transparent,#000 10%,#000 94%,transparent),linear-gradient(#000 92%,transparent); mask-composite:intersect;}
+.paper-doll>.profession-art[data-profession=mage] {mask-image:linear-gradient(90deg,transparent 11%,#000 18%,#000 94%,transparent),linear-gradient(#000 92%,transparent);}
+.portrait-ring {position:absolute; z-index:0; left:50%; bottom:10px; width:260px; height:40px; transform:translateX(-50%); border:1px solid #a79b7040; border-radius:50%; box-shadow:0 0 22px #a59c5c15,inset 0 0 18px #a59c5c10;}
+.paper-doll-slot {position:absolute; z-index:3; display:flex; flex-direction:column; align-items:center; justify-content:center; width:74px; min-height:91px; border:1px solid #65708579; background:linear-gradient(135deg,#253140f2,#141e2bf5); color:#738397; border-radius:2px; box-shadow:inset 0 0 0 3px #131d2880,0 3px 8px #0003; padding:5px;}
+.paper-doll-slot:before {content:''; position:absolute; inset:3px; border:1px solid #5c697633; pointer-events:none;}
+.paper-doll-slot>small {font-size:9px; color:#8794a4; margin-bottom:5px;}
+.paper-doll-slot>svg {stroke-width:1; opacity:.5; margin:2px 0 5px;}
+.paper-doll-slot>span:not(.gear-art) {font-size:9px; color:#8997a8; line-height:1.5; max-width:100%; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;}
+.paper-doll-slot.filled {border-color:#a9925d9c;}
+.paper-doll-slot.filled>span:not(.gear-art) {color:#d4be95;}
+.paper-doll-slot .gear-art {width:46px; height:46px; margin:-3px 0 1px;}
+.slot-position-0,.slot-position-1,.slot-position-2 {left:22px;}
+.slot-position-3,.slot-position-4,.slot-position-5 {right:22px;}
+.slot-position-0,.slot-position-3 {top:25px;}
+.slot-position-1,.slot-position-4 {top:157px;}
+.slot-position-2,.slot-position-5 {top:289px;}
+.portrait-class-label {position:absolute; z-index:4; bottom:12px; left:50%; transform:translateX(-50%); display:flex; align-items:center; justify-content:center; gap:5px; min-width:124px; background:#111a26dc; color:#d5bf96; border:1px solid #aa8f5755; padding:6px 12px; font-size:10px; letter-spacing:1px; white-space:nowrap;}
+.paper-doll.compact {height:360px; margin-top:0;}
+.paper-doll.compact>.profession-art {width:266px; top:-1px;}
+.paper-doll.compact .slot-position-0,.paper-doll.compact .slot-position-3 {top:17px;}
+.paper-doll.compact .slot-position-1,.paper-doll.compact .slot-position-4 {top:127px;}
+.paper-doll.compact .slot-position-2,.paper-doll.compact .slot-position-5 {top:237px;}
+.character-power {display:flex; align-items:center; gap:10px; padding:14px 6px; border-bottom:1px solid #4653655c;}
+.character-power>span {display:flex; align-items:center; gap:6px; color:#ad9d7d; font-size:12px;}
+.character-power>strong {font:500 27px/1 Georgia,serif; color:#dfc18c; letter-spacing:1px;}
+.character-power>small {margin-left:auto; font-size:10px; color:#8794a5;}
+.character-experience {padding:18px 4px 16px;}
+.character-experience>div:first-child {display:flex; justify-content:space-between; align-items:center; font-size:12px; margin-bottom:9px;}
+.character-experience>div>span {color:#c9d0d8; font-weight:600;}
+.character-experience>div>span small {font-size:10px; color:#8e9bab; font-weight:400; margin-left:8px;}
+.character-experience strong {font-size:11px; color:#9aaebf; font-weight:500;}
+.character-experience [data-slot=progress] {height:5px; border-radius:0; background:#2d394a;}
+.character-experience [data-slot=progress-indicator] {background:linear-gradient(90deg,#5c839d,#b2c8d2);}
+.character-experience>small {display:block; margin-top:8px; font-size:10px; color:#8797a8;}
+.evolution-banner {display:flex; align-items:center; gap:12px; width:100%; background:linear-gradient(100deg,#302e2860,#1b2633); border:1px solid #a18b544f; padding:14px 16px; margin:4px 0 26px; text-align:left; color:#b9995f; border-radius:3px;}
+.evolution-banner>span {flex:1;}
+.evolution-banner strong {display:block; color:#d4c19c; font-size:13px; font-weight:500;}
+.evolution-banner small {display:block; font-size:10px; color:#9c9b94; margin-top:5px;}
+.evolution-banner.is-ready {border-color:#dec286; box-shadow:inset 0 0 23px #b08a3420;}
+.combat-attributes {display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); gap:9px;}
+.combat-attributes>div {position:relative; display:grid; grid-template-columns:22px 1fr; align-items:center; gap:7px 5px; border:1px solid #47556569; padding:13px 10px; background:#1a2532; border-radius:2px;}
+.combat-attributes svg {color:#a99776; width:17px;}
+.combat-attributes span {font-size:11px; color:#afb9c5;}
+.combat-attributes strong {font:500 24px/1.2 Georgia,serif; color:#dcd6c8; grid-column:1/3;}
+.combat-attributes small {font-size:9px; grid-column:1/3; color:#8a9bad; line-height:1.5;}
+.character-shortcuts {display:grid; grid-template-columns:1fr 1fr; gap:10px; margin-top:22px;}
+.character-shortcuts>button {display:flex; align-items:center; gap:10px; background:#1b2633; border:1px solid #48556570; color:#ae9d7b; text-align:left; padding:15px 11px;}
+.character-shortcuts span {flex:1; font-size:13px; color:#c6cdd5;}
+.character-shortcuts small {display:block; color:#8898aa; font-size:10px; line-height:1.7; margin-top:5px;}
+.character-shortcuts>button>svg:last-child {width:14px; flex-shrink:0;}
+/* Inventory: six live slots and inspectable item tiles. */
+.gear-art {display:block; width:64px; height:64px; background-image:url('/art/equipment-atlas.webp'); background-size:400% 400%; background-repeat:no-repeat; border-radius:2px;}
+.gear-art>svg {display:none;}
+.equipment-summary {display:flex; align-items:center; justify-content:space-between; gap:10px; padding:13px 4px; color:#92a1b3; font-size:11px; border-bottom:1px solid #46536560;}
+.equipment-summary strong {font-size:12px; color:#d0b27e; font-weight:500;}
+.inventory-toolbar {display:flex; align-items:center; justify-content:space-between; gap:12px; margin:16px 0 20px;}
+.slot-filter select {width:108px; min-height:40px; padding:7px; background:#1b2735; color:#aebccc; border:1px solid #465567; border-radius:2px; font-size:11px;}
+.inventory-grid {display:grid; grid-template-columns:repeat(4,minmax(0,1fr)); gap:11px;}
+.inventory-tile {position:relative; display:flex; flex-direction:column; align-items:center; border:1px solid #68716c; padding:12px 6px 10px; background:linear-gradient(135deg,#29343b66,#172230); border-radius:3px; min-width:0; min-height:142px;}
+.inventory-tile.rarity-rare {border-color:#668fa3; background:linear-gradient(140deg,#344c5c60,#172230);}
+.inventory-tile.rarity-epic {border-color:#9c83b9; background:linear-gradient(140deg,#56436a60,#1b2032);}
+.inventory-tile:hover {box-shadow:inset 0 0 0 1px #bba470;}
+.inventory-tile .gear-art {width:82px; height:82px; max-width:100%; margin:5px 0 8px;}
+.inventory-tile>strong {font-size:11px; color:#d8d6cc; font-weight:500; max-width:100%; white-space:nowrap; text-overflow:ellipsis; overflow:hidden;}
+.inventory-tile>small {display:flex; align-items:center; gap:4px; color:#bcaa82; font-size:10px; margin-top:6px;}
+.item-level {position:absolute; z-index:1; top:5px; left:6px; font-size:9px; color:#a6b6c3;}
+.item-worn {position:absolute; z-index:1; top:5px; right:4px; display:flex; align-items:center; gap:1px; color:#cbb57f; font-size:9px;}
+.equipment-detail-dialog {width:min(420px,calc(100vw - 30px))!important; background:#182330!important; border:1px solid #9d84564f!important; border-radius:5px!important; color:#d5d9dc; padding:25px!important; gap:16px!important;}
+.equipment-detail-dialog [data-slot=dialog-title] {font:600 23px/1.4 "Songti TC",serif; color:#e0d1b8;}
+.equipment-detail-dialog [data-slot=dialog-description] {font-size:11px; color:#99a8b7;}
+.equipment-detail-art {display:flex; align-items:center; justify-content:center; padding:10px 0; background:radial-gradient(ellipse,#7e674d15,transparent 65%);}
+.equipment-detail-art .gear-art {width:152px; height:152px;}
+.equipment-lore {font-size:12px; color:#a5adb4; text-align:center; line-height:1.8;}
+.equipment-detail-stats {display:flex; flex-direction:column; gap:10px; padding:15px; background:#111b27; border:1px solid #45536660;}
+.equipment-detail-stats>div {display:flex; align-items:center; gap:9px; color:#acb6c4; font-size:13px;}
+.equipment-detail-stats svg {color:#ae9770;}
+.equipment-detail-stats strong {color:#a7c0b2; margin-left:auto; font-weight:500;}
+.equipment-wallet {display:flex; justify-content:space-between; font-size:12px; color:#92a2b2;}
+.equipment-wallet strong {color:#d6b777;}
+/* Class identity and advancement requirements. */
+.profession-selector,.talent-branch-selector {display:grid; grid-template-columns:repeat(6,minmax(0,1fr)); gap:7px; margin:0 0 17px;}
+.profession-selector button,.talent-branch-selector button {position:relative; display:flex; align-items:center; justify-content:center; flex-direction:column; gap:8px; min-height:68px; border:1px solid #4757697a; background:#1b2633; color:#7f93a8; padding:10px 3px;}
+.profession-selector button[aria-pressed=true],.talent-branch-selector button[aria-pressed=true] {color:#d8bc84; border-color:#bea06b; background:linear-gradient(#a5854428,#1b2633);}
+.profession-selector button>span,.talent-branch-selector button>span {font-size:11px;}
+.profession-selector i {position:absolute; width:4px; height:4px; bottom:4px; background:#cdb17f; border-radius:50%;}
+.profession-preview {display:grid; grid-template-columns:220px 1fr; align-items:center; gap:18px; min-height:295px; border:1px solid #6b706242; background:radial-gradient(ellipse at 25% 60%,#67605425,transparent 65%),#17212e; overflow:hidden; margin-bottom:18px;}
+.profession-preview .profession-art {width:220px; mask-image:linear-gradient(90deg,transparent,#000 12%,#000 94%,transparent),linear-gradient(#000 95%,transparent); mask-composite:intersect;}
+.profession-preview>div {min-width:0; padding:18px 20px 18px 0;}
+.profession-preview .eyebrow {font-size:8px; letter-spacing:1.5px; color:#a7a088;}
+.profession-preview h2 {font:600 27px/1.4 "Songti TC",serif; color:#e2d2b7; margin:9px 0 11px;}
+.profession-preview p {font-size:12px; line-height:1.8; color:#a3afbe;}
+.profession-focus {display:block; font-size:10px; line-height:1.8; color:#baaa8d; border-top:1px solid #66718142; padding-top:12px; margin-top:17px;}
+.profession-base-card {background:#192431; border:1px solid #49576a7d; padding:19px; margin-bottom:26px;}
+.requirement-list {display:flex; flex-direction:column; list-style:none; gap:9px; margin:0 0 15px; padding:0;}
+.requirement-list li {display:flex; align-items:center; gap:7px; color:#8a99ab; font-size:11px; line-height:1.6;}
+.requirement-list b {margin-left:auto; font-size:11px; color:#7a8ca1; font-weight:500;}
+.requirement-list .met,.requirement-list .met b {color:#9fbbab;}
+.current-class-note {display:flex; align-items:center; gap:6px; color:#bca77e; font-size:11px; line-height:1.8;}
+.evolution-tree {position:relative; display:flex; flex-direction:column; gap:22px;}
+.evolution-tree:before {content:''; position:absolute; top:38px; bottom:40px; left:31px; width:1px; background:linear-gradient(#bd9c6390,#63738670);}
+.evolution-node {position:relative; display:flex; gap:15px; align-items:flex-start;}
+.evolution-emblem {position:relative; display:flex; align-items:center; justify-content:center; flex-direction:column; gap:3px; flex-shrink:0; width:64px; height:76px; background:#1a2532; border:1px solid #5c6b7a; color:#728599; clip-path:polygon(50% 0,100% 18%,100% 82%,50% 100%,0 82%,0 18%);}
+.evolution-emblem small {font:11px/1 Georgia,serif;}
+.evolution-node.completed .evolution-emblem,.evolution-node.ready .evolution-emblem {color:#d7b77e; background:linear-gradient(#3e3a2e,#26313e); border-color:#baa16e;}
+.evolution-node-copy {flex:1; min-width:0; padding:17px; background:#182330; border:1px solid #4b5a6b7d;}
+.evolution-node.completed .evolution-node-copy {border-color:#9f8b5766;}
+.evolution-node.ready .evolution-node-copy {border-color:#d3b47fb0; box-shadow:inset 0 0 30px #c3a05e0c;}
+.evolution-node-title,.talent-node-title {display:flex; justify-content:space-between; align-items:center; gap:9px;}
+.evolution-node-title h3,.talent-node-title h3 {color:#d4c8b2; font-size:16px; font-weight:500; margin:0;}
+.evolution-node-title>span,.talent-node-title>span {font-size:11px; color:#ad9e82; white-space:nowrap;}
+.evolution-node-copy>p {font-size:11px; line-height:1.8; color:#8f9daf; margin:9px 0 13px;}
+.evolution-node-copy .primary-button,.evolution-node-copy .secondary-button {width:100%; font-size:11px; padding:10px 5px;}
+.evolution-bonuses {font-size:10px; color:#a5b7a4; line-height:1.8; border-top:1px solid #4c596848; padding-top:10px; margin:7px 0 13px;}
+.return-wanderer {display:flex; margin:22px auto 0;}
+/* Talent branches keep prerequisite, level, rank and cost visible together. */
+.talent-branch-selector {margin-top:23px;}
+.talent-tree {position:relative; display:flex; flex-direction:column; gap:24px; margin-top:27px;}
+.talent-tree:before {content:''; position:absolute; top:33px; bottom:38px; left:32px; width:1px; background:linear-gradient(#ba9c62,#4b5d74);}
+.talent-node {position:relative; display:flex; align-items:flex-start; gap:16px;}
+.talent-node-icon {position:relative; display:grid; place-items:center; flex-shrink:0; width:66px; height:76px; border:1px solid #5e6c7c; background:#202b39; color:#7c8ba0; clip-path:polygon(50% 0,100% 23%,100% 77%,50% 100%,0 77%,0 23%);}
+.talent-node-icon small {position:absolute; bottom:13px; font:10px/1 Georgia,serif;}
+.talent-node-icon svg {margin-top:-10px;}
+.talent-node.learned .talent-node-icon,.talent-node.available .talent-node-icon {color:#d4b77e; background:linear-gradient(#51432c,#27323f); border-color:#c2a473;}
+.talent-node-copy {flex:1; min-width:0; background:#1a2532; border:1px solid #4c5c707a; padding:18px;}
+.talent-node.learned .talent-node-copy {border-color:#a28d6066;}
+.talent-node.available .talent-node-copy {border-color:#d1b47f8f;}
+.talent-node-copy>p {font-size:11px; color:#a1adba; line-height:1.8; margin:10px 0 12px;}
+.talent-rank-pips {display:flex; align-items:center; gap:7px; color:#4c5d74;}
+.talent-rank-pips .lit {fill:#c9ac74; color:#c9ac74;}
+.talent-rank-pips small {margin-left:4px; color:#8d9dad; font-size:10px;}
+.talent-node-copy>p.talent-prerequisite {color:#8798ac; font-size:10px; margin:12px 0 4px;}
+.talent-node-copy>button {width:100%; margin-top:15px; font-size:11px; min-height:40px;}
+/* Real-world quest log */
+.quest-hero {position:relative; isolation:isolate; height:235px; overflow:hidden; border:1px solid #8b795247; background:radial-gradient(ellipse at 78% 40%,#6c604142,transparent 60%),linear-gradient(110deg,#1c2b3c,#151d2a); margin-bottom:17px;}
+.quest-hero:before {content:''; position:absolute; inset:0; z-index:-1; background:repeating-linear-gradient(130deg,transparent,transparent 119px,#b8a27510 120px,transparent 121px);}
+.quest-hero-copy {position:relative; z-index:2; width:62%; padding:25px 24px 0;}
+.quest-hero-copy h2 {font:600 26px/1.55 "Songti TC",serif; color:#e5d9c3; letter-spacing:1px; margin:12px 0 13px;}
+.quest-hero-copy>button {display:inline-flex; align-items:center; gap:7px; font-size:11px; color:#a7b4c3; background:none; text-align:left; max-width:100%;}
+.quest-hero-copy>button>span {color:#d3b57d; white-space:nowrap;}
+.quest-hero>.profession-art {position:absolute; right:16px; top:-8px; width:214px; z-index:1; mask-image:linear-gradient(90deg,transparent,#000 15%,#000),linear-gradient(#000 68%,transparent 91%); mask-composite:intersect;}
+.quest-hero-xp {position:absolute; z-index:3; left:24px; right:24px; bottom:20px;}
+.quest-hero-xp>div:first-child {display:flex; justify-content:space-between; align-items:center; color:#a6b8c8; margin-bottom:8px;}
+.quest-hero-xp strong {font-size:12px; font-weight:500; color:#d0c0a1;}
+.quest-hero-xp span {font-size:10px;}
+.quest-hero-xp [data-slot=progress] {height:4px; border-radius:0; background:#3e4d5d;}
+.quest-hero-xp [data-slot=progress-indicator] {background:linear-gradient(90deg,#8d7547,#d2ba89);}
+.quest-overview {display:grid; grid-template-columns:1fr 1fr 1.2fr; border:1px solid #4d5c6e70; background:#192431; margin-bottom:25px;}
+.quest-overview>div,.quest-overview>button {display:flex; flex-direction:column; align-items:center; justify-content:center; gap:6px; padding:15px 7px; background:none; color:#c3b591;}
+.quest-overview>div {border-right:1px solid #51607140;}
+.quest-overview strong {font:500 24px/1.1 Georgia,serif; color:#d7ceb9;}
+.quest-overview span {font-size:10px; color:#9aa8b7;}
+.quest-overview>button span {display:flex; align-items:center; gap:4px; color:#c6ad7d;}
+.quest-list-header {display:flex; align-items:center; justify-content:space-between; gap:12px; margin-bottom:16px;}
+.quest-list-header>svg {color:#7e90a6; flex-shrink:0;}
+.quest-task-list {display:flex; flex-direction:column; gap:11px;}
+.quest-task {display:flex; align-items:center; gap:14px; background:linear-gradient(100deg,#21303d,#1a2533); border:1px solid #4f5e6f70; padding:17px; border-left:2px solid #9b835c; border-radius:2px;}
+.quest-task.is-complete {border-left-color:#729281; background:#1b2930; opacity:.8;}
+.quest-task-sigil {display:grid; place-items:center; width:47px; height:55px; flex-shrink:0; color:#c4aa7b; background:#a1884c0b; border:1px solid #9e8d5d5c; clip-path:polygon(50% 0,100% 15%,100% 85%,50% 100%,0 85%,0 15%);}
+.quest-task-sigil.fitness {color:#c99f90; border-color:#af78635f;}
+.quest-task-sigil.knowledge {color:#aca0d0; border-color:#9b8bad5f;}
+.quest-task-sigil.mindfulness {color:#9fbaa2; border-color:#809e8c5f;}
+.quest-task-sigil.craft {color:#baa173;}
+.quest-task-sigil.exploration {color:#91b2c7;}
+.quest-task-copy {flex:1; min-width:0;}
+.quest-goal-link {display:flex; align-items:center; gap:3px; background:none; color:#96a6ba; font-size:10px; line-height:1.6; text-align:left; max-width:100%; overflow-wrap:anywhere;}
+.quest-task h3 {font-size:15px; color:#e0dfd7; line-height:1.65; font-weight:500; margin:5px 0; overflow-wrap:anywhere;}
+.quest-training-label {display:block; font-size:10px; color:#8f9cb0; line-height:1.6;}
+.quest-rewards {display:flex; flex-wrap:wrap; gap:10px; align-items:center; margin-top:10px;}
+.quest-rewards>span {display:flex; align-items:center; gap:3px; color:#bba371; font-size:10px;}
+.quest-rewards>span:first-child {color:#a1bfd3;}
+.quest-rewards b {font-size:8px; font-weight:500;}
+.quest-rewards>span.reward-recorded {color:#9ab7a3;}
+.quest-checkbox[data-slot=checkbox] {width:30px; height:30px; border:1px solid #96a8bb; background:#152230; color:#1b2430; border-radius:3px; box-shadow:none; flex-shrink:0;}
+.quest-checkbox[data-state=checked] {background:#b7c6b5; border-color:#b7c6b5;}
+.quest-more-button,.quest-create-button {display:flex; justify-content:center; align-items:center; gap:8px; width:100%; min-height:46px; border:1px solid #59677978; color:#bea778; font-size:12px; margin-top:18px; background:#1a2633;}
+.quest-create-button {border-style:dashed; background:#24314240;}
+.quest-goal-list {display:flex; flex-direction:column; gap:11px;}
+.quest-goal-list>button {display:flex; align-items:center; gap:13px; text-align:left; padding:19px; background:#1b2735; border:1px solid #4e5d6f7a; color:#a88e62;}
+.quest-goal-list>button>div {flex:1; min-width:0;}
+.quest-goal-list strong {color:#d9d9d2; font-weight:500; font-size:14px; line-height:1.6; overflow-wrap:anywhere;}
+.quest-goal-list span {display:block; font-size:10px; color:#8e9caf; margin:6px 0 11px;}
+.quest-goal-list b {font-size:12px; color:#b9a579; font-weight:500;}
+.quest-goal-list [data-slot=progress] {height:3px; border-radius:0; background:#364656;}
+.quest-goal-list [data-slot=progress-indicator] {background:#baa374;}
+.quest-empty {margin-top:8px; padding:26px 18px; gap:10px;}
+/* Skills, privacy settings and ranking. */
+.skill-training-list {display:flex; flex-direction:column; gap:12px;}
+.skill-training-row {display:flex; align-items:center; gap:16px; background:#1b2735; border:1px solid #50617670; padding:19px 16px;}
+.skill-sigil {display:grid; place-items:center; width:48px; height:58px; color:#bba170; background:#a18c5710; border:1px solid #9d895660; flex-shrink:0;}
+.skill-training-copy {flex:1; min-width:0;}
+.skill-training-copy>div {display:flex; align-items:center; justify-content:space-between;}
+.skill-training-copy h3 {font-size:15px; color:#d5d9db; font-weight:500;}
+.skill-training-copy b {font-size:12px; color:#c2aa7b;}
+.skill-training-copy p {font-size:11px; color:#9aabba; line-height:1.8; margin:7px 0 13px;}
+.skill-training-copy [data-slot=progress] {height:4px; border-radius:0; background:#35465b;}
+.skill-training-copy [data-slot=progress-indicator] {background:#9fae9d;}
+.skill-training-copy>small {display:block; font-size:9px; color:#8d9eb1; margin-top:6px;}
+.skill-stat-gains {display:block; color:#af9e7f; font-size:10px; margin-top:8px;}
+.skill-training-row>button {display:grid; place-items:center; color:#c3ac7e; width:35px; height:44px; background:none; flex-shrink:0;}
+.character-settings {padding:24px; background:#1b2735; border:1px solid #4d5b6e;}
+.character-settings form {display:flex; flex-direction:column; gap:13px;}
+.character-settings label,.character-settings legend {font-size:13px; color:#bdc7d2;}
+.character-settings input[type=text],.character-settings input:not([type]) {background:#101c2a; color:#e3e1d8; border-color:#4b5e73; border-radius:3px; min-height:44px;}
+.character-settings fieldset {border:0; margin:12px 0; padding:0;}
+.aura-picker {display:flex; flex-wrap:wrap; gap:16px; margin-top:17px;}
+.aura-picker label {display:flex; align-items:center; gap:6px; font-size:12px; cursor:pointer;}
+.aura-picker input {accent-color:#c7ac75;}
+.aura-picker span {display:block; width:12px; height:12px; background:var(--palette); transform:rotate(45deg); margin-inline:2px;}
+.leaderboard-consent {display:flex; align-items:flex-start; gap:12px; background:#121e2b; padding:17px; border:1px solid #4e5b6c70;}
+.leaderboard-consent input {width:18px; height:18px; flex-shrink:0; accent-color:#c4a86e; margin-top:3px;}
+.leaderboard-consent strong {font-size:13px; font-weight:500;}
+.leaderboard-consent small {display:block; color:#96a6b8; font-size:11px; line-height:1.9; margin-top:7px;}
+.ranking-consent-note {display:flex; align-items:center; gap:13px; padding:17px; background:#1c2937; border:1px solid #54617480; margin-bottom:19px; color:#c4aa77;}
+.ranking-consent-note>div {flex:1;}
+.ranking-consent-note strong {font-size:12px; color:#cfc3ac; font-weight:500;}
+.ranking-consent-note p {font-size:10px; color:#8e9fb2; line-height:1.8; margin-top:7px;}
+.ranking-board {border:1px solid #52617480; background:#192534;}
+.ranking-list {list-style:none; margin:0; padding:0;}
+.ranking-list li {display:flex; align-items:center; gap:15px; padding:19px; border-bottom:1px solid #5d6c7d40;}
+.ranking-list li.is-you {background:#c7a56a0a; border-left:2px solid #c7a56a;}
+.rank-position {display:flex; gap:2px; align-items:center; color:#bd9d61; width:38px; font-size:14px; flex-shrink:0;}
+.ranking-list li>svg {color:#9aaec0; flex-shrink:0;}
+.ranking-list li>div {flex:1; min-width:0;}
+.ranking-list strong {display:block; font-size:14px; color:#d5d9d9; font-weight:500; overflow-wrap:anywhere;}
+.ranking-list strong small {font-size:9px; margin-left:7px; color:#bda36f;}
+.ranking-list li>div>span {display:block; font-size:10px; color:#8e9eb2; margin-top:6px;}
+.ranking-list li>b {font:500 20px/1.2 Georgia,serif; color:#d2bc91;}
+.ranking-list li>b small {display:block; text-align:right; font:8px/1.6 var(--game-font); color:#8f9db0; margin-top:3px;}
+/* Legacy journal and dialogs retain data behavior inside the new game shell. */
+.rpg-shell .journal-page {width:min(100%,900px); min-height:calc(100svh - 170px); margin:auto; background:transparent; padding:28px 24px;}
+.rpg-shell .page-intro h1 {color:#ddd6c7; font:600 26px/1.5 "Songti TC",serif;}
+.rpg-shell .page-intro p {color:#91a1b2;}
+.rpg-shell .journal-summary {border-color:#586679;}
+.rpg-shell .journal-summary strong {color:#ceb27c;}
+.rpg-shell .journal-summary>span {color:#8c9daf;}
+.rpg-shell .achievement-card,.rpg-shell .dream-card,.rpg-shell .island-collection {background:#1b2837; border:1px solid #4d5d707a; border-radius:4px; box-shadow:none;}
+.rpg-shell .achievement-card.unlocked {background:linear-gradient(130deg,#4d42282b,#1b2837); border-color:#ab925b70;}
+.rpg-shell .achievement-card h3,.rpg-shell .dream-card h3,.rpg-shell .island-collection h2 {color:#d2c3a5;}
+.rpg-shell .achievement-card p,.rpg-shell .dream-card>p,.rpg-shell .island-collection p {color:#9ba9b8;}
+.rpg-shell .achievement-icon {background:#28394a; color:#9aaabd; border:1px solid #62718470; box-shadow:none; border-radius:6px;}
+.rpg-shell .unlocked .achievement-icon {background:#6a55312e; color:#c9a56c; border-color:#aa8d596f;}
+.rpg-shell .error-banner {background:#512e31; color:#f0cfca; border-color:#814b51; margin:12px 18px;}
+.rpg-shell .island-game {min-height:620px;}
+.island-traveler {position:absolute; width:13%; left:39%; top:32%; z-index:55; display:flex; flex-direction:column; align-items:center;}
+.island-traveler .character-avatar.profession-art {width:100%; height:auto;}
+.island-traveler>span:not(.profession-art) {white-space:nowrap; font-size:9px; color:#ddc89e; background:#14202de6; border:1px solid #a4936e80; padding:3px 6px; margin-top:-5px;}
+.dream-editor,.dream-detail,.island-shop,.growth-dialog,.rename-dialog,.rpg-more-dialog {background:#1b2735!important; border:1px solid #6d715c80!important; border-radius:5px!important; color:#cbd1d6; box-shadow:0 25px 80px #0009!important;}
+.dream-editor [data-slot=dialog-title],.dream-detail [data-slot=sheet-title],.island-shop [data-slot=dialog-title],.growth-dialog [data-slot=dialog-title],.rename-dialog [data-slot=dialog-title],.rpg-more-dialog [data-slot=dialog-title] {color:#e0d2b7; font:600 23px/1.5 "Songti TC",serif;}
+.dream-editor [data-slot=dialog-description],.dream-detail [data-slot=sheet-description],.rpg-more-dialog [data-slot=dialog-description] {color:#95a4b5; font-size:12px; line-height:1.9;}
+.dream-editor label,.dream-editor .field-label,.rename-dialog label {color:#b5c0cd!important;}
+.dream-editor input,.dream-editor textarea,.dream-detail input,.rename-dialog input {border:1px solid #4b5f75; border-radius:3px; color:#dfdfd7; background:#101c29;}
+.dream-editor input::placeholder,.dream-editor textarea::placeholder,.dream-detail input::placeholder {color:#6e8298;}
+.category-choice {background:#202e3f; border:1px solid #4c5d7280; border-radius:3px; color:#93a5b9;}
+.category-choice.chosen {border-color:#bca16b; color:#d7bd89; background:#b6965310;}
+.dream-editor .draft-goal>span {color:#a5b7c8;}
+.training-select {max-width:110px; font-size:11px; color:#bdc6cf; padding:7px 4px; background:#213043; border:1px solid #506079; border-radius:3px;}
+.training-select:disabled {opacity:.6;}
+.training-help {font-size:11px; color:#95a5b7; line-height:1.9; margin:0;}
+.task-training-badge {display:inline-block; font-size:10px; color:#cfb57d; background:#c3a4620d; border:1px solid #a8905b3d; padding:1px 5px; margin-top:6px;}
+.detail-progress {background:#23323b; border:1px solid #62705860; border-radius:3px;}
+.detail-progress strong {color:#d2bc89;}
+.detail-progress small {color:#a3b2bd;}
+.task-row,.task-row.task-done {background:#223244; border:1px solid #5b6b7b70; border-radius:3px;}
+.task-label label {color:#d1d9dc;}
+.task-label small {color:#92a3b5;}
+.detail-meta,.detail-meta>span {color:#a4b3c2;}
+.detail-reminder {color:#9bacc0;}
+.rpg-more-dialog {width:min(450px,calc(100vw - 30px))!important; padding:26px!important;}
+.more-menu-grid {display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:10px; margin-top:8px;}
+.more-menu-grid>button {display:flex; align-items:center; gap:10px; min-height:68px; padding:15px 12px; background:#253344; color:#c6ad7b; border:1px solid #56667c80; text-align:left;}
+.more-menu-grid>button>span {font-size:12px; color:#bdc7d0;}
+@media(min-width:1000px) {
+ .rpg-page,.quest-page {padding-top:35px;}
+ .quest-hero {height:260px;}
+ .quest-hero-copy {padding-top:32px;}
+ .quest-hero-copy h2 {font-size:30px;}
+ .quest-hero>.profession-art {width:242px; right:48px;}
+ .paper-doll-slot {width:82px; min-height:96px;}
+ .slot-position-0,.slot-position-1,.slot-position-2 {left:54px;}
+ .slot-position-3,.slot-position-4,.slot-position-5 {right:54px;}
+}
+@media(max-width:600px) {
+ .rpg-shell>.game-header {padding-inline:17px;}
+ .rpg-shell .game-header-actions {gap:9px;}
+ .rpg-shell .game-brand {gap:8px;}
+ .rpg-shell .game-brand strong {font-size:23px;}
+ .rpg-shell .game-brand small {font-size:8px; letter-spacing:1.3px;}
+ .rpg-shell .currency-pill {padding:6px 8px;}
+ .rpg-shell>.game-nav {inset:auto 0 0; transform:none; width:100%; height:calc(69px + env(safe-area-inset-bottom,0px)); padding:0 10px env(safe-area-inset-bottom,0px); border-radius:0; border-inline:0; border-bottom:0;}
+ .rpg-page,.quest-page {padding:22px 17px 8px;}
+ .rpg-panel-heading {margin-bottom:18px;}
+ .rpg-panel-heading h1 {font-size:26px;}
+ .rpg-panel-heading .eyebrow {font-size:8px; letter-spacing:1.7px;}
+ .character-nameplate h2 {font-size:20px;}
+ .character-level b {font-size:30px;}
+ .paper-doll {height:372px;}
+ .paper-doll>.profession-art {width:278px; top:-1px;}
+ .paper-doll-slot {width:63px; min-height:82px; padding:4px;}
+ .paper-doll-slot>small {font-size:8px; margin-bottom:3px;}
+ .paper-doll-slot>span:not(.gear-art) {font-size:8px;}
+ .paper-doll-slot .gear-art {width:41px; height:41px;}
+ .slot-position-0,.slot-position-1,.slot-position-2 {left:5px;}
+ .slot-position-3,.slot-position-4,.slot-position-5 {right:5px;}
+ .slot-position-0,.slot-position-3 {top:19px;}
+ .slot-position-1,.slot-position-4 {top:132px;}
+ .slot-position-2,.slot-position-5 {top:245px;}
+ .paper-doll.compact {height:320px;}
+ .paper-doll.compact>.profession-art {width:238px; top:-3px;}
+ .paper-doll.compact .paper-doll-slot {min-height:78px;}
+ .paper-doll.compact .slot-position-0,.paper-doll.compact .slot-position-3 {top:10px;}
+ .paper-doll.compact .slot-position-1,.paper-doll.compact .slot-position-4 {top:105px;}
+ .paper-doll.compact .slot-position-2,.paper-doll.compact .slot-position-5 {top:200px;}
+ .paper-doll.compact .portrait-class-label {bottom:9px;}
+ .character-shortcuts {grid-template-columns:1fr;}
+ .character-shortcuts>button {padding:14px 16px;}
+ .inventory-grid {grid-template-columns:repeat(3,minmax(0,1fr)); gap:9px;}
+ .inventory-tile {min-height:133px; padding:10px 4px 8px;}
+ .inventory-tile .gear-art {width:72px; height:72px;}
+ .inventory-tile>strong {font-size:10px;}
+ .inventory-toolbar {gap:7px;}
+ .inventory-toolbar .rpg-segmented button {padding-inline:13px;}
+ .slot-filter select {width:100px;}
+ .profession-selector,.talent-branch-selector {gap:5px;}
+ .profession-selector button,.talent-branch-selector button {min-height:62px; padding:9px 1px; gap:7px;}
+ .profession-selector button>span,.talent-branch-selector button>span {font-size:10px;}
+ .profession-selector button>svg,.talent-branch-selector button>svg {width:20px;}
+ .profession-preview {grid-template-columns:43% 1fr; gap:3px; min-height:240px;}
+ .profession-preview .profession-art {width:100%; max-width:100%; margin-left:0;}
+ .profession-preview>div {padding:16px 13px 16px 3px;}
+ .profession-preview h2 {font-size:23px;}
+ .profession-preview p {font-size:11px;}
+ .profession-preview .eyebrow {font-size:7px;}
+ .profession-focus {font-size:9px; padding-top:8px; margin-top:12px;}
+ .profession-base-card {padding:16px;}
+ .evolution-node {gap:12px;}
+ .evolution-emblem {width:48px; height:62px;}
+ .evolution-tree:before {left:23px;}
+ .evolution-node-copy {padding:14px;}
+ .evolution-node-title h3 {font-size:15px;}
+ .evolution-node-title>span {font-size:10px;}
+ .evolution-node-copy>p {font-size:10px;}
+ .evolution-node .requirement-list li {font-size:10px;}
+ .talent-tree {gap:23px;}
+ .talent-tree:before {left:26px;}
+ .talent-node {gap:13px;}
+ .talent-node-icon {width:54px; height:66px;}
+ .talent-node-icon svg {width:24px;}
+ .talent-node-copy {padding:16px 14px;}
+ .quest-hero {height:218px;}
+ .quest-hero-copy {padding:21px 17px 0; width:66%;}
+ .quest-hero-copy h2 {font-size:23px; margin:12px 0 11px;}
+ .quest-hero-copy .job-insignia {font-size:9px;}
+ .quest-hero-copy>button {font-size:10px; gap:5px;}
+ .quest-hero>.profession-art {width:190px; right:-14px; top:0; opacity:.9;}
+ .quest-hero-xp {left:17px; right:17px; bottom:17px;}
+ .quest-overview strong {font-size:22px;}
+ .quest-task {gap:10px; padding:15px 12px;}
+ .quest-task-sigil {width:34px; height:44px;}
+ .quest-task-sigil svg {width:19px;}
+ .quest-task h3 {font-size:14px;}
+ .quest-goal-link {font-size:9px;}
+ .quest-training-label {font-size:9px;}
+ .quest-rewards {gap:8px; margin-top:8px;}
+ .quest-rewards>span {font-size:9px;}
+ .quest-checkbox[data-slot=checkbox] {width:27px; height:27px;}
+ .quest-list-header .rpg-segmented button {padding-inline:14px;}
+ .quest-goal-list>button {padding:16px 13px; gap:10px;}
+ .skill-training-row {padding:17px 12px; gap:11px;}
+ .skill-sigil {width:36px; height:49px;}
+ .skill-sigil svg {width:22px;}
+ .skill-training-row>button {width:25px;}
+ .character-settings {padding:20px 17px;}
+ .aura-picker {gap:13px;}
+ .aura-picker label {font-size:11px;}
+ .ranking-list li {padding:17px 12px; gap:10px;}
+ .rank-position {width:30px; font-size:12px;}
+ .ranking-list li>svg {width:20px;}
+ .ranking-list strong {font-size:13px;}
+ .ranking-list li>b {font-size:18px;}
+ .rpg-shell .journal-page {padding:25px 17px;}
+ .rpg-shell .island-game {min-height:0;}
+ .draft-goal {flex-wrap:wrap;}
+ .draft-goal>input {flex:1; min-width:90px;}
+ .draft-goal>.training-select {flex-basis:calc(100% - 27px); order:4; margin-left:27px; max-width:none; flex-grow:1;}
+ .island-traveler {width:17%; left:36%; top:28%;}
+ .island-traveler>span:not(.profession-art) {font-size:8px;}
+}
+@media(max-width:767px) {
+ .rpg-shell .island-dock {bottom:calc(102px + env(safe-area-inset-bottom,0px));}
+ .rpg-shell[data-view=camp] {padding-bottom:calc(190px + env(safe-area-inset-bottom,0px));}
+}
+@media(max-width:350px) {
+ .rpg-shell>.game-header {padding-inline:14px;}
+ .rpg-shell .game-brand>svg {display:none;}
+ .rpg-shell .game-header-actions {gap:7px;}
+ .rpg-page,.quest-page {padding-inline:14px;}
+ .rpg-panel-heading h1 {font-size:24px;}
+ .quest-hero-copy h2 {font-size:20px;}
+ .quest-hero>.profession-art {right:-23px; width:181px;}
+ .paper-doll {height:345px;}
+ .paper-doll>.profession-art {width:258px;}
+ .paper-doll-slot {width:56px; min-height:77px;}
+ .slot-position-1,.slot-position-4 {top:120px;}
+ .slot-position-2,.slot-position-5 {top:223px;}
+ .combat-attributes {gap:6px;}
+ .combat-attributes>div {padding:12px 7px;}
+ .combat-attributes small {font-size:8px;}
+ .inventory-grid {gap:7px;}
+ .inventory-tile .gear-art {width:65px; height:65px;}
+ .inventory-toolbar .rpg-segmented button {font-size:11px; padding-inline:9px;}
+ .slot-filter select {width:91px; font-size:10px;}
+ .profession-preview h2 {font-size:21px;}
+ .evolution-node-title {gap:5px;}
+ .evolution-node-title h3 {font-size:14px;}
+ .evolution-node-copy {padding:12px;}
+ .talent-node-copy {padding:15px 12px;}
+ .quest-task {padding:14px 10px; gap:8px;}
+ .quest-task-sigil {width:29px; height:39px;}
+ .quest-rewards {gap:6px;}
+}
+@media(prefers-reduced-motion:reduce) {.character-avatar,.rpg-shell * {scroll-behavior:auto;}}

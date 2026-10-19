@@ -1,5 +1,7 @@
-export type Task = { id:string; title:string; done:boolean; completedAt:string|null };
-export type Dream = { id:string; revision?:number; title:string; description:string; category:string; targetDate:string; createdAt:string; tasks:Task[] };
+import type {SkillId} from "./character-model";
+import type {QuestSource} from "./quest-model";
+export type Task = { id:string; title:string; done:boolean; completedAt:string|null; training?:SkillId; trainingLocked?:boolean };
+export type Dream = { id:string; revision?:number; title:string; description:string; category:string; targetDate:string; createdAt:string; tasks:Task[]; quest?:QuestSource };
 export const categories=[{id:"travel",label:"探索世界",color:"#7bb6ff"},{id:"growth",label:"自我成長",color:"#b7a0ff"},{id:"health",label:"健康生活",color:"#68dfb4"},{id:"career",label:"職涯與創作",color:"#ffa875"},{id:"life",label:"理想生活",color:"#ff94bd"},{id:"other",label:"其他夢想",color:"#e5d07c"}];
 export const categoryOf=(id:string)=>categories.find(c=>c.id===id)??categories[5];
 export const progressOf=(d:Dream)=>d.tasks.length?Math.round(d.tasks.filter(t=>t.done).length/d.tasks.length*100):0;

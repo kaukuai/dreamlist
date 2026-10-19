@@ -15,6 +15,7 @@
 
 # next.js
 /.next/
+/.next-vercel/
 /.vinext/
 /out/
 
@@ -44,3 +45,7 @@ next-env.d.ts
 /.codex/
 /outputs/
 /work/
+
+# Local Python research-check bytecode.
+__pycache__/
+*.py[cod]

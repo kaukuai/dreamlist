@@ -1,0 +1,71 @@
+{
+  "tool": "built-in image_gen",
+  "originalAssets": true,
+  "thirdPartyGameAssetsUsed": false,
+  "style": "Original adult characters between Korean fantasy manhwa linework and Japanese adventure game cel-painted lighting. Clear class silhouettes, expressive faces and broad painted color planes. No existing franchise characters or costumes.",
+  "promptRecord": "Generation briefs, not a verbatim transcript.",
+  "conversion": {
+    "tool": "Sharp",
+    "format": "WebP",
+    "quality": 94,
+    "operations": "Format conversion only"
+  },
+  "assets": [
+    {
+      "file": "profession-adventure-atlas.webp",
+      "source": "exec-3ff652af-9e36-4096-b0e4-f5a3c4abfe0c.png",
+      "size": [
+        1536,
+        1024
+      ],
+      "alpha": true,
+      "layout": "4 columns x 2 rows, full-body class art",
+      "order": [
+        "wanderer",
+        "warrior",
+        "mage",
+        "ranger",
+        "bard",
+        "artisan",
+        "healer",
+        "unused-knight"
+      ],
+      "generationBrief": "Redraw the project’s original profession atlas with clean manhwa face and contour drawing, luminous broad cel shading, adult heroic anatomy, consistent original identities, practical adventuring outfits and clear class weapons. No text. Every figure belongs to one atlas cell."
+    },
+    {
+      "file": "profession-adventure-evolved-atlas.webp",
+      "source": "exec-563fb82f-b642-419d-b83a-566777b942e0.png",
+      "size": [
+        1536,
+        1024
+      ],
+      "alpha": true,
+      "layout": "Same 4x2 identities and positions",
+      "generationBrief": "Redraw the original evolved class atlas in the new manhwa/adventure cel style, with upgraded armor and expressive magic while keeping mature identities, complete weapons and class colors. Three evolution stages currently share this atlas."
+    },
+    {
+      "file": "npc-townsfolk-atlas.webp",
+      "source": "exec-a3f1aaaf-1442-4236-b187-4473d4b6c34a.png",
+      "size": [
+        1536,
+        1024
+      ],
+      "alpha": true,
+      "layout": "3 columns x 2 rows, adult waist-up dialogue portraits",
+      "order": [
+        "eira",
+        "lorne",
+        "selene",
+        "mira",
+        "ori",
+        "lucien"
+      ],
+      "generationBrief": "Six original approachable village companions in the same expressive manhwa/adventure cel style: sage guide with compass, silver/teal guard trainer with red scarf and wooden sword, navy scholar with glasses and book, warm herbalist with sprig, amber/indigo artisan with wooden bird and tools, silver-haired plum/teal bard with lute. Distinct adult faces and personalities, transparent atlas without labels."
+    }
+  ],
+  "limitations": [
+    "Atlas edges use CSS masks in UI framing.",
+    "Equipment remains a separate live inventory; individual items do not repaint class art.",
+    "NPCs are original, with scripted introductions and completion dialogue; no live AI conversation or affinity scores."
+  ]
+}

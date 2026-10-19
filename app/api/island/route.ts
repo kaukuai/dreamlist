@@ -2,6 +2,7 @@ import {z} from 'zod';
 import {owner,prepared,failure,checkOrigin,ApiError} from '@/lib/dream-store';
 import {islandState,moveItem} from '@/lib/island-store';
 import {buildings} from '@/lib/island-model';
+import {walletBalanceSql} from '@/lib/wallet-store';
 export const dynamic='force-dynamic';
 export async function GET(){try{return Response.json({island:await islandState(await owner())},{headers:{'Cache-Control':'no-store'}});}catch(e){return failure(e);}}
 const purchase=z.object({action:z.literal('purchase'),kind:z.string(),slot:z.number().int().min(0).max(5),requestId:z.string().uuid()}).strict();
@@ -21,7 +22,7 @@ export async function POST(request:Request){try{
  // One conditional insert serializes spending and prevents overdrafts across tabs.
  let result;
  try{result=await prepared().prepare(`INSERT INTO island_items(id,owner_id,kind,slot,cost,created_at) SELECT ?,?,?,?,?,?
- WHERE 100+COALESCE((SELECT SUM(amount) FROM island_rewards WHERE owner_id=?),0)-COALESCE((SELECT SUM(cost) FROM island_items WHERE owner_id=?),0)>=?`).bind(data.requestId,ownerId,data.kind,data.slot,building.cost,new Date().toISOString(),ownerId,ownerId,building.cost).run();}
+ WHERE ${walletBalanceSql}>=?`).bind(data.requestId,ownerId,data.kind,data.slot,building.cost,new Date().toISOString(),ownerId,ownerId,ownerId,building.cost).run();}
  catch(error){if(error instanceof Error&&/UNIQUE constraint|constraint failed/i.test(error.message))throw new ApiError(409,'建設或位置剛剛已更新，請重新載入小島');throw error;}
  if(result.meta.changes!==1)throw new ApiError(400,'星露不足，完成小目標就能獲得更多');
  }

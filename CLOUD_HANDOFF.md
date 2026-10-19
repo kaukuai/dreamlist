@@ -1,75 +1,71 @@
 # 夢嶼 reverie — 雲端開發交接
 
-更新日期：2026-10-16（Asia/Taipei）
+## 2026-10-19 Vercel 接續
 
-## 要完成的工作
+使用者現在要求更新原 Vercel 網址 https://kaukuai-dreamlist.vercel.app/，且選擇先保留私人使用。閱讀 VERCEL_DEPLOYMENT.md；此要求授權增加 Vercel 相容流程，原 Sites 與正式資料仍保留。已新增標準 Next.js 建置、Google 單帳號登入與 Turso D1 相容介面；兩套建置成功，原 18 項及新 3 項規則測試通過，Next.js 正式 server 的 24 項 HTTP 驗證通過。真正 Google／遠端 Turso／Vercel 上線仍待正式設定。
 
-使用者希望將目前 Windows 本機的夢嶼開發作業移至 Codex Cloud，方便在不同電腦與地點繼續。已明確授權以本專案取代 GitHub kaukuai/dreamlist 的現有內容；保留 Git 歷史，不強制改寫既有提交。Codex Cloud 環境仍需另行建立、測試與發布，不能把程式上傳等同於雲端環境已完成。
+GitHub main 查核停在 a4b7df75ad4428f99d562f107d5ceb794c49ea83，先前 RPG 未提交也未部署。Vercel 網域與 API 在環境代理 CONNECT 階段遭 403，沒有 VERCEL_TOKEN 或專案綁定，因此尚不能核對 Vercel 最後成功部署或宣稱修復正式網站。已在原草稿保留研究白名單，新增原網站、vercel.com、api.vercel.com、api.github.com 和只送至 api.vercel.com 的 VERCEL_TOKEN 需求；保存不等於套用，仍需環境 Save／Publish。GitHub Git 原生讀取已成功，不要重複索取 GitHub token。後續先用 python3 scripts/check-vercel-deployment.py 唯讀查核，再在原專案設定 Git／環境變數／五個加法遷移並更新部署。
 
-## 目前版本與線上網站
+## 目前方向
 
-- 專案名稱：夢嶼 reverie · DREAM ORBIT。
-- 已上線網址：https://dream-orbit-life.holyman0405.chatgpt.site/
-- 本機來源：D:\聖\ai\DREAM\dream-orbit。
-- 來源 Git commit：2623c047133ed05d1acd51e6241f9da2a0a6f901。
-- Sites project_id：appgprj_6abf4597d31c8191b75ecb4f00c6c183。
-- 目前正式版為現代生活模擬遊戲美術：圓潤漂浮島、鮮明草地、湖水色與珊瑚色建物。保留這個方向。
-- 原網站為擁有者私人存取。開發環境移轉不應改變網站受眾。
+使用者最新要求為手機 RPG：降低小島、韓漫線條與日系冒險賽璐璐風格的成人職業角色、獨立任務／人物裝備／天賦介面，角色持續升級與轉職進化。這項明確要求取代先前「保留可愛生活模擬美術」的限制。保留繁體中文及所有原有資料機制。新增輕量每日任務和不同 NPC 委託，讓尚未建立夢想的人也能開始。
 
-## 已完成的功能
+接續先閱讀 README.md、GAME_DESIGN.md、RPG_REFERENCES.md、DESIGN_REVIEW.md。官方瑪奇與主流手機 RPG 資料查核遭環境代理 403 阻擋；官方域名、Nintendo 及 Nexon 子網域已存入環境設定草稿，仍未確認套用。新增 `python3 scripts/check-research-network.py` 以提供的代理與 TLS 驗證診斷。6 個官方入口均在 CONNECT 階段遭拒；同代理對 npm 回覆 200，工具也驗證能區分真正的網站 HTTP 錯誤。遊戲本身不依賴官方研究網路。不要把待核實入口或既有設計知識說成已完成官方研究。
 
-- 繁體中文夢想新增與編輯，描述、類型、日期，以及小目標新增、改名與完成勾選。
-- 首頁目標進度、下一步任務、五階島嶼成長、六種建物商店、放置、移動與交換。
-- 初始 100 星露；小目標首次完成 +25，夢想首次完整完成額外 +100；重複勾選不重複領取。
-- 每累積獲得 150 星露成長一階，最高第五階。購買建物不會降低島嶼成長。
-- 成就收藏、晨光／月夜、動畫暫停、可選音效、減少動態效果與手機版。
-- D1 持續保存夢想、獎勵收據、小島名稱與建設；資料依登入使用者隔離。
-- 版本衝突、重複獎勵、同時購買超支、移動與交換一致性已有本機驗證。
-- 最近通過 TypeScript 檢查與正式 build；現代版另檢查 1280×720、1440×1000、390×844、320×740 的介面。
+## 專案與正式網站
 
-## 尚未執行的方向
+- GitHub：https://github.com/kaukuai/dreamlist ，目前為 Vinext／React 19／Sites 專案，不是舊 AI Studio 專案。
+- 既有正式網址：https://dream-orbit-life.holyman0405.chatgpt.site/
+- Sites project_id：`appgprj_6abf4597d31c8191b75ecb4f00c6c183`，保留 `.openai/hosting.json`。
+- 正式站為擁有者私人存取；本機開發不改變受眾。正式資料在原 Sites D1，不在來源包。
+- 歷史 Windows 來源：`D:\聖\ai\DREAM\dream-orbit`，來源 commit `2623c047133ed05d1acd51e6241f9da2a0a6f901`。
 
-使用者曾詢問 iPhone 安裝方式，已說明 PWA 和 App Store 的差別。目前尚未實作專用 iPhone 圖示、web app manifest、完整 PWA 安裝引導或離線寫入。不要把這些列為已完成，也不要因交接自動擴大實作範圍。
+本輪僅實作及驗證本機版本，未推送或部署。雲端環境草稿保存、Publish 環境、GitHub 保存及正式網站發布是不同步驟，不能互相代稱。
 
-## 原始碼與資料的區分
+## 本輪實作
 
-程式與美術在來源包中。正式使用者的夢想與小島資料仍在原 Sites 的 D1；不在來源包中。保持 .openai/hosting.json 與既有 project_id。不要建立替代 Site、重設正式資料庫、改動原有 0000 遷移，或把本機示範資料匯入正式環境。
+- 手機直式深色 RPG：任務／角色／裝備／天賦／職業五入口；原小島位於更多選單。
+- 韓漫與日系冒險之間的六職業／旅人及進階原創立繪；原裝備圖集保留，新 NPC 圖集與生成摘要位於 `public/art/`。
+- 3 份每日隨機委託（台北 04:00 更新、1～3 分鐘）和 6 位原創 NPC 初識委託（2～4 分鐘）；接取不發獎，跨日可完成。選項快照與接取防重複保存在 D1。
+- 六種生活修練、六項永久屬性、不封頂角色 XP 和每級 1 AP。
+- 六職業的基礎門檻為 Lv.2 加技能／屬性；各自保存 Lv.10／25／50 進化，轉職不清空進度。
+- 18 個有等級和前置條件的天賦節點；保留舊根節點投入。
+- 六部位裝備與 13 件軍需裝備、背包／商店詳情、共享星露餘額。
+- 預設不公開的排行榜；沒有假玩家，不輸出任務內容。
+- 首次完成收據、任務版本衝突、帳號隔離、防重複領取及條件扣款延續。
 
-來源包透過 git archive 從上述 commit 產生，只包含 Git 追蹤的檔案；不包含 .env、node_modules、.wrangler、本機資料庫、.sites-runtime 或憑證。美術位於 public/art/，生成提示詞也已保存。
+戰力是養成評級，尚無戰鬥引擎。立繪依職業與是否進化切換，三階目前共用進階立繪；逐件換裝、混合職業、子技能、劇情與 PWA 未實作。
 
-## GitHub 與 Codex Cloud 接續
+## 本機環境與遷移
 
-已連接的 GitHub 帳號為 kaukuai，目標儲存庫為 https://github.com/kaukuai/dreamlist 。它原先是 AI Studio/Vite/React 18 專案；使用者已明確指定直接取代，故將 main 更新為這份 Vinext/React 19/Sites 專案，沿用原有公開可見性並保留舊提交以便回復。不要同時保留舊 AI Studio 的 package.json、GEMINI_API_KEY 設定或部署腳本作為本專案的啟動方式。
+Node.js >=22.13（本環境為 24.19.0）、npm 11.9.0、鎖定安裝；不需要 Gemini 或 Cloudflare 金鑰。
 
-在 Codex 的 Settings > Codex Cloud > Environments > Create environment 選取該儲存庫。檢查依賴與預覽設定，完成測試後 Publish。換裝置後，使用同一帳號，選 Work in > Cloud 與已發布環境；開啟同一個雲端任務接續。不同新任務有各自的工作檔案，長期成果應提交至 GitHub。
+使用現有 `/workspace/dreamlist` 和 portable execution profile。完整環境安裝腳本已保存為草稿；`.sites-runtime/cloud-onboarding/wrangler.json` 使用獨立虛擬 D1 ID `00000000-0000-4000-8000-000000000000`、DB binding `DB`、遷移目錄 `../../drizzle`。設定是忽略檔，全新環境的格式見 README。
 
-官方流程：https://learn.chatgpt.com/docs/environments/cloud-environments
+```sh
+npm run install:ci
+CI=true node --import ./scripts/sites-env.mjs ./node_modules/wrangler/bin/wrangler.js d1 migrations apply DB --local --config .sites-runtime/cloud-onboarding/wrangler.json --persist-to .wrangler/state
+npm run dev -- --hostname 127.0.0.1
+```
 
-## 技術與啟動
+必須套用全部五個遷移，包含 `0002_character_journey.sql`、`0003_mobile_rpg_advancement.sql` 和 `0004_npc_daily_quests.sql`；沿用 `.wrangler/state`，不清庫、不改舊遷移、不用 `--remote`。正式更新前也須在原 Sites 正式流程套用新遷移。
 
-- Node.js >=22.13、npm 與 package-lock.json。保留現有依賴與鎖定檔。
-- React 19、TypeScript、Vinext/Vite、Tailwind、Cloudflare Worker、D1、Drizzle。
-- 安裝：npm ci。
-- 型別檢查：npx tsc --noEmit --incremental false。
-- 建置：npm run build。
-- 預覽：npm run dev。攜帶的預設設定使用 5173；雲端預覽若需要對外綁定，依實際環境調整啟動參數與允許主機，不能假設 127.0.0.1 可被外部存取。
-- scripts/execution-profile.mjs 在沒有本機 profile 檔時使用 portable。若環境提供 Sites，先閱讀當前版本的 Sites skill，讓它配置適用的執行 profile。
-- 預覽需建立獨立本機 D1，僅對本機套用 drizzle/0000_classy_thunderball.sql、drizzle/0001_colorful_hulk.sql。沿用相同的 Wrangler persist-to 路徑。本機可產生空資料，不要連正式 D1 測試。
-- 正式認證由 Sites 注入；預覽登入依執行 profile 提供。不要偽造或停用正式驗證。
-- 這不是 Gemini API 專案，不需要現有 dreamlist 中的 GEMINI_API_KEY。
+本機以 `/signin-with-chatgpt` 取得專案內建的 loopback 試玩登入。雲端 localhost 不能直接當使用者的公開網址。曾嘗試的預覽面板工具未提供可用 handler；目前交付本機試玩包與實際畫面，沒有建立公開認證替代或外部 tunnel。
 
-## 主要檔案
+## 驗證與試玩
 
-- app/dream-app.tsx：夢想管理、旅誌、成就與資料整合。
-- app/island-game.tsx：小島、建造、商店、日夜與動畫。
-- app/modern-game.css：現代遊戲視覺方向；app/globals.css：共用與原有版型。
-- lib/island-model.ts：建物目錄、位置與等級；lib/island-store.ts：獎勵與建設保存。
-- app/api/dreams/、app/api/island/：伺服器驗證與寫入。
-- db/schema.ts、drizzle/：資料庫模型與遷移。
-- DESIGN_REVIEW.md：設計迭代與驗證紀錄。
+- `npm test`：18 項規則與加法遷移通過，不改動個人資料。
+- `npx tsc --noEmit --incremental false`、`npm run build`。
+- `npm run test:api`：21 組情境通過（含外層共 23 tests），涵蓋舊角色及每日／NPC 委託。讀 GAME_DESIGN 後才對拋棄式本機資料庫執行。跨日 fixture 需 `DREAMLIST_TEST_SQLITE_PATH`；本輪有指定且無跳過。
+- Chromium 完整驗證新玩家不建立個人目標，靠每日委託和 3 位 NPC 修練升級與轉職；六位 NPC 對話與 45 組尺寸／頁面檢查通過。詳見 DESIGN_REVIEW；不等同手機真機測試。
+- 舊 `app/island-game.tsx` 仍有已確認的 ESLint 基線問題，不能宣稱全專案 lint 通過。
 
-## 發布既有網站
+試玩包必須包含最新原始碼、原創美術、`preview.mjs` 和 Windows／Mac 啟動器；排除 `.env`、`.git`、node_modules、`.wrangler`、`.sites-runtime`、憑證與測試資料。啟動器只建立本機資料庫，保留後續個人進度；確認全新解壓與再次執行都能通過 `node preview.mjs --check`。
 
-後續修改網站時，使用當前安裝的 Sites skill 與原 project_id。必須保存並推送相符來源、建立正式封裝，再部署到原有網址。GitHub 程式保存與 Sites 正式發布是兩個不同步驟；不要將 GitHub push 當成網站已更新。憑證只能臨時取得，不要放入來源、交接檔、GitHub 或 shell 參數。
+## 正式發布與保存
 
-GitHub 儲存庫與 Sites 的發布來源有不同的 Git 歷史。若 Sites 工作流程需要還原既有 Site，請在另一個空資料夾開啟原 Site checkout，再把此 GitHub 專案的修改套用過去。保留兩邊各自的 .git 與來源紀錄，不要用強制推送把其中一邊的歷史覆蓋到另一邊。
+使用現有專案 Git 歷史，不強制覆寫。換裝置接續前應把成果提交到 GitHub；未提交變更只存在此任務工作區。若另建立 PR，必須附回聊天。
+
+正式網站發布需使用當前 Sites skill、原 project_id 和原網址。GitHub 與 Sites 發布來源歷史不同，必要時在另一個空資料夾取得原 Site checkout，再套用修改；不要強推覆蓋任一歷史，也不要建立替代 Site。不要把憑證寫入程式、文件、Git 或命令參數。
+
+雲端設定需在 Settings 的環境頁檢查、Save 並 Publish 才會生效。這也不會自動部署正式網站。

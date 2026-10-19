@@ -8,9 +8,11 @@ import {Checkbox} from '@/components/ui/checkbox';
 import {Progress} from '@/components/ui/progress';
 import {buildings,islandStages,lots,type IslandState} from '@/lib/island-model';
 import {progressOf,getStats,type Dream,type Task} from '@/lib/dream-model';
+import CharacterAvatar from './character-avatar';
+import {professionOf,type CharacterState} from '@/lib/character-model';
 export function BuildingSprite({index,className='',style}:{index:number;className?:string;style?:CSSProperties}){return <span aria-hidden="true" className={'building-sprite '+className} style={{...style,backgroundPosition:`${index%3*50}% ${index<3?0:100}%`}}/>;}
-type Props={island:IslandState|null;dreams:Dream[];loading:boolean;busy:boolean;celebration:number;onStart:()=>void;onSelect:(dream:Dream)=>void;onToggle:(dream:Dream,task:Task,done:boolean)=>void;onMutation:(data:object)=>Promise<boolean>;onJournal:()=>void};
-export default function IslandGame({island,dreams,loading,busy,celebration,onStart,onSelect,onToggle,onMutation,onJournal}:Props){
+type Props={island:IslandState|null;character:CharacterState|null;onCharacter:()=>void;dreams:Dream[];loading:boolean;busy:boolean;celebration:number;onStart:()=>void;onSelect:(dream:Dream)=>void;onToggle:(dream:Dream,task:Task,done:boolean)=>void;onMutation:(data:object)=>Promise<boolean>;onJournal:()=>void};
+export default function IslandGame({island,character,onCharacter,dreams,loading,busy,celebration,onStart,onSelect,onToggle,onMutation,onJournal}:Props){
  const [shop,setShop]=useState(false),[growth,setGrowth]=useState(false),[rename,setRename]=useState(false),[name,setName]=useState('');
  const [placement,setPlacement]=useState<{kind:string;requestId:string}|{id:string}|null>(null);
  const [decorating,setDecorating]=useState(false),[zoom,setZoom]=useState(1),[night,setNight]=useState(false),[paused,setPaused]=useState(false);
@@ -57,6 +59,7 @@ export default function IslandGame({island,dreams,loading,busy,celebration,onSta
   <div className="scene-tools"><button className="round-button" aria-label={night?'切換晨光':'切換月夜'} onClick={theme}>{night?<Sun size={19}/>:<Moon size={19}/>}</button><button className="round-button" aria-label={paused?'開啟場景動畫':'暫停場景動畫'} onClick={motion}>{paused?<Play size={18}/>:<Pause size={18}/>}</button><button className="round-button" aria-label={sound?'關閉獎勵音效':'開啟獎勵音效'} onClick={()=>void toggleSound()}>{sound?<Volume2 size={18}/>:<VolumeX size={18}/>}</button></div>
   <div className="scene-region" ref={sceneRef} onPointerMove={e=>{if(paused||!window.matchMedia('(pointer:fine)').matches||window.matchMedia('(prefers-reduced-motion:reduce)').matches)return;const r=e.currentTarget.getBoundingClientRect();setCamera({x:(e.clientX-r.left-r.width/2)/r.width*9,y:(e.clientY-r.top-r.height/2)/r.height*5});}} onPointerLeave={()=>setCamera({x:0,y:0})}><div className="island-diorama" style={{'--zoom':zoom,'--camera-x':camera.x+'px','--camera-y':camera.y+'px'} as CSSProperties}>
    <img className="island-base" src="/art/floating-island-modern.webp" alt="圓潤的漂浮小島，有珊瑚色屋頂、綠樹、草地與瀑布" fetchPriority="high" draggable="false"/>
+   {character&&!placement&&<button className="island-traveler" onClick={onCharacter} aria-label={'查看角色：'+character.name}><CharacterAvatar character={character} compact/><span>{professionOf(character.profession).name} · Lv. {character.level}</span></button>}
    {level>=2&&<BuildingSprite className="growth-tree" index={0} style={{left:'11%',top:'33%',width:'10%'}}/>}
    {level>=3&&<BuildingSprite className="growth-crystal" index={3} style={{left:'82%',top:'52%',width:'10%'}}/>}
    {level>=4&&<BuildingSprite className="growth-tree" index={0} style={{left:'88%',top:'31%',width:'9%'}}/>}
