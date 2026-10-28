@@ -26,8 +26,8 @@ export function SoundProvider({children}: {children: ReactNode}) {
   useEffect(() => {
     const gesture = () => {if (preferences.current.enabled && (!audio.current?.context || audio.current.context.state === "suspended")) void resume();};
     const visibility = () => {if (document.hidden) void audio.current?.suspend();};
-    document.addEventListener("pointerdown", gesture, true);document.addEventListener("keydown", gesture, true);document.addEventListener("visibilitychange", visibility);
-    return () => {document.removeEventListener("pointerdown", gesture, true);document.removeEventListener("keydown", gesture, true);document.removeEventListener("visibilitychange", visibility);};
+    document.addEventListener("pointerdown", gesture, true);document.addEventListener("touchstart", gesture, true);document.addEventListener("click", gesture, true);document.addEventListener("keydown", gesture, true);document.addEventListener("visibilitychange", visibility);
+    return () => {document.removeEventListener("pointerdown", gesture, true);document.removeEventListener("touchstart", gesture, true);document.removeEventListener("click", gesture, true);document.removeEventListener("keydown", gesture, true);document.removeEventListener("visibilitychange", visibility);};
   }, [resume]);
   return <SoundContext.Provider value={{settings, error, enable, update, cue, mood, resume}}>{children}</SoundContext.Provider>;
 }

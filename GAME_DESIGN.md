@@ -174,3 +174,6 @@ API 情境包含認證與來源檢查、嚴格輸入、防重複／並行完成�
 同一 v1 localStorage 鍵新增 adventure 子資料，缺少時加法初始化；保留既有夢想、收據、裝備、天賦、職業、錢包與未知欄位，不清空存檔。每次整份快照保存成功後才回覆成功，失敗不會半領材料或遺失勝利狀態。
 
 新目錄 lib/adventure-catalog.ts、規則 lib/adventure-model.ts、介面 app/adventure-world.tsx／adventure.css。npm run test:adventure 驗證完整九主線＋六支線、舊存檔延續、戰術、防重領、共享錢包、失敗／撤退、跨週及保存失敗。數字與劇情均為本作原創，並非瑪奇官方規則。
+
+
+本輪觸控／像素調整（2026-10-28）：地圖與戰鬥採四方向像素人物，選單與對話保留 CG；預設可見十字鍵，可切換搖桿。原生觸控、雙指動作與 click 備援支援內嵌視窗，頁面真正進入背景才自動暫停。實作與證據／限制見 [PIXEL_TOUCH_RESEARCH.md](PIXEL_TOUCH_RESEARCH.md)。Vercel 版本標記 pixel-touch-rpg-v1，存檔鍵不變。

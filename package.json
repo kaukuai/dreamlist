@@ -22,7 +22,7 @@
     "test:vercel": "node --experimental-strip-types --test tests/vercel-runtime.test.mjs",
     "test:preview": "node --experimental-strip-types --test tests/browser-preview.test.mjs",
     "test:adventure": "node --experimental-strip-types --test tests/adventure.test.mjs",
-    "test:field": "node --experimental-strip-types --test tests/field-game.test.mjs"
+    "test:field": "node --experimental-strip-types --test tests/field-game.test.mjs tests/pixel-touch.test.mjs"
   },
   "dependencies": {
     "@base-ui/react": "^1.7.0",

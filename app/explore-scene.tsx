@@ -1,5 +1,5 @@
 "use client";
-import {useCallback, useEffect, useLayoutEffect, useRef, useState, type CSSProperties} from "react";
+import {useCallback, useEffect, useLayoutEffect, useRef, useState} from "react";
 import {ArrowRight, BookOpen, Check, Compass, HelpCircle, Map, MessageCircle, Music2, Navigation, ScrollText, Sparkles, Swords} from "lucide-react";
 import {Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle} from "@/components/ui/dialog";
 import {appFetch} from "@/lib/client-api";
@@ -9,10 +9,14 @@ import {jobTitle, type CharacterState} from "@/lib/character-model";
 import {npcOf, type NpcId, type QuestBoardState} from "@/lib/quest-model";
 import type {Dream} from "@/lib/dream-model";
 import CharacterAvatar from "./character-avatar";
-import {NpcPortrait} from "./quest-hub";
+import {NpcFullFigure} from "./quest-hub";
 import AdventureWorld from "./adventure-world";
-import {MovementPad} from "./field-controls";
+import {GameButton, MovementPad} from "./field-controls";
 import {useGameSound} from "./game-sound";
+
+import {bindGround} from "@/lib/touch-controls";
+import {facingFromVector, snapPixel, walkPose, type Facing} from "@/lib/pixel-actors";
+import {PixelActor} from "./pixel-actor";
 
 type Props = {character: CharacterState | null; dreams: Dream[]; onRefresh: () => Promise<unknown>; onQuest: (id: string) => void; onAccept: (id: string) => Promise<Dream | undefined>; onJournal: () => void};
 type Episode = AdventureView["episodes"][number];
@@ -40,11 +44,12 @@ function TownPlayfield({character, dreams, data, error, act, reload, onRefresh, 
   const sound = useGameSound();
   const [position, setPosition] = useState<Point>({x: data.field.x, y: data.field.y});
   const [destination, setDestination] = useState<Point | null>(null);
-  const [size, setSize] = useState({width: 390, height: 640}), [moving, setMoving] = useState(false), [direction, setDirection] = useState(1);
+  const [size, setSize] = useState({width: 390, height: 640}), [moving, setMoving] = useState(false), [direction, setDirection] = useState<Facing>("down"), [stride, setStride] = useState<0 | 1 | 2>(1);
   const [npcId, setNpcId] = useState<NpcId | null>(null), [help, setHelp] = useState(false), [map, setMap] = useState(false), [bell, setBell] = useState(false);
   const [encounter, setEncounter] = useState<string | null>(null), [quests, setQuests] = useState<QuestBoardState | null>(null), [notice, setNotice] = useState("");
   const viewport = useRef<HTMLDivElement | null>(null), location = useRef(position), pad = useRef({x: 0, y: 0}), path = useRef<Point[]>([]), keys = useRef(new Set<string>());
-  const current = useRef({act, data, sound, interact: () => {}, modal: false});
+  const travel = useRef(0);
+  const current = useRef({act, data, sound, interact: () => {}, modal: false, go: (() => {}) as (point: Point) => void});
   const modal = !!npcId || help || map || bell || !!encounter;
   const next = data.episodes.find(episode => episode.kind === "main" && episode.status !== "cleared");
   const foundEcho = data.field.discovered.includes("echo");
@@ -53,8 +58,8 @@ function TownPlayfield({character, dreams, data, error, act, reload, onRefresh, 
   const npc = npcOf(npcId ?? "");
   const npcEpisode = npcId ? data.episodes.find(episode => episode.bondNpc === npcId) : null;
   const primaryEpisode = next && npcId && (next.intro.some(line => line.speaker === npcId) || next.choices.some(choice => choice.npcId === npcId)) ? next : undefined;
-  const zoom = size.width < 600 ? .92 : 1.05;
-  const camera = {x: Math.max(0, Math.min(FIELD.width * zoom - size.width, position.x * zoom - size.width / 2)), y: Math.max(0, Math.min(FIELD.height * zoom - size.height, position.y * zoom - size.height * .57))};
+  const zoom = 1;
+  const camera = {x: snapPixel(Math.max(0, Math.min(FIELD.width - size.width, position.x - size.width / 2))), y: snapPixel(Math.max(0, Math.min(FIELD.height - size.height, position.y - size.height * .57)))};
   const navigate = (point: Point) => {const route = fieldPath(location.current, point);path.current = route;setDestination(route.at(-1) ?? null);setMap(false);};
   function story(episode: Episode) {setNpcId(null);setEncounter(episode.id);sound.cue("interact");}
   async function interact() {
@@ -77,9 +82,10 @@ function TownPlayfield({character, dreams, data, error, act, reload, onRefresh, 
       else setNotice("回聲之門尚未回應。先去和夥伴聊聊，選擇你的第一段修練。");
     }
   }
-  useLayoutEffect(() => {current.current = {act, data, sound, interact: () => void interact(), modal};});
+  useLayoutEffect(() => {current.current = {act, data, sound, interact: () => void interact(), modal, go: point => {if (modal) return;const box = viewport.current?.getBoundingClientRect();if (box) navigate({x: point.x - box.x + camera.x, y: point.y - box.y + camera.y});}};});
   useEffect(() => {
     const element = viewport.current;if (!element) return;
+    const unbindGround = bindGround(element, point => current.current.go(point));
     const observer = new ResizeObserver(entries => {const box = entries[0].contentRect;setSize({width: box.width, height: box.height});});observer.observe(element);
     const onKey = (event: KeyboardEvent) => {
       if (current.current.modal || (event.target as HTMLElement).closest("input,textarea,select,[role=dialog]")) return;
@@ -90,7 +96,8 @@ function TownPlayfield({character, dreams, data, error, act, reload, onRefresh, 
     const release = (event: KeyboardEvent) => keys.current.delete(event.key.toLowerCase());
     const stop = () => {keys.current.clear();pad.current = {x: 0, y: 0};path.current = [];void current.current.act({action: "saveField", ...location.current});};
     const visibility = () => {if (document.hidden) stop();};
-    window.addEventListener("keydown", onKey);window.addEventListener("keyup", release);window.addEventListener("blur", stop);document.addEventListener("visibilitychange", visibility);window.addEventListener("reverie:pause", stop);
+    const blur = () => {keys.current.clear();if (document.hidden) stop();};
+    window.addEventListener("keydown", onKey);window.addEventListener("keyup", release);window.addEventListener("blur", blur);document.addEventListener("visibilitychange", visibility);window.addEventListener("reverie:pause", stop);
     let animation = 0, last = performance.now(), lastPaint = 0, lastSave = 0;
     const tick = (now: number) => {
       const dt = (now - last) / 1000;last = now;
@@ -99,15 +106,15 @@ function TownPlayfield({character, dreams, data, error, act, reload, onRefresh, 
         let dy = pad.current.y + Number(keys.current.has("s") || keys.current.has("arrowdown")) - Number(keys.current.has("w") || keys.current.has("arrowup"));
         if (path.current.length && !dx && !dy) {const next = path.current[0], size = distance(next, location.current);if (size < 5) {path.current.shift();if (!path.current.length) setDestination(null);}else {dx = (next.x - location.current.x) / size;dy = (next.y - location.current.y) / size;}}
         const point = moveField(location.current, {x: dx, y: dy}, dt), didMove = distance(point, location.current) > .01;
-        location.current = point;
-        if (now - lastPaint > 45) {setPosition({...point});setMoving(didMove);if (dx) setDirection(dx > 0 ? 1 : -1);lastPaint = now;}
+        travel.current += distance(point, location.current);location.current = point;
+        if (now - lastPaint > 32) {setPosition({...point});setMoving(didMove);setStride(didMove ? walkPose(travel.current) : 1);if (didMove) setDirection(previous => facingFromVector(dx, dy, previous));lastPaint = now;}
         if (didMove) current.current.sound.cue("step");
         if (didMove && now - lastSave > 2200) {lastSave = now;void current.current.act({action: "saveField", ...point});}
       }
       animation = requestAnimationFrame(tick);
     };
     animation = requestAnimationFrame(tick);
-    return () => {cancelAnimationFrame(animation);observer.disconnect();window.removeEventListener("keydown", onKey);window.removeEventListener("keyup", release);window.removeEventListener("blur", stop);document.removeEventListener("visibilitychange", visibility);window.removeEventListener("reverie:pause", stop);void appFetch("/api/adventure", {method: "POST", body: JSON.stringify({action: "saveField", ...location.current})});};
+    return () => {cancelAnimationFrame(animation);observer.disconnect();unbindGround();window.removeEventListener("keydown", onKey);window.removeEventListener("keyup", release);window.removeEventListener("blur", blur);document.removeEventListener("visibilitychange", visibility);window.removeEventListener("reverie:pause", stop);void appFetch("/api/adventure", {method: "POST", body: JSON.stringify({action: "saveField", ...location.current})});};
   }, []);
   const changeMood = sound.mood;
   useEffect(() => {changeMood(modal ? "dialogue" : "town");}, [changeMood, modal]);
@@ -119,16 +126,13 @@ function TownPlayfield({character, dreams, data, error, act, reload, onRefresh, 
   }
   const objective = !foundEcho ? "走向廣場上的微光，試著拾起它" : next?.status === "active" ? "把修練帶到生活裡，完成後再回來" : next?.status === "ready" ? "生活修練已完成・走向回聲之門" : next ? `和${npcOf(next.choices[0].npcId)?.name}聊聊，決定下一步` : "隨意走走，尋找還沒聽過的故事";
   return <main className="town-experience" aria-label="晨鐘鎮可探索場景">
-    <div className="town-viewport" ref={viewport} role="application" tabIndex={0} aria-label="點選地面移動角色；方向鍵或WASD移動，E互動" onPointerDown={event => {
-      if ((event.target as HTMLElement).closest("button")) return;
-      const box = event.currentTarget.getBoundingClientRect();navigate({x: (event.clientX - box.x + camera.x) / zoom, y: (event.clientY - box.y + camera.y) / zoom});
-    }}>
+    <div className="town-viewport" ref={viewport} role="application" tabIndex={0} aria-label="點選地面移動角色；方向鍵或WASD移動，E互動">
       <div className={"town-world " + (data.field.bellSolved ? "bell-awakened" : "")} style={{width: FIELD.width, height: FIELD.height, transform: `translate(${-camera.x}px,${-camera.y}px) scale(${zoom})`}}>
         <div className="town-ground"/>
         {data.field.bellSolved && <span className="tower-light"/>}
-        {fieldPlaces.filter(place => place.id !== "echo" || !foundEcho).map(place => <WorldPlace key={place.id} place={place} active={near?.id === place.id} tracked={focus?.id === place.id} discovered={data.field.discovered.includes(place.id)} onClick={() => navigate(place)}/>)}
+        {fieldPlaces.filter(place => place.id !== "echo" || !foundEcho).map(place => <WorldPlace key={place.id} place={place} active={near?.id === place.id} tracked={focus?.id === place.id} discovered={data.field.discovered.includes(place.id)} player={position} onClick={() => navigate(place)}/>)}
         {destination && <span className="field-destination" style={{left: destination.x, top: destination.y}} aria-hidden="true"/>}
-        <div className={"field-player " + (moving && !modal ? "is-walking" : "")} data-player-x={position.x.toFixed(1)} data-player-y={position.y.toFixed(1)} style={{left: position.x, top: position.y, zIndex: Math.round(position.y), "--facing": direction} as CSSProperties}><i className="player-ground-ring"/><CharacterAvatar character={character}/><span>{character.name}</span></div>
+        <div className={"field-player " + (moving && !modal ? "is-walking" : "")} data-player-x={position.x.toFixed(1)} data-player-y={position.y.toFixed(1)} style={{left: snapPixel(position.x), top: snapPixel(position.y), zIndex: Math.round(position.y)}}><PixelActor identity={character.profession} direction={direction} pose={moving && !modal ? stride : 1} tier={character.advancements[character.profession]} label={character.name}/><span>{character.name}</span></div>
         <div className="field-fireflies" aria-hidden="true">{Array.from({length: 12}, (_, index) => <i key={index} style={{left: 270 + index * 59, top: 270 + index * 37 % 420, animationDelay: `${index * -.7}s`}}/>)}</div>
       </div>
       <div className="town-vignette"/>
@@ -139,19 +143,19 @@ function TownPlayfield({character, dreams, data, error, act, reload, onRefresh, 
     {data.battle?.phase === "active" && <button className="scene-resume" onClick={() => setEncounter(data.battle!.episodeId)}><Swords size={15}/>接續未結束的試煉<ArrowRight size={14}/></button>}
     {notice && <div className="scene-notice" role="status"><Sparkles size={18}/><span>{notice}</span></div>}
     {error && <div className="scene-error" role="alert">{error}</div>}
-    <div className="scene-controls"><MovementPad onMove={point => {pad.current = point;path.current = [];}}/><div className="scene-interaction" data-nearby={near?.id ?? ""}><span>{near ? near.kind === "npc" ? npcOf(near.id)?.role : near.name : "點地面也能移動"}</span><button aria-label={near ? near.kind === "npc" ? `和${near.name}交談` : near.kind === "echo" ? "拾起微光" : near.kind === "portal" ? "進入回聲之門" : "敲響共鳴石" : "靠近後互動"} className={near ? "can-interact" : ""} disabled={!near || modal} onClick={() => void interact()}>{near?.kind === "npc" ? <MessageCircle size={25}/> : near?.kind === "portal" ? <Swords size={25}/> : <Sparkles size={25}/>}<strong>{near ? near.kind === "npc" ? `和${near.name}交談` : near.kind === "echo" ? "拾起微光" : near.kind === "portal" ? "進入回聲之門" : "敲響共鳴石" : "靠近後互動"}</strong><small>E</small></button></div></div>
+    <div className="scene-controls"><MovementPad onMove={point => {pad.current = point;path.current = [];}}/><div className="scene-interaction" data-nearby={near?.id ?? ""}><span>{near ? near.kind === "npc" ? npcOf(near.id)?.role : near.name : "點地面也能移動"}</span><GameButton aria-label={near ? near.kind === "npc" ? `和${near.name}交談` : near.kind === "echo" ? "拾起微光" : near.kind === "portal" ? "進入回聲之門" : "敲響共鳴石" : "靠近後互動"} className={near ? "can-interact" : ""} disabled={!near || modal} onActivate={() => void interact()}>{near?.kind === "npc" ? <MessageCircle size={25}/> : near?.kind === "portal" ? <Swords size={25}/> : <Sparkles size={25}/>}<strong>{near ? near.kind === "npc" ? `和${near.name}交談` : near.kind === "echo" ? "拾起微光" : near.kind === "portal" ? "進入回聲之門" : "敲響共鳴石" : "靠近後互動"}</strong><small>E</small></GameButton></div></div>
     {!sound.settings.enabled && <button className="scene-enable-audio" onClick={() => void sound.enable()}><Music2 size={14}/>開啟旅途聲音</button>}
-    <Dialog open={!!npc} onOpenChange={open => {if (!open) setNpcId(null);}}><DialogContent className="field-npc-dialog">{npc && <><div className="field-npc-scene"><NpcPortrait npc={npc}/><span>{npc.location}</span></div><DialogHeader><small className="eyebrow">{npc.role}</small><DialogTitle>{npc.name}</DialogTitle><DialogDescription>{primaryEpisode ? primaryEpisode.intro.find(line => line.speaker === npc.id)?.text ?? npc.greeting : npc.greeting}</DialogDescription></DialogHeader><div className="field-npc-options">{primaryEpisode && <button className="primary-button" onClick={() => story(primaryEpisode)}><ScrollText size={18}/>{primaryEpisode.status === "active" ? "繼續我們的修練" : primaryEpisode.title}<ArrowRight size={16}/></button>}<button className="secondary-button" onClick={() => void acceptNpc()} disabled={!quests}><Compass size={17}/>{quests?.introductions.find(quest => quest.npcId === npcId)?.status === "complete" ? "回顧生活委託" : "有什麼我能在生活中練習的？"}</button>{npcEpisode && npcEpisode.status !== "locked" && <button className="text-button" onClick={() => story(npcEpisode)}>{npcEpisode.status === "cleared" ? "重溫你的故事" : "聽聽你的故事"}<ArrowRight size={14}/></button>}<button className="text-button" onClick={() => setNpcId(null)}>待會見，我再去走走</button></div></>}</DialogContent></Dialog>
-    <Dialog open={help} onOpenChange={setHelp}><DialogContent className="field-help-dialog"><DialogHeader><span className="eyebrow">LEARN BY EXPLORING</span><DialogTitle>先走一步，就已經在玩了。</DialogTitle><DialogDescription>這裡沒有必須照表完成的開場。先散步、和夥伴說話，或聽聽廣場上的共鳴石。</DialogDescription></DialogHeader><ol><li><strong>自己走近</strong><p>點地面移動，或拖動左下搖桿。靠近人物與物件後，右下角會出現互動。</p></li><li><strong>把一點冒險帶進生活</strong><p>和夥伴選擇一段修練，到生活中實際完成，再回來記下成長。</p></li><li><strong>親自通過試煉</strong><p>走向回聲之門，用走位、閃避和職業戰技尋回故事；失敗不扣成長。</p></li></ol><p className="field-keyboard">電腦：WASD / 方向鍵移動 · E 互動<br/>地圖可幫你找路，不會把你瞬間傳送。</p><button className="primary-button" onClick={() => setHelp(false)}>我自己去探索<Compass size={17}/></button><p className="rpg-footnote">免登入試玩・進度只存於目前瀏覽器。<br/>配樂自願開啟，聲音設定在右上角。</p></DialogContent></Dialog>
+    <Dialog open={!!npc} onOpenChange={open => {if (!open) setNpcId(null);}}><DialogContent className="field-npc-dialog">{npc && <><div className="field-npc-scene"><NpcFullFigure npc={npc}/><span>{npc.location}</span></div><DialogHeader><small className="eyebrow">{npc.role}</small><DialogTitle>{npc.name}</DialogTitle><DialogDescription>{primaryEpisode ? primaryEpisode.intro.find(line => line.speaker === npc.id)?.text ?? npc.greeting : npc.greeting}</DialogDescription></DialogHeader><div className="field-npc-options">{primaryEpisode && <button className="primary-button" onClick={() => story(primaryEpisode)}><ScrollText size={18}/>{primaryEpisode.status === "active" ? "繼續我們的修練" : primaryEpisode.title}<ArrowRight size={16}/></button>}<button className="secondary-button" onClick={() => void acceptNpc()} disabled={!quests}><Compass size={17}/>{quests?.introductions.find(quest => quest.npcId === npcId)?.status === "complete" ? "回顧生活委託" : "有什麼我能在生活中練習的？"}</button>{npcEpisode && npcEpisode.status !== "locked" && <button className="text-button" onClick={() => story(npcEpisode)}>{npcEpisode.status === "cleared" ? "重溫你的故事" : "聽聽你的故事"}<ArrowRight size={14}/></button>}<button className="text-button" onClick={() => setNpcId(null)}>待會見，我再去走走</button></div></>}</DialogContent></Dialog>
+    <Dialog open={help} onOpenChange={setHelp}><DialogContent className="field-help-dialog"><DialogHeader><span className="eyebrow">LEARN BY EXPLORING</span><DialogTitle>先走一步，就已經在玩了。</DialogTitle><DialogDescription>這裡沒有必須照表完成的開場。先散步、和夥伴說話，或聽聽廣場上的共鳴石。</DialogDescription></DialogHeader><ol><li><strong>自己走近</strong><p>點地面移動，或按住左下十字方向鍵（也能切換搖桿）。靠近人物與物件後，右下角會出現互動。</p></li><li><strong>把一點冒險帶進生活</strong><p>和夥伴選擇一段修練，到生活中實際完成，再回來記下成長。</p></li><li><strong>親自通過試煉</strong><p>走向回聲之門，用走位、閃避和職業戰技尋回故事；失敗不扣成長。</p></li></ol><p className="field-keyboard">電腦：WASD / 方向鍵移動 · E 互動<br/>地圖可幫你找路，不會把你瞬間傳送。</p><button className="primary-button" onClick={() => setHelp(false)}>我自己去探索<Compass size={17}/></button><p className="rpg-footnote">免登入試玩・進度只存於目前瀏覽器。<br/>配樂自願開啟，聲音設定在右上角。</p></DialogContent></Dialog>
     <Dialog open={map} onOpenChange={setMap}><DialogContent className="field-map-dialog"><DialogHeader><DialogTitle>晨鐘鎮・找一條自己的路</DialogTitle><DialogDescription>選擇地點後，角色會沿道路走過去；途中隨時能改變方向。</DialogDescription></DialogHeader><div className="field-map-preview"><span style={{left: position.x / FIELD.width * 100 + "%", top: position.y / FIELD.height * 100 + "%"}}/></div><div className="field-place-list">{fieldPlaces.filter(place => place.kind === "npc" || place.kind === "portal" || place.kind === "bell").map(place => <button key={place.id} data-place-id={place.id} onClick={() => navigate(place)}><span>{place.kind === "npc" ? <MessageCircle size={16}/> : place.kind === "portal" ? <Swords size={16}/> : <Music2 size={16}/>} {place.name}</span><small>{Math.round(distance(position, place) / 15)}m <ArrowRight size={13}/></small></button>)}</div></DialogContent></Dialog>
     <Dialog open={bell} onOpenChange={setBell}><DialogContent className="bell-dialog"><DialogHeader><span className="eyebrow">A MELODY YOU CAN TOUCH</span><DialogTitle>{data.field.bellSolved ? "小鎮記起了自己的旋律" : "三塊共鳴石，留著同一段記憶"}</DialogTitle><DialogDescription>石座上刻著：先低吟，再仰望，最後回到心間。依「低 → 高 → 中」的順序，走近並敲響三塊石頭，讓鐘樓回應你。</DialogDescription></DialogHeader><div className="bell-sequence" aria-label="本次敲響的音序">{bellSolution.map((id, index) => <span key={id} className={data.field.bellSequence[index] === id ? "lit" : ""}>{index + 1}<strong>{id === "bell-low" ? "低" : id === "bell-high" ? "高" : "中"}</strong>{data.field.bellSequence[index] === id && <Check size={14}/>}</span>)}</div><p>不開聲音也能完成，音高會以文字標示。不扣星露，也不影響主線。</p><button className="primary-button" onClick={() => setBell(false)}>我去試試<Music2 size={17}/></button></DialogContent></Dialog>
     {encounter && <AdventureWorld key={encounter} character={character} progressStamp={dreams.map(dream => dream.revision).join(":")} onRefresh={onRefresh} onQuest={id => {setEncounter(null);onQuest(id);}} onExit={() => {setEncounter(null);void reload();}} initialEpisodeId={encounter} encounter/>}
   </main>;
 }
 
-function WorldPlace({place, active, tracked, discovered, onClick}: {place: FieldPlace; active: boolean; tracked: boolean; discovered: boolean; onClick: () => void}) {
+function WorldPlace({place, active, tracked, discovered, player, onClick}: {place: FieldPlace; active: boolean; tracked: boolean; discovered: boolean; player: Point; onClick: () => void}) {
   const npc = place.kind === "npc" ? npcOf(place.id) : undefined;
-  return <button className={`world-place ${place.kind} ${active ? "nearby" : ""} ${tracked ? "tracked" : ""} ${discovered ? "discovered" : ""}`} style={{left: place.x, top: place.y, zIndex: Math.round(place.y)}} aria-label={`前往${place.name}`} onClick={event => {event.stopPropagation();onClick();}}>
-    {npc ? <><i className="npc-ground-shadow"/><span className="field-npc-sprite" role="img" aria-label={npc.name + "，" + npc.role} style={{backgroundPosition: `${npc.portrait % 3 / 2 * 100}% ${Math.floor(npc.portrait / 3) * 100}%`}}/><span className="place-label">{npc.name}{tracked && <b>!</b>}</span></> : <><span className="place-object">{place.kind === "echo" ? <Sparkles size={26}/> : place.kind === "bell" ? <Music2 size={23}/> : <Compass size={38}/>}</span><span className="place-label">{place.name}</span></>}
-  </button>;
+  return <GameButton className={`world-place ${place.kind} ${active ? "nearby" : ""} ${tracked ? "tracked" : ""} ${discovered ? "discovered" : ""}`} style={{left: place.x, top: place.y, zIndex: Math.round(place.y)}} aria-label={`前往${place.name}`} onActivate={onClick}>
+    {npc ? <><PixelActor identity={npc.id} direction={active ? facingFromVector(player.x - place.x, player.y - place.y) : "down"} label={npc.name + "，" + npc.role}/><span className="place-label">{npc.name}{tracked && <b>!</b>}</span></> : <><span className="place-object">{place.kind === "echo" ? <Sparkles size={26}/> : place.kind === "bell" ? <Music2 size={23}/> : <Compass size={38}/>}</span><span className="place-label">{place.name}</span></>}
+  </GameButton>;
 }

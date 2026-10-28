@@ -27,9 +27,6 @@
 .town-vignette {position:absolute;inset:0;pointer-events:none;box-shadow:inset 0 90px 70px -55px #0a182aaa,inset 0 -95px 70px -50px #101e2bc4;z-index:2;}
 .tower-light {position:absolute;top:120px;left:505px;width:210px;height:250px;background:radial-gradient(ellipse,#ffe4a066,transparent 65%);filter:blur(7px);mix-blend-mode:screen;pointer-events:none;}
 .world-place {position:absolute;transform:translate(-50%,-100%);width:74px;height:100px;border:0;background:none;padding:0;display:grid;place-items:end center;touch-action:none;}
-.world-place .character-avatar.profession-art,.field-player .character-avatar.profession-art {position:relative;display:block;inset:auto;width:72px;height:96px;aspect-ratio:3/4;background-size:400% 200%;mask-image:none;filter:drop-shadow(0 4px 3px #172626a8);margin:0;}
-.npc-ground-shadow {position:absolute;bottom:-1px;width:49px;height:15px;border-radius:50%;background:#15202555;filter:blur(2px);}
-.field-npc-sprite {display:block;width:108px;height:108px;background:url(/art/npc-field-atlas.webp) no-repeat;background-size:300% 200%;filter:drop-shadow(0 3px 3px #152a2580);pointer-events:none;}
 .world-place .place-label {position:absolute;top:-17px;left:50%;transform:translateX(-50%);display:flex;gap:5px;align-items:center;white-space:nowrap;font:600 12px/1.5 var(--game-font);color:#f7edce;text-shadow:0 1px 3px #000,0 0 8px #000;padding:2px 7px;border-radius:3px;background:#14222a77;}
 .world-place.tracked .place-label {background:#293e3cce;color:#ffe09d;border:1px solid #d7b66870;}
 .world-place .place-label b {color:#eac37d;font:700 17px/1 var(--game-font);}
@@ -43,10 +40,7 @@
 .world-place.portal {width:82px;height:110px;}
 .world-place.portal .place-object {display:grid;place-items:center;width:65px;height:95px;border-radius:50% 50% 15% 15%;border:3px solid #a9e3d98c;box-shadow:0 0 24px #abebdf77,inset 0 0 22px #a5f4de55;color:#d9fff0;background:radial-gradient(ellipse,#84dadb4d,#102f354f);animation:portal-breathe 3s ease-in-out infinite;}
 .field-player {position:absolute;transform:translate(-50%,-100%);height:104px;width:78px;pointer-events:none;display:grid;place-items:end center;}
-.field-player .character-avatar.profession-art {width:78px;height:104px;transform:scaleX(var(--facing,1));filter:drop-shadow(0 4px 5px #0007) drop-shadow(0 0 8px #bce9eb44);}
 .field-player>span:last-child {position:absolute;bottom:-23px;left:50%;transform:translateX(-50%);white-space:nowrap;font-size:10px;font-weight:600;color:#eafff4;background:#183237b8;padding:1px 7px;border-radius:3px;text-shadow:0 1px 2px #000;}
-.player-ground-ring {position:absolute;width:56px;height:18px;bottom:-3px;left:50%;transform:translateX(-50%);border:1px solid #daefcc9e;border-radius:50%;background:#c9f2d01a;box-shadow:0 0 9px #c9f2d088;}
-.field-player.is-walking .character-avatar {animation:field-walk .32s linear infinite;}
 .field-destination {position:absolute;width:25px;height:11px;border:1px solid #f4e2a4;border-radius:50%;transform:translate(-50%,-50%);box-shadow:0 0 15px #f4e2a4a6;z-index:790;pointer-events:none;}
 .field-fireflies {position:absolute;inset:0;pointer-events:none;z-index:800;}
 .field-fireflies i {position:absolute;width:3px;height:3px;background:#ecffd8;border-radius:50%;box-shadow:0 0 9px #e5f7a4;animation:field-firefly 5s ease-in-out infinite;}
@@ -154,14 +148,11 @@
 .arena-ground {position:absolute;inset:0;background:linear-gradient(#11232c22,#172d2b11),url(/art/echo-playfield.webp) center/cover;box-shadow:inset 0 0 65px #0d1d2d77;pointer-events:none;}
 .arena-player,.arena-opponent {position:absolute;transform:translate(-50%,-100%);pointer-events:none;z-index:4;}
 .arena-player {width:64px;height:85px;display:grid;align-items:end;justify-items:center;}
-.arena-player .character-avatar.profession-art {position:relative;width:64px;height:85px;aspect-ratio:3/4;filter:drop-shadow(0 3px 3px #0009);}
 .arena-player.evading {filter:drop-shadow(0 0 10px #d5fff0);opacity:.68;}
-.arena-player.striking .character-avatar {animation:arena-strike .3s ease-out;}
 .arena-player>span:last-child {position:absolute;bottom:-17px;left:50%;transform:translateX(-50%);font-size:9px;white-space:nowrap;color:#ecf9de;text-shadow:0 1px 4px #000;}
 .arena-opponent {width:120px;height:120px;display:grid;place-items:end center;}
 .echo-creature {display:block;width:120px;height:120px;background:url(/art/echo-creatures-atlas.webp) no-repeat;background-size:300% 200%;filter:drop-shadow(0 3px 7px #14212a88);}
 .arena-opponent>span:last-child {position:absolute;bottom:-17px;color:#e7dcc0;font-size:10px;white-space:nowrap;text-shadow:0 1px 4px #000;}
-.arena-opponent.was-hit .echo-creature {animation:arena-impact .27s ease-out;}
 .arena-hazard {position:absolute;transform:translate(-50%,-50%);border:2px dashed #ffce9f;border-radius:50%;background:#e8846944;box-shadow:inset 0 0 20px #da705950,0 0 10px #dd756544;pointer-events:none;z-index:2;}
 .arena-hazard>i {position:absolute;inset:calc(var(--warning-progress)*30%);border:1px solid #ffd6aabb;border-radius:50%;background:#f9ad7750;}
 .arena-hazard>b {position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);font-size:10px;color:#fff1db;text-shadow:0 1px 3px #792d24;white-space:nowrap;}
@@ -207,12 +198,41 @@
 .arena-save-error button {justify-content:center;font-size:11px;}
 @keyframes echo-hover {50% {transform:translateY(-7px);filter:drop-shadow(0 0 18px #c6fff3);}}
 @keyframes portal-breathe {50% {filter:brightness(1.25);}}
-@keyframes field-walk {0%,100% {transform:scaleX(var(--facing)) rotate(-2deg) translateY(0);}50% {transform:scaleX(var(--facing)) rotate(2deg) translateY(-4px);}}
 @keyframes field-firefly {0%,100% {opacity:.1;transform:translate(0,0);}50% {opacity:.9;transform:translate(11px,-22px);}}
-@keyframes arena-strike {50% {transform:translate(6px,-3px) rotate(7deg);}}
-@keyframes arena-impact {40% {filter:brightness(1.9) drop-shadow(0 0 8px #e9e1a8);transform:translateX(3px);}}
 @keyframes damage-rise {0% {opacity:1;transform:translate(-50%,-160%);}100% {opacity:0;transform:translate(-50%,-260%);}}
 @media(min-width:700px) {.town-experience {inset-inline:max(0px,calc((100vw - 1300px)/2));}.scene-location {display:block;}.scene-objective {width:310px;top:106px;padding:14px 12px;}.scene-objective strong {font-size:15px;}.scene-objective em {font-size:12px;}.scene-objective small {font-size:10px;}.scene-tools {flex-direction:row;}.scene-controls {left:35px;right:35px;bottom:54px;}.scene-first-hint {bottom:175px;}.scene-character-hud {left:25px;top:22px;}.scene-resume {top:225px;}.arena-controls {padding-bottom:17px;}.arena-opponent,.arena-opponent .echo-creature {width:145px;height:145px;}}
 @media(max-width:380px) {.rpg-shell .game-header-actions {gap:6px;}.rpg-shell>.game-header {padding-inline:14px;}.rpg-shell .game-brand {gap:5px;}.rpg-shell .game-brand small {font-size:7px;letter-spacing:1.2px;}.rpg-shell .save-state {display:none;}.rpg-shell .currency-pill {padding:7px;}.scene-character-hud {left:12px;}.scene-tools {right:12px;}.scene-objective {left:12px;top:93px;padding:8px 7px;}.scene-character-hud button>span:last-child {min-width:100px;}.scene-controls {left:13px;right:13px;bottom:54px;}.movement-stick {width:91px;height:91px;}.scene-interaction>button {min-width:142px;min-height:60px;padding:9px;gap:6px;}.scene-interaction strong {font-size:11px;}.scene-interaction small {display:none;}.scene-enable-audio {font-size:9px;bottom:7px;padding:5px 10px;}.scene-first-hint {font-size:10px;bottom:135px;}.arena-controls {padding-inline:10px;gap:5px;}.arena-controls .movement-stick {width:80px;height:80px;}.arena-actions {grid-template-columns:44px 50px 68px;gap:4px;}.arena-actions .arena-attack {width:68px;height:68px;}.arena-actions .arena-skill {width:49px;height:49px;}.arena-actions .arena-attack span {font-size:9px;}.arena-player .character-avatar.profession-art {width:53px;height:71px;}.arena-player {height:71px;width:53px;}.arena-opponent,.arena-opponent .echo-creature {width:102px;height:102px;}.arena-topline {padding-inline:11px;}.arena-enemy-bar {padding-inline:13px;}.arena-pause-panel {padding:20px;gap:11px;}.arena-pause-panel h2 {font-size:22px;}.life-focus-dialog {padding:22px 19px;gap:15px;}.life-focus-dialog [data-slot=dialog-title] {font-size:23px;}.field-help-dialog,.field-map-dialog,.bell-dialog {padding:25px 20px;}}
 @media(max-height:700px) {.scene-objective {top:87px;padding-block:7px;}.scene-character-hud {top:11px;}.scene-tools {top:11px;}.scene-first-hint {bottom:134px;}.scene-controls {bottom:54px;}.scene-resume {top:180px;}.arena-topline {padding-block:3px;}.arena-enemy-bar {padding-bottom:8px;}.arena-enemy-bar>span {font-size:11px;}.arena-controls {padding-block:4px 8px;}.arena-controls .movement-stick {width:76px;height:76px;}.arena-actions {grid-template-rows:44px 42px;}.arena-actions .arena-attack {width:68px;height:68px;}.arena-vitals {padding-block:7px;}.arena-pause-panel {gap:9px;padding:18px 21px;}.arena-pause-panel .arena-key-hint {display:none;}}
 @media(prefers-reduced-motion:reduce) {.field-fireflies,.tower-light {display:none;}.world-place.echo .place-object,.world-place.portal .place-object,.field-player.is-walking .character-avatar,.arena-player.striking .character-avatar,.arena-opponent.was-hit .echo-creature {animation:none;}.arena-feedback {animation:none;}.arena-hp i,.arena-enemy-bar i {transition:none;}}
+
+/* Map actors use a fixed foot anchor, integer-scale pixels and limb frames. CG stays in menus. */
+.pixel-actor {display:block;width:64px;height:96px;flex-shrink:0;image-rendering:pixelated;pointer-events:none;}
+.pixel-enemy {display:block;width:80px;height:96px;image-rendering:pixelated;pointer-events:none;}
+.field-player,.world-place.npc,.arena-player {width:64px;height:96px;}
+.field-player .pixel-actor,.world-place .pixel-actor,.arena-player .pixel-actor {animation:none;transform:none;filter:none;}
+.arena-opponent {width:80px;height:96px;}
+.arena-player.striking .pixel-actor {filter:brightness(1.2);}
+.arena-opponent.was-hit .pixel-enemy {filter:brightness(1.5);}
+.movement-dpad {width:132px;height:132px;display:grid;grid-template:repeat(3,44px)/repeat(3,44px);touch-action:none;user-select:none;-webkit-user-select:none;}
+.movement-dpad>button {border:1px solid #b9cabc80;border-radius:7px;background:linear-gradient(135deg,#405b60ee,#1b333fe8);display:grid;place-items:center;color:#f2e3b9;touch-action:none;padding:0;box-shadow:0 2px 4px #07192155;}
+.movement-dpad>button:nth-child(1) {grid-area:1/2;}
+.movement-dpad>button:nth-child(2) {grid-area:2/1;}
+.movement-dpad>button:nth-child(3) {grid-area:2/3;}
+.movement-dpad>button:nth-child(4) {grid-area:3/2;}
+.movement-dpad>span {grid-area:2/2;display:grid;place-items:center;color:#cfbf8b;background:#1a303999;border-radius:50%;margin:6px;}
+.movement-dpad>button.is-held {background:#b7b187;color:#172e36;box-shadow:inset 0 2px 6px #18303266;}
+.movement-mode {display:flex;align-items:center;justify-content:center;gap:4px;width:100%;min-height:28px;margin-top:5px;background:#142b37dc;border:1px solid #9fb9ae66;border-radius:5px;color:#d1dbca;font-size:10px;touch-action:manipulation;}
+.npc-full-figure {display:block;width:240px;height:240px;flex-shrink:0;background:url(/art/npc-field-atlas.webp) no-repeat;background-size:300% 200%;}
+.field-npc-scene {height:240px;}
+.field-npc-scene .npc-full-figure {position:absolute;bottom:0;left:50%;transform:translateX(-50%);}
+.scene-interaction>button,.arena-actions>button {touch-action:none;}
+@media(max-width:380px) {
+  .arena-controls .movement-dpad {width:120px;height:120px;grid-template:repeat(3,40px)/repeat(3,40px);}
+  .arena-actions {grid-template-columns:44px 48px 68px;gap:3px;}
+}
+@media(max-height:700px) {
+  .arena-player,.arena-player .pixel-actor {width:32px;height:48px;}
+  .arena-opponent,.arena-opponent .pixel-enemy {width:40px;height:48px;}
+  .field-npc-scene {height:190px;}
+  .field-npc-scene .npc-full-figure {width:190px;height:190px;}
+}

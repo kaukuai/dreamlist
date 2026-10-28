@@ -7,6 +7,7 @@ export type ArenaInput = {x: number; y: number; attack: boolean; dash: boolean; 
 export type ArenaEvent = {id: number; tick: number; kind: "swing" | "hit" | "hurt" | "dash" | "heal" | "warning" | "win"; x: number; y: number; value: number};
 export type Hazard = {id: number; x: number; y: number; radius: number; kind: "circle" | "ring"; remaining: number};
 export type ArenaState = {
+  travelled?: number; lastMoveTick?: number;
   version: 1; tick: number; x: number; y: number; facing: number; enemyX: number; enemyY: number;
   hp: number; maxHp: number; enemyHp: number; enemyMaxHp: number; attack: number; armor: number; healing: number;
   enemyAttack: number; profession: ProfessionId; focus: number; phase: "active" | "won" | "lost";
@@ -46,9 +47,11 @@ export function stepArena(state: ArenaState, input: ArenaInput) {
     state.dashY = magnitude > .05 ? dy / Math.max(Math.hypot(dx, dy), .001) : Math.sin(state.facing);
     state.dashTime = .2;state.invulnerable = .38;state.dashCd = 1.8;event(state, "dash", state.x, state.y);
   }
+  const oldX = state.x, oldY = state.y;
   const speed = state.dashTime > 0 ? 530 : 145;
   state.x = clamp(state.x + (state.dashTime > 0 ? state.dashX : dx) * speed * dt, 34, ARENA.width - 34);
   state.y = clamp(state.y + (state.dashTime > 0 ? state.dashY : dy) * speed * dt, 110, ARENA.height - 40);
+  const moved = Math.hypot(state.x - oldX, state.y - oldY);state.travelled = (state.travelled ?? 0) + moved;if (moved > .01) state.lastMoveTick = state.tick;
   const distance = Math.hypot(state.enemyX - state.x, state.enemyY - state.y);
   if (distance > 135 && state.hazards.length === 0) {
     state.enemyX += (state.x - state.enemyX) / distance * 27 * dt;

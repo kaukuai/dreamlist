@@ -26,7 +26,7 @@
 
 `DREAMLIST_MODE` 未設定時也預設為 browser。不需要 `NEXTAUTH_URL`、`NEXTAUTH_SECRET`、`DREAMLIST_OWNER_EMAIL`、Google 或 Turso 變數。build 不會因缺少那些憑證而失敗，也不會連線或遷移雲端資料庫。
 
-更新 `main` 後在原專案部署 Production，確認 alias 仍為原網址。`/api/version` 應回傳 `mode: browser`、`release: direct-play-audio-v1` 與最新 commit。原專案需維持 `autoAssignCustomDomains=true`，否則成功的 Production build 也可能停在待指定網域狀態。由於這是瀏覽器試看版，API 的雲端角色／任務端點仍拒絕未登入請求；頁面操作透過瀏覽器保存實作，不使用公開假帳號。
+更新 `main` 後在原專案部署 Production，確認 alias 仍為原網址。`/api/version` 應回傳 `mode: browser`、`release: pixel-touch-rpg-v1` 與最新 commit。原專案需維持 `autoAssignCustomDomains=true`，否則成功的 Production build 也可能停在待指定網域狀態。由於這是瀏覽器試看版，API 的雲端角色／任務端點仍拒絕未登入請求；頁面操作透過瀏覽器保存實作，不使用公開假帳號。
 
 第一卷《無聲晨鐘》的主線、支線、戰況、材料與收藏加在同一份瀏覽器存檔，舊進度不需重建。從任務大廳「展開冒險」進入。
 
@@ -56,3 +56,6 @@ npm run start:vercel -- --hostname 127.0.0.1
 使用者提供的 165a58d Vercel 日誌顯示 Git 已抓到新版，但舊建置流程無條件要求 Turso，因環境變數空白而中止。另已透過 API 確認 Dashboard 舊框架為 Vite、Git 綁定為 main、最後成功 Production 仍為 a4b7df7。這不是瀏覽器快取問題。
 
 目前網路與 Vercel API 授權已可用，Dashboard 框架與建置設定已修正。先前試設的登入變數已移除，保留 browser 模式；不需要再要求同一個 Vercel token。部署是否成功必須以真實 build 狀態、原網址版本和瀏覽器操作判定。
+
+
+本輪觸控／像素調整（2026-10-28）：地圖與戰鬥採四方向像素人物，選單與對話保留 CG；預設可見十字鍵，可切換搖桿。原生觸控、雙指動作與 click 備援支援內嵌視窗，頁面真正進入背景才自動暫停。實作與證據／限制見 [PIXEL_TOUCH_RESEARCH.md](PIXEL_TOUCH_RESEARCH.md)。Vercel 版本標記 pixel-touch-rpg-v1，存檔鍵不變。

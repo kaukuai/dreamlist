@@ -10,6 +10,10 @@ import {appFetch} from "@/lib/client-api";
 
 type Props = {dreams: Dream[]; busy: boolean; loading: boolean; onAccept: (offerId: string) => Promise<Dream | undefined>; onSelect: (dream: Dream) => void};
 const statusText = {available: "可以接取", active: "修練中", complete: "已完成", archived: "已收起"};
+export function NpcFullFigure({npc}: {npc: Npc}) {
+  return <span className="npc-full-figure" role="img" aria-label={npc.name + "完整立繪"} style={{backgroundPosition: `${npc.portrait % 3 / 2 * 100}% ${Math.floor(npc.portrait / 3) * 100}%`}}/>;
+}
+
 export function NpcPortrait({npc, className = ""}: {npc: Npc; className?: string}) {
   return <span role="img" aria-label={`NPC ${npc.name}，${npc.role}`} className={"npc-portrait " + className} style={{backgroundPosition: `${npc.portrait % 3 * 50}% ${Math.floor(npc.portrait / 3) * 100}%`} as CSSProperties}/>;
 }

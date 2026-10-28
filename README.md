@@ -90,3 +90,6 @@ npm run build
 遊戲與每日任務不依賴外部遊戲網站；官方查核另外使用 `python3 scripts/check-research-network.py`。它沿用雲端代理與 TLS 驗證，區分代理拒絕、官方 HTTP 錯誤及連線問題，成功時把頁面保存到忽略的 `.sites-runtime/research/` 供閱讀。此命令需要雲端的 Python 3，不是啟動遊戲的必要步驟。
 
 先前的代理 403 限制已解除。2026-10-28 已實際載入瑪奇官方介紹、Nintendo 官方頁與玩家動機原論文；部分動態 guide 網址仍只有外框，不能當作詳細規則證據。各來源取得內容與限制見 ENGAGEMENT_RESEARCH.md。診斷工具仍保留供日後網路變動時使用。
+
+
+本輪觸控／像素調整（2026-10-28）：地圖與戰鬥採四方向像素人物，選單與對話保留 CG；預設可見十字鍵，可切換搖桿。原生觸控、雙指動作與 click 備援支援內嵌視窗，頁面真正進入背景才自動暫停。實作與證據／限制見 [PIXEL_TOUCH_RESEARCH.md](PIXEL_TOUCH_RESEARCH.md)。Vercel 版本標記 pixel-touch-rpg-v1，存檔鍵不變。
