@@ -5,7 +5,7 @@ import {spriteLooks,spriteLayers,spriteRows,walkFrame} from '../lib/sprite-catal
 import {readFileSync} from 'node:fs';
 import {createHash} from 'node:crypto';
 const manifest=JSON.parse(readFileSync(new URL('../public/art/lpc/manifest.json',import.meta.url)));
-import {bindContact,bindTap,bindGround} from '../lib/touch-controls.ts';
+import {bindContact,bindDirection,bindTap,bindGround} from '../lib/touch-controls.ts';
 class Target extends EventTarget {
  disabled=false;hidden=false;ownerDocument;defaultView=new EventTarget();
  constructor(doc){super();this.ownerDocument=doc??this;}
@@ -59,4 +59,14 @@ test('backgrounding and explicit pause discard unfinished action and ground cont
   fire(doc,'touchend',{changedTouches:[touch(1),touch(2)]});assert.equal(moved,0);assert.equal(tapped,0);
   fire(button,'touchstart',{changedTouches:[touch(3)]});fire(doc,'touchend',{changedTouches:[touch(3)]});assert.equal(tapped,1);a();b();
  }
+});
+
+test('short direction tap survives a delayed paint and pending movement cancels on background',async t=>{
+ let time=0,seq=0;const callbacks=new Map();t.mock.method(performance,'now',()=>time);
+ const doc=new Target(),element=new Target(doc);doc.defaultView.requestAnimationFrame=callback=>{callbacks.set(++seq,callback);return seq;};doc.defaultView.cancelAnimationFrame=id=>callbacks.delete(id);
+ const axes=[];const off=bindDirection(element,{x:1,y:0},axis=>axes.push(axis),()=>{});
+ fire(element,'touchstart',{changedTouches:[touch(1)]});time=5;fire(doc,'touchend',{changedTouches:[touch(1)]});time=1000;
+ const paint=()=>{const batch=[...callbacks.values()];callbacks.clear();for(const callback of batch)callback();};
+ assert.equal(axes.at(-1).x,1);paint();assert.equal(axes.at(-1).x,1,'one late paint cannot swallow a tap');paint();paint();paint();assert.equal(axes.at(-1).x,0);
+ fire(element,'click');doc.hidden=true;fire(doc,'visibilitychange');assert.equal(axes.at(-1).x,0);assert.equal(callbacks.size,0);off();
 });

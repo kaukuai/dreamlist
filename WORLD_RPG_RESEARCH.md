@@ -50,3 +50,5 @@ npm run test:field 包含素材校驗、四方向／八步態及腳底、所有�
 tests/mobile-play.browser.mjs 會實際在 iframe 開啟 app，操作觸控／點擊備援、走進書庫／森林、讀完記錄並啟動鐘亭、重載、開手札切頁、多尺寸及雙指戰鬥。原生 Touch 相容分支部分用注入事件，引擎 touchscreen tap 另驗；不能當作已在實體 iPhone、Android 或 ChatGPT 原生 App 驗收。畫面輸出在忽略的 outputs/world-redesign。沒有真人可用性測試或證明已達商業大型 RPG 品質。
 
 本輪模型與素材／保存檢查共 59 項通過；TypeScript、改動模組 ESLint、Next Vercel 與 vinext Sites 兩套正式建置通過。Chromium／WebKit 開發版三區域流程通過，Chromium 正式建置三區域流程及舊回合轉換亦通過。正式網址需另核對最新 SHA 與互動，不能以本機建置代稱發布完成。
+
+線上回歸補正：嵌入視窗更新頻率降低時，方向鍵短按原本的 160ms 定時器可能先於移動更新結束。改為同時滿足最低時間與四次畫面更新機會後釋放；進入背景／明確暫停仍會立即取消。新增低更新頻率的輸入測試（總計 60 項），不以固定 400ms 內必定顯示若干步態作為所有裝置的假設。

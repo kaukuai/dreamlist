@@ -38,12 +38,23 @@ export function bindStick(element: HTMLElement, onAxis: (axis: Axis) => void, on
   return bindContact(element, {start: update, move: update, end: () => {onThumb({x: 0, y: 0});onAxis({x: 0, y: 0});}});
 }
 export function bindDirection(element: HTMLElement, axis: Axis, onAxis: (axis: Axis) => void, onHeld: (held: boolean) => void) {
-  let began = 0, timer: ReturnType<typeof setTimeout> | undefined;
-  const stop = () => {clearTimeout(timer);onAxis({x: 0, y: 0});onHeld(false);};
-  const start = () => {clearTimeout(timer);began = clock();onHeld(true);onAxis(axis);};
-  const end = (cancelled: boolean) => {const rest = cancelled ? 0 : Math.max(0, 160 - (clock() - began));if (rest) timer = setTimeout(stop, rest);else stop();};
-  const unbind = bindContact(element, {start, move: () => {}, end, click: () => {start();timer = setTimeout(stop, 160);}});
-  return () => {unbind();stop();};
+  const doc=element.ownerDocument,view=doc.defaultView;
+  let began=0,animation=0,timer:ReturnType<typeof setTimeout>|undefined;
+  const clear=()=>{if(animation)view?.cancelAnimationFrame(animation);animation=0;clearTimeout(timer);};
+  const stop=()=>{clear();onAxis({x:0,y:0});onHeld(false);};
+  const start=()=>{clear();began=clock();onHeld(true);onAxis(axis);};
+  const end=(cancelled:boolean)=>{
+    if(cancelled||clock()-began>=160){stop();return;}
+    // A wall-clock timeout can expire before a throttled WebView paints any movement.
+    // Keep a short tap until both the minimum time and four paint opportunities pass.
+    let paints=0;
+    if(!view?.requestAnimationFrame){timer=setTimeout(stop,Math.max(0,160-(clock()-began)));return;}
+    const paint=()=>{paints++;if(paints>=4&&clock()-began>=160)stop();else animation=view.requestAnimationFrame(paint);};
+    animation=view.requestAnimationFrame(paint);
+  };
+  const unbind=bindContact(element,{start,move:()=>{},end,click:()=>{start();end(false);}});
+  const visibility=()=>{if(doc.hidden)stop();};doc.addEventListener("visibilitychange",visibility);view?.addEventListener("reverie:pause",stop);
+  return()=>{unbind();stop();doc.removeEventListener("visibilitychange",visibility);view?.removeEventListener("reverie:pause",stop);};
 }
 /** Native activation works even while another finger owns movement. */
 export function bindTap(element: HTMLElement, activate: () => void) {
