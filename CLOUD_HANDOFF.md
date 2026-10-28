@@ -14,6 +14,8 @@ public/audio 有兩首原創無外部採樣的配樂，來源腳本 scripts/comp
 
 預期 /api/version.release 為 direct-play-audio-v1。推 main 後核對原網址 SHA 才報告部署；前輪 token 對 team 的 API scope 403 仍可透過 Git 自動部署、公開版本與 GitHub commit status 完成發布，不要重複索取同一 token。雲端環境草稿／Publish 與 Vercel app 發布分開。
 
+舊回合戰況另以 legacy-ui.mjs 補測：在城鎮接續時用 field-legacy-battle 固定覆層，避免城鎮 HUD 遮住舊按鍵；實際點選改用走位後，生命與生活收據不變。兩套 build 與此舊存檔 UI 測試已通過，不只驗證資料層轉換。
+
 ## 2026-10-28：晨鐘編年史擴充
 
 本輪使用者要求持續研究留存、擴充劇情與內容規模。先讀 ENGAGEMENT_RESEARCH.md；已實際查核瑪奇官方介紹（單角色全技能／生活與戰鬥並存）、Nintendo 官方頁與 Ryan 等人 2006 原論文，沒有把關聯研究當成本作留存成效。部分 guide 空殼仍未取得詳細資料，不聲稱看過那些規則。遊戲採自主路線、可理解成長與 NPC 故事，不加斷簽懲罰、倒數體力或抽獎付費。

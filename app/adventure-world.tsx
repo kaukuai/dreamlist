@@ -76,7 +76,8 @@ export default function AdventureWorld({character, progressStamp, onRefresh, onQ
     const back = () => {if (encounter) onExit();else setShowBattle(false);};
     const story = () => {setShowBattle(false);if (activeBattleEpisode) open(activeBattleEpisode);};
     if (data.battle.arena) return <ActionArena key={data.battle.id} data={data} character={character} error={error} onAction={act} onBack={back} onStory={story}/>;
-    return <BattlePanel data={data} character={character} busy={busy} error={error} onAction={act} onBack={back} onStory={story}/>;
+    const tactical = <BattlePanel data={data} character={character} busy={busy} error={error} onAction={act} onBack={back} onStory={story}/>;
+    return encounter ? <div className="field-legacy-battle">{tactical}</div> : tactical;
   }
 
   return <main className={"rpg-page adventure-page" + (encounter ? " encounter-mode" : "")}>

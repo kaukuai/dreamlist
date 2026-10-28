@@ -118,6 +118,7 @@
 .bell-sequence .lit {background:#d0ce9e22;border-color:#e8dba8;box-shadow:0 0 16px #d3e4a735;}
 .bell-dialog>p {font-size:11px;color:#b6c9c4;line-height:1.8;}
 .encounter-mode {display:none;}
+.field-legacy-battle {position:fixed;inset:calc(var(--scene-top,102px) + env(safe-area-inset-top,0px)) 0 calc(var(--scene-bottom,86px) + env(safe-area-inset-bottom,0px));z-index:30;background:#14232d;overflow-y:auto;overscroll-behavior:contain;}
 .encounter-dialogue>div+div {margin-top:16px;}
 .encounter-dialogue p {font-size:13px;line-height:1.9;}
 .encounter-dialogue small {font-size:10px;color:#ccb981;}
