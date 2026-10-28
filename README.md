@@ -6,6 +6,8 @@ Vercel 原專案 `kaukuai-dreamlist.vercel.app` 現在以**免登入試看版**�
 
 ## 目前可以玩
 
+Vercel 試看版新增第一卷《無聲晨鐘》：4 個區域、9 段主線、6 篇夥伴故事、各篇兩條生活修練路線、9 個回合試煉對手、3 種刻印製作、15 頁回聲與 3 個稱號。從任務大廳的「展開冒險」進入；舊瀏覽器存檔會保留後加上冒險進度。設計研究與限制見 [ENGAGEMENT_RESEARCH.md](ENGAGEMENT_RESEARCH.md)。
+
 - 手機直式介面，底部五個入口：任務、角色、裝備、天賦、職業。小島移到「更多 → 營地與小島」。
 - 原創韓漫線條與日系冒險賽璐璐風格的成人職業立繪，保留武器、護甲辨識；進化後切換進階立繪。
 - 每日抽出 3 份 1～3 分鐘的輕量委託，台北時間 04:00 更新；選項保存、重新整理不重抽，接下後跨日保留。活動任務提供坐姿替代。
@@ -17,7 +19,7 @@ Vercel 原專案 `kaukuai-dreamlist.vercel.app` 現在以**免登入試看版**�
 - 可命名的角色、三種靈魂光暈、自願加入的成長排行榜；不公開生活任務內容，也沒有假玩家。
 - D1 持續保存、依登入身分隔離、版本衝突保護；原有目標、小島建設、星露和首次完成收據延續。
 
-目前是可操作的角色養成循環；戰力為屬性評級，尚無戰鬥引擎。職業立繪會隨轉職與進化改變，裝備尚未逐件疊到立繪上。完整規則及後續路線見 [GAME_DESIGN.md](GAME_DESIGN.md)，競品查核進度見 [RPG_REFERENCES.md](RPG_REFERENCES.md)。
+目前有角色養成與瀏覽器版回合試煉；綜合戰力仍是屬性評級，實際試煉使用出戰能力、職業戰技與預告意圖。職業立繪會隨轉職與進化改變，裝備尚未逐件疊到立繪上。完整規則及後續路線見 [GAME_DESIGN.md](GAME_DESIGN.md)，競品查核進度見 [RPG_REFERENCES.md](RPG_REFERENCES.md)。
 
 ## 快速試玩
 
@@ -69,6 +71,7 @@ npm run build
 
 ## 主要原始碼
 
+- `lib/adventure-catalog.ts`／`lib/adventure-model.ts`：世界、故事、戰鬥、刻印與回聲規則；`app/adventure-world.tsx`／`app/adventure.css`：冒險介面。`npm run test:adventure` 驗證完整第一卷與舊存檔延續。
 - `app/quest-board.tsx`：任務頁；`app/quest-hub.tsx`／`app/quest-hub.css`：每日委託與 NPC 對話；`app/character-journey.tsx`：角色、裝備、技能、設定與排行榜。
 - `app/class-progression.tsx`：職業進化、天賦樹；`app/rpg-ui.tsx`、`app/character-avatar.tsx`：裝備欄及立繪；`app/mobile-rpg.css`：手機 RPG 視覺。
 - `lib/character-model.ts`：成長規則；`lib/character-store.ts`：首次完成收據與彙總；`lib/wallet-store.ts`：共用錢包。
@@ -76,10 +79,10 @@ npm run build
 - `db/schema.ts`、`drizzle/`：加法遷移；`app/api/`：身分、條件與原子寫入驗證。
 - `app/island-game.tsx`：保留的選用營地；`DESIGN_REVIEW.md`：美術與介面紀錄。
 
-原 Sites 網址、project_id 與正式資料維持延續。程式修改、雲端環境設定保存、GitHub 保存及正式網站發布是不同步驟。此版未部署正式網站。`node_modules`、`.wrangler`、`.sites-runtime`、`.env` 與驗證資料不應加入來源封裝。
+原 Sites 網址、project_id 與正式資料維持延續。程式修改、雲端環境設定保存、GitHub 保存及正式網站發布是不同步驟。Vercel 試看站與原 Sites 發布狀態分開核對。`node_modules`、`.wrangler`、`.sites-runtime`、`.env` 與驗證資料不應加入來源封裝。
 
 ## 官方研究網路
 
 遊戲與每日任務不依賴外部遊戲網站；官方查核另外使用 `python3 scripts/check-research-network.py`。它沿用雲端代理與 TLS 驗證，區分代理拒絕、官方 HTTP 錯誤及連線問題，成功時把頁面保存到忽略的 `.sites-runtime/research/` 供閱讀。此命令需要雲端的 Python 3，不是啟動遊戲的必要步驟。
 
-目前官方來源仍在 CONNECT 階段遭代理 403；網域已保存至設定草稿，工具不能自行套用或 Publish。需要在環境設定儲存並發布，再重跑診斷確認。失敗時程式會以非零狀態結束，不會假報研究已完成。
+先前的代理 403 限制已解除。2026-10-28 已實際載入瑪奇官方介紹、Nintendo 官方頁與玩家動機原論文；部分動態 guide 網址仍只有外框，不能當作詳細規則證據。各來源取得內容與限制見 ENGAGEMENT_RESEARCH.md。診斷工具仍保留供日後網路變動時使用。

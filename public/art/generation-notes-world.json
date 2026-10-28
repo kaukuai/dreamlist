@@ -1,0 +1,16 @@
+{
+  "created": "2026-10-28",
+  "tool": "image_gen",
+  "source": "exec-e11d46cb-1bdf-4e34-9205-d97690fbfdfc.png",
+  "layout": "2 columns × 2 rows; morningbell, mistwood, archive, dawnrift",
+  "direction": "Original mature fantasy environments, Korean webtoon atmosphere and Japanese adventure cel shading; no existing game locations copied.",
+  "output": {
+    "format": "webp",
+    "width": 1536,
+    "height": 1024,
+    "channels": 3,
+    "premultiplied": false,
+    "hasAlpha": false,
+    "size": 523084
+  }
+}

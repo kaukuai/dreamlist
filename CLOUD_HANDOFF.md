@@ -1,5 +1,17 @@
 # 夢嶼 reverie — 雲端開發交接
 
+## 2026-10-28：晨鐘編年史擴充
+
+本輪使用者要求持續研究留存、擴充劇情與內容規模。先讀 ENGAGEMENT_RESEARCH.md；已實際查核瑪奇官方介紹（單角色全技能／生活與戰鬥並存）、Nintendo 官方頁與 Ryan 等人 2006 原論文，沒有把關聯研究當成本作留存成效。部分 guide 空殼仍未取得詳細資料，不聲稱看過那些規則。遊戲採自主路線、可理解成長與 NPC 故事，不加斷簽懲罰、倒數體力或抽獎付費。
+
+瀏覽器版新增第一卷《無聲晨鐘》：4 區、9 主線、6 夥伴篇，各兩路線；9 種對手、3 守關者、職業差異的回合戰鬥；3 刻印、15 回聲與3稱號。生活行動給 XP，戰鬥與故事只給一次固定素材／星露；工坊／裝備／營地共用同一餘額。戰況可保存，敗退不扣成長，戰鬥回合防重複。每週自選方向僅計新收據時間，不推算舊收據日期，也不扣既有成長。
+
+新增 lib/adventure-catalog.ts、adventure-model.ts 與 app/adventure-world.tsx／adventure.css。現有 v1 localStorage 保留並加 adventure 子資料；故事修練在 Dream.story，不能改內容或刪除，個人旅誌排除故事任務。只有瀏覽器試看模式開啟此功能，原 Sites D1 未修改。新目錄可擴充下一卷，尚無 3D 自由走動、多人公會或雲端同步。
+
+npm run test:adventure 驗證九主線＋六支線完整通關、舊存檔、戰術、防重領、共享錢包、跨週與保存失敗；先跑舊 test:preview／test:vercel／npm test。檢查型別、改動檔案 ESLint、兩套 build；瀏覽器測試腳本在忽略的 .sites-runtime/adventure-validation。推送 main 後必須核對 Vercel READY、原網域 /api/version 與最新 Git SHA，再宣稱已部署。
+
+本輪上述 38 項測試、型別、改動模組 ESLint、兩套正式 build 均通過。Next 正式 server 的 Chromium 驗證完成前三主線與守關者、戰士戰技、跨重載／分頁戰況、夥伴篇、稱號及刻印；五尺寸 × 四分頁／故事共 25 組檢查通過，無瀏覽器錯誤、無 RPG 伺服器 API 請求。2026-10-28 現有 Vercel API token 對原 team 回應 scope forbidden 403（不是代理阻擋），不要輸出或重複索取值；main Git 自動部署與公開版本查核仍可獨立運作。原 autoAssignCustomDomains 已於前輪設 true。優先推 main 並查原網址；需要改 Dashboard 才另處理該 scope。
+
 ## 最新要求：免登入的 Vercel 試看版
 
 使用者已取消這階段的 Google 綁定與跨裝置儲存，只要原 Vercel 網址方便檢視開發 app。此要求取代下方先前的私人 Google／Turso 設定計畫。Vercel 的 DREAMLIST_MODE=browser（亦為預設）使用 localStorage，無需任何 Google／Turso 憑證；原 Sites 模式維持認證及 D1，未操作正式資料。只有明確選 cloud 模式才需要先前的七個設定與遷移。

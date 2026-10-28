@@ -30,7 +30,7 @@ export default function CharacterJourney({panel, character, island, busy, loadin
   return <main className={"rpg-page rpg-panel-" + panel}>
     {panel === "character" && <>
       <PanelHeading eyebrow="CHARACTER DOSSIER" title="角色檔案" aside={<button className="rpg-icon-button" aria-label="角色設定" onClick={() => onNavigate("settings")}><Settings2 size={20}/></button>}/>
-      <div className="character-nameplate"><div><span className="job-insignia"><ProfessionIcon profession={character.profession} size={15}/>{title}</span><h2>{character.name}</h2></div><span className="character-level">Lv.<b>{character.level}</b></span></div>
+      <div className="character-nameplate"><div><span className="job-insignia"><ProfessionIcon profession={character.profession} size={15}/>{title}</span><h2>{character.name}</h2>{character.title&&<span className="character-earned-title"><Crown size={12}/>{character.title}</span>}</div><span className="character-level">Lv.<b>{character.level}</b></span></div>
       <PaperDoll character={character} onSlot={onSlot}/>
       <div className="character-power"><span><Swords size={16}/>綜合戰力</span><strong title="依等級、屬性、穿戴裝備與職業進化計算的角色評級">{character.power.toLocaleString()}</strong><small>{["初階", "進階", "大師", "覺醒"][stage]}職業</small></div>
       <ExperienceBar character={character}/>

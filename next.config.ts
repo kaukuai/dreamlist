@@ -4,6 +4,8 @@ const isVercel = process.env.VERCEL === "1" || process.env.DREAMLIST_DEPLOY_TARG
 
 const nextConfig: NextConfig = isVercel ? {
   distDir: ".next-vercel",
+  devIndicators: false,
+  agentRules: false,
   serverExternalPackages: ["@libsql/client"],
   // Next's path resolver runs before webpack aliases. Select both server
   // bindings through this config; Vite/Sites retains the default tsconfig.

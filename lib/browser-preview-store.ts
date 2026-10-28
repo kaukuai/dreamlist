@@ -4,10 +4,11 @@ import {inputSchema, normalizeTasks} from "./dream-validation.ts";
 import {buildings, islandLevel, type IslandItem, type IslandState} from "./island-model.ts";
 import {drawDailyQuests, npcQuests, questCategory, questDay, questOf, questStepTitle, type QuestBoardState, type QuestOffer} from "./quest-model.ts";
 import type {Dream} from "./dream-model.ts";
+import {adventureAction, adventureView, AdventureError, initialAdventure, validateAdventure, type AdventureState} from "./adventure-model.ts";
 
 export const PREVIEW_STORAGE_KEY = "dreamlist:browser-preview:v1";
 type StoredDream = Dream & {deleted?: boolean};
-type Receipt = RewardTotal & {dreamId: string; taskId: string; kind: "step" | "dream"; coins: number};
+type Receipt = RewardTotal & {dreamId: string; taskId: string; kind: "step" | "dream"; coins: number; createdAt?: string};
 type PreviewState = {
   version: 1; playerId: string; dreams: StoredDream[]; receipts: Receipt[];
   profile: {name: string; profession: ProfessionId; avatarColor: CharacterState["avatarColor"]};
@@ -15,6 +16,7 @@ type PreviewState = {
   inventory: {itemId: string; cost: number}[]; equipped: Record<EquipmentSlot, string | null>;
   island: {name: string; items: IslandItem[]}; dailyBoards: Record<string, string[]>;
   contracts: {offerId: string; dreamId: string}[];
+  adventure: AdventureState;
 };
 type PreviewStorage = Pick<Storage, "getItem" | "setItem">;
 
@@ -29,7 +31,7 @@ function initialState(): PreviewState {
     profile: {name: "初行旅人", profession: "wanderer", avatarColor: "mint"}, talents: {},
     advancements: Object.fromEntries(professionIds.map(id => [id, 0])) as PreviewState["advancements"],
     inventory: [], equipped: Object.fromEntries(equipmentSlots.map(slot => [slot, null])) as PreviewState["equipped"],
-    island: {name: "曙光小島", items: []}, dailyBoards: {}, contracts: []};
+    island: {name: "曙光小島", items: []}, dailyBoards: {}, contracts: [], adventure: initialAdventure()};
 }
 
 function readState(raw: string | null): PreviewState {
@@ -39,6 +41,7 @@ function readState(raw: string | null): PreviewState {
     if (value.version !== 1 || typeof value.playerId !== "string" || !Array.isArray(value.dreams) ||
       !Array.isArray(value.receipts) || !Array.isArray(value.inventory) || !Array.isArray(value.contracts) ||
       !value.profile || !value.equipped || !value.advancements || !value.talents || !value.dailyBoards || !Array.isArray(value.island?.items)) throw new Error();
+    value.adventure = value.adventure ? validateAdventure(value.adventure) : initialAdventure();
     return value;
   } catch {return reject("此瀏覽器的試玩紀錄暫時無法讀取，原紀錄已保留，請勿清除網站資料。", 503);}
 }
@@ -49,31 +52,31 @@ function character(state: PreviewState): CharacterState {
   const stage = state.advancements[state.profile.profession];
   const jobBonuses = professionBonuses(state.profile.profession, stage);
   const effectiveAttributes = Object.fromEntries(attributeIds.map(id => [id, growth.attributes[id] + equipmentBonuses[id] + jobBonuses[id]])) as CharacterState["attributes"];
-  return {...growth, ...state.profile, leaderboardOptIn: false, inventory: state.inventory.map(item => item.itemId),
+  return {...growth, ...state.profile, ...(state.adventure.equippedTitle ? {title: state.adventure.equippedTitle} : {}), leaderboardOptIn: false, inventory: state.inventory.map(item => item.itemId),
     equipped: {...state.equipped}, advancements: {...state.advancements}, equipmentBonuses, professionBonuses: jobBonuses,
     effectiveAttributes, power: characterPower(growth.level, effectiveAttributes, Object.values(state.equipped).filter(Boolean).length, stage)};
 }
 
 function island(state: PreviewState): IslandState {
-  const earned = state.receipts.reduce((sum, receipt) => sum + receipt.coins, 0);
-  const spent = state.inventory.reduce((sum, item) => sum + item.cost, 0) + state.island.items.reduce((sum, item) => sum + item.cost, 0);
+  const earned = state.receipts.reduce((sum, receipt) => sum + receipt.coins, 0) + state.adventure.goldEarned;
+  const spent = state.inventory.reduce((sum, item) => sum + item.cost, 0) + state.island.items.reduce((sum, item) => sum + item.cost, 0) + state.adventure.goldSpent;
   return {earned, balance: 100 + earned - spent, level: islandLevel(earned), name: state.island.name,
     items: [...state.island.items].sort((a, b) => a.slot - b.slot), steps: state.receipts.filter(receipt => receipt.kind === "step").length,
     dreamsFulfilled: state.receipts.filter(receipt => receipt.kind === "dream").length};
 }
 
-function award(state: PreviewState) {
+function award(state: PreviewState, now: Date) {
   const keys = new Set(state.receipts.map(receipt => JSON.stringify([receipt.dreamId, receipt.taskId, receipt.kind])));
   for (const dream of state.dreams.filter(dream => !dream.deleted)) {
     for (const task of dream.tasks.filter(task => task.done)) {
       const key = JSON.stringify([dream.id, task.id, "step"]);
       if (keys.has(key)) continue;
-      state.receipts.push({dreamId: dream.id, taskId: task.id, kind: "step", skillId: task.training ?? defaultTraining(dream.category), xp: STEP_XP, skillXp: SKILL_XP, coins: 25});
+      state.receipts.push({dreamId: dream.id, taskId: task.id, kind: "step", skillId: task.training ?? defaultTraining(dream.category), xp: STEP_XP, skillXp: SKILL_XP, coins: 25, createdAt: now.toISOString()});
       keys.add(key);
     }
     const key = JSON.stringify([dream.id, "", "dream"]);
     if (dream.tasks.length && dream.tasks.every(task => task.done) && !keys.has(key)) {
-      state.receipts.push({dreamId: dream.id, taskId: "", kind: "dream", skillId: null, xp: DREAM_XP, skillXp: 0, coins: 100});
+      state.receipts.push({dreamId: dream.id, taskId: "", kind: "dream", skillId: null, xp: DREAM_XP, skillXp: 0, coins: 100, createdAt: now.toISOString()});
       keys.add(key);
     }
   }
@@ -100,6 +103,12 @@ async function questBoard(state: PreviewState, now: Date): Promise<QuestBoardSta
 }
 
 async function dispatch(state: PreviewState, path: string, method: string, body: unknown, now: Date): Promise<unknown> {
+  const adventureContext = () => ({dreams: state.dreams, receipts: state.receipts, player: character(state), balance: island(state).balance, now});
+  if (path === "/api/adventure" && method === "GET") return {adventure: adventureView(state.adventure, adventureContext())};
+  if (path === "/api/adventure" && method === "POST") {
+    adventureAction(state.adventure, body, adventureContext());
+    return {adventure: adventureView(state.adventure, adventureContext()), ...rewardState(state)};
+  }
   if (path === "/api/dreams" && method === "GET") return {dreams: state.dreams.filter(dream => !dream.deleted)};
   if (path === "/api/character" && method === "GET") return {character: character(state)};
   if (path === "/api/island" && method === "GET") return {island: island(state)};
@@ -117,13 +126,13 @@ async function dispatch(state: PreviewState, path: string, method: string, body:
   }
   if (path.startsWith("/api/dreams/") && ["PUT", "DELETE"].includes(method)) {
     const dream = findDream(state, decodeURIComponent(path.slice("/api/dreams/".length)));
-    if (method === "DELETE") {dream.deleted = true; dream.revision = (dream.revision ?? 0) + 1; return {ok: true};}
+    if (method === "DELETE") {if (dream.story) reject("故事修練會保留在旅程中，可以依自己的節奏完成");dream.deleted = true; dream.revision = (dream.revision ?? 0) + 1; return {ok: true};}
     const data = inputSchema.parse(body);
     if (typeof data.revision !== "number" || data.revision !== dream.revision) return reject("任務已在另一個視窗更新，請重新載入後再試", 409);
-    if (dream.quest && (data.title !== dream.title || data.description !== dream.description || data.category !== dream.category || data.targetDate !== dream.targetDate || data.tasks.length !== dream.tasks.length || data.tasks.some((task, index) => {const old = dream.tasks[index]; return task.id !== old.id || task.title !== old.title || (task.training ?? old.training) !== old.training;}))) reject("NPC 委託內容固定，可以完成行動或另外建立自己的目標");
+    if ((dream.quest || dream.story) && (data.title !== dream.title || data.description !== dream.description || data.category !== dream.category || data.targetDate !== dream.targetDate || data.tasks.length !== dream.tasks.length || data.tasks.some((task, index) => {const old = dream.tasks[index]; return task.id !== old.id || task.title !== old.title || (task.training ?? old.training) !== old.training;}))) reject("委託與故事的修練內容固定，可以完成行動或另外建立自己的目標");
     const awarded = new Map(state.receipts.filter(receipt => receipt.dreamId === dream.id && receipt.kind === "step").map(receipt => [receipt.taskId, receipt.skillId as SkillId]));
     Object.assign(dream, data, {revision: data.revision + 1, tasks: normalizeTasks(data.tasks, dream.tasks, false, data.category, awarded)});
-    award(state);
+    award(state, now);
     return {dream, ...rewardState(state)};
   }
   if (path === "/api/quests" && method === "POST") {
@@ -217,8 +226,8 @@ export function createBrowserPreviewStore(storage: PreviewStorage, clock = () =>
       if (after !== before) storage.setItem(PREVIEW_STORAGE_KEY, after);
       return Response.json(data, {headers: {"Cache-Control": "no-store"}});
     } catch (error) {
-      const message = error instanceof PreviewError ? error.message : error instanceof z.ZodError ? error.issues[0]?.message ?? "請檢查輸入內容" : "此瀏覽器目前無法保存試玩紀錄，請確認網站儲存空間與權限後重試。";
-      return Response.json({error: message}, {status: error instanceof PreviewError ? error.status : error instanceof z.ZodError ? 400 : 503});
+      const message = error instanceof PreviewError || error instanceof AdventureError ? error.message : error instanceof z.ZodError ? error.issues[0]?.message ?? "請檢查輸入內容" : "此瀏覽器目前無法保存試玩紀錄，請確認網站儲存空間與權限後重試。";
+      return Response.json({error: message}, {status: error instanceof PreviewError || error instanceof AdventureError ? error.status : error instanceof z.ZodError ? 400 : 503});
     }
   };
   return {

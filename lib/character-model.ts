@@ -103,7 +103,7 @@ export const equipment: Equipment[] = [
 export const avatarColors = ["mint", "lilac", "sunset"] as const;
 export type AvatarColor = typeof avatarColors[number];
 export type CharacterState = ReturnType<typeof progression> & {
-  name: string; profession: ProfessionId; avatarColor: AvatarColor; leaderboardOptIn: boolean;
+  name: string; profession: ProfessionId; avatarColor: AvatarColor; leaderboardOptIn: boolean; title?: string;
   inventory: string[]; equipped: Record<EquipmentSlot, string | null>; equipmentBonuses: Attributes; professionBonuses: Attributes; effectiveAttributes: Attributes; advancements: Record<ProfessionId, number>; power: number;
 };
 export type RewardTotal = {skillId: SkillId | null; xp: number; skillXp: number};
