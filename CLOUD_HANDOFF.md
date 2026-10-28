@@ -1,5 +1,19 @@
 # 夢嶼 reverie — 雲端開發交接
 
+## 2026-10-28：直接操控與聲音重做
+
+最新使用者要求深入調整整體 UI／UX，不要只是按下一步，並加入配樂與音效。先讀 PLAY_EXPERIENCE_RESEARCH.md。已讀 NN/g、Microsoft XAG 103／105／107、MDN、Chrome、W3C，並檢視 XAG 中的 Grounded 音量畫面、COD Mobile 控制配置與虛構 RPG 留白示意；不是最新遊戲實機評測，沒有真人 UX／留存實驗。
+
+Vercel 瀏覽器版預設可走動晨鐘鎮，五導覽為冒險／任務／角色／裝備／成長；成長保留天賦／職業／技能。點地面尋徑、碰撞、搖桿與鍵盤並行，NPC 近距互動、微光／共鳴石環境解謎、單一當前目標，生活任務一次聚焦一個行動。九主線新增即時走位試煉，30Hz 模擬、範圍預警／閃避／職業戰技／調息／從容模式；控制批次約半秒保存，暫停排完輸入後保存。強制關頁可能退回最近保存。設定／更多／切頁／失焦暫停，舊回合存檔仍可接續，不清空舊進度。
+
+新增 lib/field-engine.ts、arena-engine.ts、game-audio.ts 與 app/explore-scene.tsx、action-arena.tsx、field-controls.tsx、field-game.css、game-sound.tsx、life-focus.tsx。原 v1 存檔只加 adventure.field／battle.arena。遊戲內操作不給生活 XP，勝利與一次性劇情獎勵仍驗證生活收據。原 Sites 認證／D1 未接新場景，也未操作正式資料。
+
+public/audio 有兩首原創無外部採樣的配樂，來源腳本 scripts/compose-soundtrack.py（僅作者工具需 numpy／ffmpeg）。聲音須明確開啟，Web Audio、探索／交戰切換、三類音量、環境／行動提示與背景暫停；不假稱有人聲或管弦錄製。四份新場景／NPC／敵人美術來源在 public/art/generation-notes-playfields.json，圖集僅轉格式，不使用競品圖片。
+
+46 項規則測試（新增 test:field 8項）、型別與改動模組 ESLint、Vercel／Sites 兩套正式 build 均通過。新瀏覽器驗證在 .sites-runtime/field-validation/browser.mjs，Next 正式 server 已以 exit0 完成：實際觸控搖桿、畫面位置／比例、尋徑、微光／三音解謎、NPC、生活修練、即時戰鬥／閃避、配樂解碼與三類音量、設定暫停、重載續接／首次獎勵、五寬度及320×640、聲音按鈕不覆蓋控制、零RPG伺服器API、無瀏覽器錯誤。手機為 Chromium 模擬，非 iOS／Android 真機。上線後仍需對原網址重做版本及互動查核。舊 island-game lint 基線仍保留，勿說全專案 lint 通過。
+
+預期 /api/version.release 為 direct-play-audio-v1。推 main 後核對原網址 SHA 才報告部署；前輪 token 對 team 的 API scope 403 仍可透過 Git 自動部署、公開版本與 GitHub commit status 完成發布，不要重複索取同一 token。雲端環境草稿／Publish 與 Vercel app 發布分開。
+
 ## 2026-10-28：晨鐘編年史擴充
 
 本輪使用者要求持續研究留存、擴充劇情與內容規模。先讀 ENGAGEMENT_RESEARCH.md；已實際查核瑪奇官方介紹（單角色全技能／生活與戰鬥並存）、Nintendo 官方頁與 Ryan 等人 2006 原論文，沒有把關聯研究當成本作留存成效。部分 guide 空殼仍未取得詳細資料，不聲稱看過那些規則。遊戲採自主路線、可理解成長與 NPC 故事，不加斷簽懲罰、倒數體力或抽獎付費。

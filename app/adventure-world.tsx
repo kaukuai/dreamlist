@@ -12,33 +12,36 @@ import {skillOf, type CharacterState} from "@/lib/character-model";
 import CharacterAvatar, {SkillIcon} from "./character-avatar";
 import {NpcPortrait} from "./quest-hub";
 import {PanelHeading} from "./rpg-ui";
+import ActionArena from "./action-arena";
+import {useGameSound} from "./game-sound";
 
 type Episode = AdventureView["episodes"][number];
-type Props = {character: CharacterState | null; progressStamp: string; onRefresh: () => Promise<unknown>; onQuest: (id: string) => void; onExit: () => void};
+type Props = {character: CharacterState | null; progressStamp: string; onRefresh: () => Promise<unknown>; onQuest: (id: string) => void; onExit: () => void; initialEpisodeId?: string; encounter?: boolean};
 const statusNames = {available: "可以啟程", active: "生活修練中", ready: "準備好試煉", cleared: "回聲已尋回", locked: "尚未開啟"};
 const regionStyle = (id: RegionId): CSSProperties => {
   const region = regions.find(region => region.id === id)!;
   return {"--region-color": region.color, backgroundPosition: `${region.art % 2 * 100}% ${Math.floor(region.art / 2) * 100}%`} as CSSProperties;
 };
 
-export default function AdventureWorld({character, progressStamp, onRefresh, onQuest, onExit}: Props) {
+export default function AdventureWorld({character, progressStamp, onRefresh, onQuest, onExit, initialEpisodeId, encounter = false}: Props) {
+  const sound = useGameSound();
   const [data, setData] = useState<AdventureView | null>(null);
   const [tab, setTab] = useState<"world" | "companions" | "forge" | "codex">("world");
   const [region, setRegion] = useState<RegionId>("morningbell");
-  const [selectedId, setSelectedId] = useState<string | null>(null);
+  const [selectedId, setSelectedId] = useState<string | null>(initialEpisodeId ?? null);
   const [scene, setScene] = useState(0);
   const [showBattle, setShowBattle] = useState(false);
   const [busy, setBusy] = useState(false), [error, setError] = useState("");
-  const lock = useRef(false), sequence = useRef(0);
+  const lock = useRef(false), sequence = useRef(0), firstLoad = useRef(true);
   const load = useCallback((signal?: AbortSignal) => {
     const version = ++sequence.current;
     return appFetch("/api/adventure", {signal}).then(async response => {
       const body = await response.json() as {adventure?: AdventureView; error?: string};
       if (!response.ok || !body.adventure) throw new Error(body.error ?? "暫時無法讀取冒險紀錄");
       return body.adventure;
-    }).then(adventure => {if (version === sequence.current) {setData(adventure);setError("");}})
+    }).then(adventure => {if (version === sequence.current) {setData(adventure);setError("");if (firstLoad.current) {firstLoad.current = false;if (encounter && adventure.battle && adventure.battle.episodeId === initialEpisodeId && adventure.battle.phase === "active") setShowBattle(true);}}})
       .catch(error => {if (!signal?.aborted && version === sequence.current) setError(error instanceof Error ? error.message : "暫時無法讀取冒險");});
-  }, []);
+  }, [encounter, initialEpisodeId]);
   useEffect(() => {const controller = new AbortController();void load(controller.signal);return () => controller.abort();}, [load, progressStamp]);
   useEffect(() => {const refresh = (event: StorageEvent) => {if (event.key === "dreamlist:browser-preview:v1") void load();};window.addEventListener("storage", refresh);return () => window.removeEventListener("storage", refresh);}, [load]);
   async function act(action: object) {
@@ -48,7 +51,7 @@ export default function AdventureWorld({character, progressStamp, onRefresh, onQ
       const response = await appFetch("/api/adventure", {method: "POST", body: JSON.stringify(action)});
       const body = await response.json() as {adventure?: AdventureView; error?: string};
       if (!response.ok || !body.adventure) {if (response.status === 409) void load();throw new Error(body.error ?? "暫時無法保存冒險");}
-      if (version === sequence.current) {setData(body.adventure);setError("");}await onRefresh();return body.adventure;
+      if (version === sequence.current) {setData(body.adventure);setError("");}if ((action as {action?: string}).action === "claimEpisode") sound.cue("win");await onRefresh();return body.adventure;
     } catch (error) {setError(error instanceof Error ? error.message : "暫時無法保存冒險");}
     finally {lock.current = false;setBusy(false);}
   }
@@ -61,7 +64,7 @@ export default function AdventureWorld({character, progressStamp, onRefresh, onQ
     if (entry) {setSelectedId(null);onQuest(entry.dreamId);}
   };
   const fight = async (episode: Episode) => {
-    const updated = await act({action: "startBattle", episodeId: episode.id});
+    const updated = await act({action: "startBattle", episodeId: episode.id, mode: "action"});
     if (updated?.battle) {toast.dismiss();setSelectedId(null);setShowBattle(true);window.scrollTo({top: 0, behavior: "instant"});}
   };
   if (!data || !character) return <main className="rpg-page adventure-page"><PanelHeading eyebrow="THE MORNINGBELL CHRONICLES" title="世界冒險"/>{error ? <div className="rpg-empty" role="alert"><p>{error}</p><button className="secondary-button" onClick={() => void load()}>重新讀取</button></div> : <div className="loading-panel" role="status"><LoaderCircle className="spin"/>正在展開世界地圖…</div>}</main>;
@@ -69,9 +72,14 @@ export default function AdventureWorld({character, progressStamp, onRefresh, onQ
   const activeRegion = data.regions.find(item => item.id === region)!;
   const next = data.episodes.find(episode => episode.kind === "main" && episode.status !== "cleared");
   const activeBattleEpisode = data.episodes.find(episode => episode.id === data.battle?.episodeId);
-  if (showBattle && data.battle) return <BattlePanel data={data} character={character} busy={busy} error={error} onAction={act} onBack={() => setShowBattle(false)} onStory={() => {setShowBattle(false);if (activeBattleEpisode) open(activeBattleEpisode);}}/>;
+  if (showBattle && data.battle) {
+    const back = () => {if (encounter) onExit();else setShowBattle(false);};
+    const story = () => {setShowBattle(false);if (activeBattleEpisode) open(activeBattleEpisode);};
+    if (data.battle.arena) return <ActionArena key={data.battle.id} data={data} character={character} error={error} onAction={act} onBack={back} onStory={story}/>;
+    return <BattlePanel data={data} character={character} busy={busy} error={error} onAction={act} onBack={back} onStory={story}/>;
+  }
 
-  return <main className="rpg-page adventure-page">
+  return <main className={"rpg-page adventure-page" + (encounter ? " encounter-mode" : "")}>
     <button className="world-back text-button" onClick={onExit}><ArrowLeft size={15}/>任務大廳</button>
     <PanelHeading eyebrow="THE MORNINGBELL CHRONICLES" title="世界冒險" aside={<span className="resource-tag"><Sparkles size={13}/>{data.balance}</span>}/>
     {error && <div className="adventure-error" role="alert">{error}</div>}
@@ -97,11 +105,11 @@ export default function AdventureWorld({character, progressStamp, onRefresh, onQ
       <section className="bestiary"><div className="rpg-block-heading"><h3>試煉見聞</h3><span>{data.episodes.filter(episode => episode.enemyId && episode.status === "cleared").length} / {enemies.length}</span></div>{data.episodes.filter(episode => episode.enemyId && episode.status === "cleared").map(episode => {const enemy = enemyOf(episode.enemyId!)!;return <article key={enemy.id}><EnemyFigure kind={enemy.kind}/><div><h4>{enemy.name}{enemy.boss && <small>守關者</small>}</h4><p>{enemy.lore}</p></div></article>;})}</section>
     </>}
     <p className="rpg-footnote">生活行動帶來角色 XP；戰鬥與故事帶來固定的首次收藏。<br/>可以暫停、休息，再沿著原來的路繼續。</p>
-    <Dialog open={Boolean(selected)} onOpenChange={open => {if (!open && !busy) setSelectedId(null);}}><DialogContent className="story-dialog" showCloseButton={false}>{selected && <>
-      <button className="story-close rpg-icon-button" aria-label="關閉故事" disabled={busy} onClick={() => setSelectedId(null)}><X size={19}/></button>
+    <Dialog open={Boolean(selected)} onOpenChange={open => {if (!open && !busy) {setSelectedId(null);if (encounter) onExit();}}}><DialogContent className="story-dialog" showCloseButton={false}>{selected && <>
+      <button className="story-close rpg-icon-button" aria-label="關閉故事" disabled={busy} onClick={() => {setSelectedId(null);if (encounter) onExit();}}><X size={19}/></button>
       <div className="story-scene" style={regionStyle(selected.region)}><span className="story-scene-shade"/>{(() => {const speaker = selected.entry ? selected.choices.find(choice => choice.id === selected.entry!.choiceId)?.npcId : selected.intro[scene].speaker;const npc = npcOf(speaker ?? "");return npc ? <NpcPortrait npc={npc}/> : null;})()}<DialogHeader><span className="eyebrow">{selected.act}・{regions.find(region => region.id === selected.region)?.name}</span><DialogTitle>{selected.title}</DialogTitle><DialogDescription>{selected.summary}</DialogDescription></DialogHeader></div>
       <div className="story-dialog-body">
-        {!selected.entry ? <><div className="story-dialogue"><small>{npcOf(selected.intro[scene].speaker)?.name ?? "旅程旁白"}<span>{scene + 1} / {selected.intro.length}</span></small><p>{selected.intro[scene].text}</p></div>{scene < selected.intro.length - 1 ? <button className="primary-button story-primary" onClick={() => setScene(value => value + 1)}>下一段對話<ArrowRight size={16}/></button> : <><h3 className="story-choice-heading">這一次，你想怎麼靠近？</h3><div className="story-choices">{selected.choices.map(choice => <button key={choice.id} disabled={busy} onClick={() => void begin(selected, choice.id)}><SkillIcon skill={choice.skill} size={21}/><span><strong>{choice.label}</strong><small>{skillOf(choice.skill)?.name}・{choice.steps.length} 個輕量行動</small></span><ChevronRight size={17}/></button>)}</div><p className="story-choice-note">選擇影響這段修練與故事回應，不會封鎖職業或後續篇章。接取不發獎。</p></>}</> : <>
+        {!selected.entry ? <>{encounter ? <div className="story-dialogue encounter-dialogue">{selected.intro.map((line, index) => <div key={index}><small>{npcOf(line.speaker)?.name ?? "旅程旁白"}</small><p>{line.text}</p></div>)}</div> : <div className="story-dialogue"><small>{npcOf(selected.intro[scene].speaker)?.name ?? "旅程旁白"}<span>{scene + 1} / {selected.intro.length}</span></small><p>{selected.intro[scene].text}</p></div>}{!encounter && scene < selected.intro.length - 1 ? <button className="primary-button story-primary" onClick={() => setScene(value => value + 1)}>下一段對話<ArrowRight size={16}/></button> : <><h3 className="story-choice-heading">這一次，你想怎麼靠近？</h3><div className="story-choices">{selected.choices.map(choice => <button key={choice.id} disabled={busy} onClick={() => void begin(selected, choice.id)}><SkillIcon skill={choice.skill} size={21}/><span><strong>{choice.label}</strong><small>{skillOf(choice.skill)?.name}・{choice.steps.length} 個輕量行動</small></span><ChevronRight size={17}/></button>)}</div><p className="story-choice-note">選擇影響這段修練與故事回應，不會封鎖職業或後續篇章。接取不發獎。</p></>}</> : <>
           <p className="chosen-path"><Compass size={14}/>{selected.choices.find(choice => choice.id === selected.entry!.choiceId)?.label}</p>
           {selected.status === "cleared" ? <><p className="story-ending">{selected.ending}</p><blockquote>{selected.memory.text}</blockquote>{selected.id === "bell-09" && <p className="story-ending personal-ending">{data.ending?.text}</p>}<div className="story-cleared"><Check size={17}/>首次回聲與獎勵已保存</div>{selected.kind === "main" && next && <button className="primary-button story-primary" onClick={() => {setRegion(next.region);open(next);}}>前往下一篇章<ArrowRight size={16}/></button>}{selected.enemyId && <button className="secondary-button story-primary" disabled={busy} onClick={() => void fight(selected)}>再度挑戰・不重複發獎<Swords size={16}/></button>}</> : <><p className="story-response">{selected.choices.find(choice => choice.id === selected.entry!.choiceId)?.response}</p><div className="story-training-progress"><span>生活修練</span><strong>{selected.completedSteps} / {selected.totalSteps}</strong><Progress value={selected.totalSteps ? selected.completedSteps / selected.totalSteps * 100 : 0} aria-label="篇章生活修練進度"/></div>{selected.status === "active" ? <button className="primary-button story-primary" onClick={() => openQuest(selected)}>繼續生活修練<ArrowRight size={17}/></button> : selected.enemyId && !(data.battle?.episodeId === selected.id && data.battle.phase === "won" && !data.battle.practice) ? <button className="primary-button story-primary" disabled={busy} onClick={() => void fight(selected)}><Swords size={18}/>{data.battle?.episodeId === selected.id && data.battle.phase === "active" ? "繼續這場試煉" : "進入回聲試煉"}</button> : <button className="primary-button story-primary" disabled={busy} onClick={() => void act({action: "claimEpisode", episodeId: selected.id})}>{busy ? <LoaderCircle size={17} className="spin"/> : <Sparkles size={17}/>}收下回聲，完成篇章</button>}<div className="story-loot"><span>故事首次完成</span><strong>{selected.reward.gold} 星露</strong><small>{Object.entries(selected.reward.materials).map(([id, amount]) => `${materials.find(material => material.id === id)?.name} ×${amount}`).join("・")}</small>{selected.reward.title && <small>稱號「{selected.reward.title}」</small>}</div></>}
           <details className="story-recap"><summary>回顧開場對話</summary>{selected.intro.map((line, index) => <p key={index}><strong>{npcOf(line.speaker)?.name ?? "旁白"}</strong>{line.text}</p>)}</details>
@@ -131,6 +139,7 @@ function BattlePanel({data, character, busy, error, onAction, onBack, onStory}: 
   const move = (move: BattleMove) => void onAction({action: "battleAction", battleId: battle.id, turn: battle.turn, move});
   return <main className="rpg-page adventure-page battle-page">
     <button className="text-button world-back" onClick={onBack}><ArrowLeft size={15}/>暫離試煉・保留戰況</button>
+    {battle.phase === "active" && <button className="secondary-button" disabled={busy} onClick={() => void onAction({action: "startBattle", episodeId: battle.episodeId, mode: "action"})}><Swords size={17}/>改用走位試煉・保留目前生命</button>}
     <PanelHeading eyebrow={battle.practice ? "PRACTICE · NO EXTRA REWARDS" : "ECHO TRIAL"} title={enemy.name} aside={<span className="battle-turn">第 {battle.turn} 回合{enemy.boss && <small>守關者</small>}</span>}/>
     {error && <div className="adventure-error" role="alert">{error}</div>}
     <section className={"battle-stage " + battle.phase} style={regionStyle(episode.region)} aria-label="回聲試煉戰場"><span className="battle-stage-shade"/><div className="battle-hero"><CharacterAvatar character={{...character, profession: battle.profession}}/></div><div className="battle-foe"><EnemyFigure kind={enemy.kind}/></div><span className="battle-vs">✦</span><div className="foe-health"><span>{enemy.name}<b>{battle.foeHp} / {battle.foeMaxHp}</b></span><Progress value={battle.foeHp / battle.foeMaxHp * 100} aria-label="對手生命"/></div></section>

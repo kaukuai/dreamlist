@@ -11,3 +11,5 @@ iPhone PWA 安裝功能目前尚未實作，需依使用者後續需求安排。
 使用者最新明確要求 Vercel 只用於檢視開發中的 app：不綁 Google、不需要跨裝置資料。這取代先前私人 Google／Turso 部署方向。閱讀 VERCEL_DEPLOYMENT.md。原 Vercel 網址 https://kaukuai-dreamlist.vercel.app/ 採免登入瀏覽器試看模式（DREAMLIST_MODE=browser，預設值），資料只存於各瀏覽器的獨立 localStorage，不上傳伺服器；介面要清楚標示，不宣稱雲端同步或提供假玩家排名。此模式公開的是 app 介面，每個瀏覽器有自己的進度，不是共享假帳號。原 Sites 認證與 D1 仍保留；未來只有在使用者要求正式雲端版時才設定 DREAMLIST_MODE=cloud 與 Google／Turso。不要再要求試看版建立那些服務。
 
 擴充第一卷《無聲晨鐘》時閱讀 ENGAGEMENT_RESEARCH.md、lib/adventure-catalog.ts 和 adventure-model.ts。保留既有 localStorage 鍵與成長，只加法初始化 adventure；完整篇章與固定首次獎勵不能重複領取。用生活行動賺角色 XP，戰鬥不提供無限灌 XP；玩家可以自由休息，不能為留存加上斷簽扣分、錯過就消失的收藏或虛假玩家。當前四區是節點地圖，回合戰鬥只在瀏覽器試看版，勿宣稱已具備開放世界／多人或已證明留存提升。
+
+使用者最新回饋是遊玩像只按下一步、缺少直接操控及沉浸，並要求配樂／音效。接續先讀 PLAY_EXPERIENCE_RESEARCH.md。瀏覽器版預設可探索晨鐘鎮，主入口為冒險／任務／角色／裝備／成長；成長包含原天賦／職業／技能，這取代上方舊五入口方向。新主線試煉有走位、閃避及預警，舊回合存檔仍保留。音訊須先明確開啟，音樂／音效／環境聲獨立控制，關閉聲音也能遊玩；開設定或離開視窗需暫停戰鬥。不要把按鈕減少、合成音樂或模擬尺寸檢查說成已完成真人 UX／真機聽感評測。新增 test:field，保存採加法；原 Sites 尚未連上新場景與即時戰鬥。

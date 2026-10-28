@@ -1,0 +1,49 @@
+{
+  "created": "2026-10-28",
+  "tool": "image_gen",
+  "direction": "Original mature fantasy overhead playable town and forest arena; no existing game locations, no copied characters, no UI in the art.",
+  "files": [
+    {
+      "source": "exec-39bbc513-a8f5-4218-b14f-310388e18d0d.png",
+      "output": "morningbell-playfield.webp",
+      "width": 1536,
+      "height": 1024
+    },
+    {
+      "source": "exec-2f508c95-73d9-4739-9ea6-31626ae1daf0.png",
+      "output": "echo-playfield.webp",
+      "format": "webp",
+      "width": 1024,
+      "height": 1536,
+      "channels": 3,
+      "premultiplied": false,
+      "hasAlpha": false,
+      "size": 526342
+    },
+    {
+      "source": "exec-e9fb828c-edbb-423d-8509-03ea33c0ec7d.png",
+      "reference": "npc-townsfolk-atlas.webp",
+      "output": "npc-field-atlas.webp",
+      "layout": "3 columns, 2 rows; eira, lorne, selene, mira, ori, lucien",
+      "format": "webp",
+      "width": 1536,
+      "height": 1024,
+      "channels": 4,
+      "premultiplied": false,
+      "hasAlpha": true,
+      "size": 347102
+    },
+    {
+      "source": "exec-55bf3130-3dbc-4874-afe8-ff158d3700c8.png",
+      "output": "echo-creatures-atlas.webp",
+      "layout": "3 columns, 2 rows; wisp, thorn, guardian, eye, knight, crown",
+      "format": "webp",
+      "width": 1536,
+      "height": 1024,
+      "channels": 4,
+      "premultiplied": false,
+      "hasAlpha": true,
+      "size": 731600
+    }
+  ]
+}

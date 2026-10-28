@@ -26,7 +26,7 @@
 
 `DREAMLIST_MODE` 未設定時也預設為 browser。不需要 `NEXTAUTH_URL`、`NEXTAUTH_SECRET`、`DREAMLIST_OWNER_EMAIL`、Google 或 Turso 變數。build 不會因缺少那些憑證而失敗，也不會連線或遷移雲端資料庫。
 
-更新 `main` 後在原專案部署 Production，確認 alias 仍為原網址。`/api/version` 應回傳 `mode: browser`、`release: morningbell-chronicles-v1` 與最新 commit。原專案需維持 `autoAssignCustomDomains=true`，否則成功的 Production build 也可能停在待指定網域狀態。由於這是瀏覽器試看版，API 的雲端角色／任務端點仍拒絕未登入請求；頁面操作透過瀏覽器保存實作，不使用公開假帳號。
+更新 `main` 後在原專案部署 Production，確認 alias 仍為原網址。`/api/version` 應回傳 `mode: browser`、`release: direct-play-audio-v1` 與最新 commit。原專案需維持 `autoAssignCustomDomains=true`，否則成功的 Production build 也可能停在待指定網域狀態。由於這是瀏覽器試看版，API 的雲端角色／任務端點仍拒絕未登入請求；頁面操作透過瀏覽器保存實作，不使用公開假帳號。
 
 第一卷《無聲晨鐘》的主線、支線、戰況、材料與收藏加在同一份瀏覽器存檔，舊進度不需重建。從任務大廳「展開冒險」進入。
 
@@ -38,6 +38,7 @@ Vercel 的 Preview 與 Production 是不同網址，因此瀏覽器試玩進度�
 npm run test:preview
 npm run test:vercel
 npm run test:adventure
+npm run test:field
 VERCEL=1 npm run build:vercel
 npm run start:vercel -- --hostname 127.0.0.1
 ```

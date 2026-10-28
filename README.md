@@ -6,9 +6,11 @@ Vercel 原專案 `kaukuai-dreamlist.vercel.app` 現在以**免登入試看版**�
 
 ## 目前可以玩
 
+瀏覽器版目前直接從可走動的晨鐘鎮開始：點地面、搖桿或鍵盤移動，靠近六位 NPC 交談，敲響共鳴石、選故事修練，再親自走位、閃避並使用職業戰技完成試煉。生活行動一次只呈現當前一步，可以放下手機實際去做。原創探索／戰鬥配樂與行動／環境聲需自行開啟，三類音量可獨立調整。玩法研究、來源與原型界線見 [PLAY_EXPERIENCE_RESEARCH.md](PLAY_EXPERIENCE_RESEARCH.md)。
+
 Vercel 試看版新增第一卷《無聲晨鐘》：4 個區域、9 段主線、6 篇夥伴故事、各篇兩條生活修練路線、9 個回合試煉對手、3 種刻印製作、15 頁回聲與 3 個稱號。從任務大廳的「展開冒險」進入；舊瀏覽器存檔會保留後加上冒險進度。設計研究與限制見 [ENGAGEMENT_RESEARCH.md](ENGAGEMENT_RESEARCH.md)。
 
-- 手機直式介面，底部五個入口：任務、角色、裝備、天賦、職業。小島移到「更多 → 營地與小島」。
+- 手機直式介面，瀏覽器版底部入口：冒險、任務、角色、裝備、成長；成長內有天賦、職業與技能。原 Sites 五個養成入口保留，小島仍在更多選單。
 - 原創韓漫線條與日系冒險賽璐璐風格的成人職業立繪，保留武器、護甲辨識；進化後切換進階立繪。
 - 每日抽出 3 份 1～3 分鐘的輕量委託，台北時間 04:00 更新；選項保存、重新整理不重抽，接下後跨日保留。活動任務提供坐姿替代。
 - 晨鐘鎮的 6 位原創 NPC、對話與各自的初識修練（約 2～4 分鐘），不用先建立個人目標也能升級與解鎖職業。
@@ -19,7 +21,7 @@ Vercel 試看版新增第一卷《無聲晨鐘》：4 個區域、9 段主線、
 - 可命名的角色、三種靈魂光暈、自願加入的成長排行榜；不公開生活任務內容，也沒有假玩家。
 - D1 持續保存、依登入身分隔離、版本衝突保護；原有目標、小島建設、星露和首次完成收據延續。
 
-目前有角色養成與瀏覽器版回合試煉；綜合戰力仍是屬性評級，實際試煉使用出戰能力、職業戰技與預告意圖。職業立繪會隨轉職與進化改變，裝備尚未逐件疊到立繪上。完整規則及後續路線見 [GAME_DESIGN.md](GAME_DESIGN.md)，競品查核進度見 [RPG_REFERENCES.md](RPG_REFERENCES.md)。
+目前有角色養成、可探索的晨鐘鎮與瀏覽器版即時走位試煉；舊回合戰況仍能接續。綜合戰力是屬性評級，試煉使用出戰能力、職業戰技與範圍預警。角色有立繪式動態，尚無逐方向骨骼動畫或逐件換裝。完整規則及後續路線見 [GAME_DESIGN.md](GAME_DESIGN.md)，競品查核進度見 [RPG_REFERENCES.md](RPG_REFERENCES.md)。
 
 ## 快速試玩
 
@@ -71,6 +73,8 @@ npm run build
 
 ## 主要原始碼
 
+- `app/explore-scene.tsx`／`field-game.css`：場景操作與遊戲 HUD；`app/action-arena.tsx`／`lib/arena-engine.ts`：30 Hz 走位試煉與可重演的輸入批次；`lib/field-engine.ts`：尋徑、碰撞與世界互動；`app/life-focus.tsx`：聚焦生活行動。
+- `app/game-sound.tsx`／`lib/game-audio.ts`：自願開啟的 Web Audio、三類音量、場景配樂與音效；`public/audio/credits.json`：原創來源。`npm run test:field` 驗證新的操作規則。
 - `lib/adventure-catalog.ts`／`lib/adventure-model.ts`：世界、故事、戰鬥、刻印與回聲規則；`app/adventure-world.tsx`／`app/adventure.css`：冒險介面。`npm run test:adventure` 驗證完整第一卷與舊存檔延續。
 - `app/quest-board.tsx`：任務頁；`app/quest-hub.tsx`／`app/quest-hub.css`：每日委託與 NPC 對話；`app/character-journey.tsx`：角色、裝備、技能、設定與排行榜。
 - `app/class-progression.tsx`：職業進化、天賦樹；`app/rpg-ui.tsx`、`app/character-avatar.tsx`：裝備欄及立繪；`app/mobile-rpg.css`：手機 RPG 視覺。

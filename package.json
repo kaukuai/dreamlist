@@ -21,7 +21,8 @@
     "db:migrate:vercel": "node --experimental-strip-types scripts/migrate-vercel.mjs",
     "test:vercel": "node --experimental-strip-types --test tests/vercel-runtime.test.mjs",
     "test:preview": "node --experimental-strip-types --test tests/browser-preview.test.mjs",
-    "test:adventure": "node --experimental-strip-types --test tests/adventure.test.mjs"
+    "test:adventure": "node --experimental-strip-types --test tests/adventure.test.mjs",
+    "test:field": "node --experimental-strip-types --test tests/field-game.test.mjs"
   },
   "dependencies": {
     "@base-ui/react": "^1.7.0",

@@ -1,0 +1,29 @@
+{
+  "created": "2026-10-28",
+  "authorship": "Original Dreamlist procedural composition; no third-party recordings, samples or melodies.",
+  "source": "scripts/compose-soundtrack.py",
+  "instruments": [
+    "synthesized plucked strings",
+    "breathy sine flute",
+    "soft harmonic pads",
+    "synthesized frame drums"
+  ],
+  "tracks": [
+    {
+      "file": "morningbell-town.mp3",
+      "tempo": 80,
+      "duration": 48.0,
+      "peak": 0.76,
+      "rms": 0.18728235745442642,
+      "bytes": 673388
+    },
+    {
+      "file": "echo-trial.mp3",
+      "tempo": 108,
+      "duration": 35.55555555555556,
+      "peak": 0.76,
+      "rms": 0.15356774919537194,
+      "bytes": 499004
+    }
+  ]
+}

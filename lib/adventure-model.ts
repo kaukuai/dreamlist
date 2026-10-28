@@ -3,17 +3,21 @@ import type {CharacterState, ProfessionId} from "./character-model.ts";
 import type {Dream} from "./dream-model.ts";
 import {npcs, questCategory, type NpcId} from "./quest-model.ts";
 import {enemyOf, enemyPatterns, episodeOf, mainEpisodes, materials, regions, runes, storyEpisodes, type MaterialId, type RuneId, type StoryEpisode} from "./adventure-catalog.ts";
+import {createArena, stepArena, type ArenaState} from "./arena-engine.ts";
+import {initialField, touchField, walkable, type FieldProgress} from "./field-engine.ts";
 
 export type BattleMove = "strike" | "skill" | "guard" | "mend";
 export type Battle = {
   id: string; episodeId: string; enemyId: string; phase: "active" | "won" | "lost";
   turn: number; hp: number; maxHp: number; foeHp: number; foeMaxHp: number; focus: number;
   attack: number; armor: number; healing: number; profession: ProfessionId; runeId: RuneId | null; practice: boolean; log: string[];
+  arena?: ArenaState;
 };
 export type AdventureState = {
   version: 1; entries: Record<string, {dreamId: string; choiceId: string; claimedAt?: string}>;
   materials: Record<MaterialId, number>; runes: RuneId[]; equippedRune: RuneId | null;
   goldEarned: number; goldSpent: number; weeklyTarget: number; equippedTitle: string | null; battle: Battle | null;
+  field: FieldProgress;
 };
 export type LifeReceipt = {dreamId: string; taskId: string; kind: "step" | "dream"; createdAt?: string};
 export type AdventureContext = {dreams: (Dream & {deleted?: boolean})[]; receipts: LifeReceipt[]; player: CharacterState; balance: number; now: Date};
@@ -24,11 +28,13 @@ export class AdventureError extends Error {
 function requireThat(condition: unknown, message: string, status = 400): asserts condition {if (!condition) throw new AdventureError(message, status);}
 
 export function initialAdventure(): AdventureState {
-  return {version: 1, entries: {}, materials: {ember: 0, fiber: 0, ink: 0}, runes: [], equippedRune: null, goldEarned: 0, goldSpent: 0, weeklyTarget: 2, equippedTitle: null, battle: null};
+  return {version: 1, entries: {}, materials: {ember: 0, fiber: 0, ink: 0}, runes: [], equippedRune: null, goldEarned: 0, goldSpent: 0, weeklyTarget: 2, equippedTitle: null, battle: null, field: initialField()};
 }
 export function validateAdventure(value: AdventureState) {
   requireThat(value.version === 1 && value.entries && value.materials && Array.isArray(value.runes) &&
     Number.isFinite(value.goldEarned) && Number.isFinite(value.goldSpent) && [2, 4, 6].includes(value.weeklyTarget), "冒險紀錄版本暫時無法讀取，原紀錄已保留", 503);
+  value.field ??= initialField();
+  requireThat(Array.isArray(value.field.discovered) && Array.isArray(value.field.bellSequence) && Number.isFinite(value.field.x) && Number.isFinite(value.field.y), "場景紀錄暫時無法讀取，原紀錄已保留", 503);
   return value;
 }
 const hasCompleted = (context: AdventureContext, dreamId: string) => context.receipts.some(receipt => receipt.dreamId === dreamId && receipt.kind === "dream");
@@ -77,6 +83,7 @@ export function startBattle(episode: StoryEpisode, state: AdventureState, contex
 }
 
 export function takeBattleTurn(battle: Battle, move: BattleMove, expectedTurn: number) {
+  requireThat(!battle.arena, "這場試煉使用走位操作，請返回戰場", 409);
   requireThat(battle.phase === "active" && battle.turn === expectedTurn, "戰況已更新，請依目前回合操作", 409);
   const intent = battleIntent(battle), events: string[] = [];
   const skill = professionMoves[battle.profession];
@@ -135,7 +142,7 @@ export function adventureView(state: AdventureState, context: AdventureContext) 
     companions: npcs.map(npc => {const points = companionPoints(state, context, npc.id);return {...npc, points, bond: points >= 9 ? "同行" : points >= 5 ? "信賴" : points >= 2 ? "相識" : "初遇"};}),
     memories: episodes.filter(episode => episode.status === "cleared").map(episode => ({id: episode.id, ...episode.memory, ending: episode.ending, npcId: episode.choices.find(choice => choice.id === episode.entry?.choiceId)?.npcId})),
     titles: unlockedTitles(state), equippedTitle: state.equippedTitle, battle: state.battle ? {...state.battle, intent: battleIntent(state.battle)} : null,
-    rhythm: rhythm(context, state.weeklyTarget), balance: context.balance,
+    rhythm: rhythm(context, state.weeklyTarget), balance: context.balance, field: state.field,
     ending: cleared === mainEpisodes.length ? endingReflection(state) : null,
   };
 }
@@ -149,7 +156,7 @@ function endingReflection(state: AdventureState) {
 
 const actionSchema = z.discriminatedUnion("action", [
   z.object({action: z.literal("beginEpisode"), episodeId: z.string(), choiceId: z.string()}).strict(),
-  z.object({action: z.literal("startBattle"), episodeId: z.string()}).strict(),
+  z.object({action: z.literal("startBattle"), episodeId: z.string(), mode: z.literal("action").optional()}).strict(),
   z.object({action: z.literal("battleAction"), battleId: z.string(), turn: z.number().int().min(1), move: z.enum(["strike", "skill", "guard", "mend"])}).strict(),
   z.object({action: z.literal("retreatBattle"), battleId: z.string()}).strict(),
   z.object({action: z.literal("claimEpisode"), episodeId: z.string()}).strict(),
@@ -157,6 +164,10 @@ const actionSchema = z.discriminatedUnion("action", [
   z.object({action: z.literal("equipRune"), runeId: z.string().nullable()}).strict(),
   z.object({action: z.literal("equipTitle"), title: z.string().nullable()}).strict(),
   z.object({action: z.literal("setRhythm"), target: z.union([z.literal(2), z.literal(4), z.literal(6)])}).strict(),
+  z.object({action: z.literal("saveField"), x: z.number().finite(), y: z.number().finite()}).strict(),
+  z.object({action: z.literal("fieldInteract"), placeId: z.string(), x: z.number().finite(), y: z.number().finite()}).strict(),
+  z.object({action: z.literal("arenaAdvance"), battleId: z.string(), fromTick: z.number().int().min(0), frames: z.array(z.object({x: z.number().min(-1).max(1), y: z.number().min(-1).max(1), attack: z.boolean(), dash: z.boolean(), skill: z.boolean(), mend: z.boolean()}).strict()).min(1).max(45)}).strict(),
+  z.object({action: z.literal("arenaAssist"), battleId: z.string(), fromTick: z.number().int().min(0), enabled: z.boolean()}).strict(),
 ]);
 export function adventureAction(state: AdventureState, input: unknown, context: AdventureContext) {
   const data = actionSchema.parse(input);
@@ -173,9 +184,14 @@ export function adventureAction(state: AdventureState, input: unknown, context: 
   } else if (data.action === "startBattle") {
     const episode = episodeOf(data.episodeId);requireThat(episode, "找不到這個篇章");
     const entry = state.entries[episode.id];requireThat(entry && hasCompleted(context, entry.dreamId), "完成這個篇章的生活修練，再進入試煉");
-    if (state.battle?.phase === "active") {requireThat(state.battle.episodeId === episode.id, "先完成目前的試煉，或返回目前戰況", 409);return;}
+    if (state.battle?.phase === "active") {
+      requireThat(state.battle.episodeId === episode.id, "先完成目前的試煉，或返回目前戰況", 409);
+      if (data.mode === "action" && !state.battle.arena) state.battle.arena = createArena(state.battle, enemyOf(state.battle.enemyId)!.attack);
+      return;
+    }
     if (state.battle?.phase === "won" && state.battle.episodeId === episode.id && !entry.claimedAt) return;
     state.battle = startBattle(episode, state, context);
+    if (data.mode === "action") state.battle.arena = createArena(state.battle, enemyOf(state.battle.enemyId)!.attack);
   } else if (data.action === "battleAction") {
     requireThat(state.battle && state.battle.id === data.battleId, "戰況已更新，請重新查看", 409);
     takeBattleTurn(state.battle, data.move, data.turn);
@@ -203,5 +219,21 @@ export function adventureAction(state: AdventureState, input: unknown, context: 
   } else if (data.action === "equipTitle") {
     requireThat(data.title === null || unlockedTitles(state).includes(data.title), "這個稱號尚未解鎖");
     state.equippedTitle = data.title;
+  } else if (data.action === "saveField") {
+    requireThat(walkable(data), "這裡不是可行走的道路");state.field.x = data.x;state.field.y = data.y;
+  } else if (data.action === "fieldInteract") {
+    try {touchField(state.field, data.placeId, data);} catch (error) {throw new AdventureError(error instanceof Error ? error.message : "先靠近互動目標");}
+  } else if (data.action === "arenaAdvance" || data.action === "arenaAssist") {
+    const battle = state.battle;
+    requireThat(battle?.id === data.battleId && battle.arena && battle.arena.tick === data.fromTick, "戰況已在另一個視窗更新，請重新接續", 409);
+    if (data.action === "arenaAssist") battle.arena.assist = data.enabled;
+    else {
+      requireThat(battle.phase === "active", "這場試煉已結束，請返回篇章", 409);
+      for (const frame of data.frames) stepArena(battle.arena, frame);
+      battle.hp = battle.arena.hp;battle.foeHp = battle.arena.enemyHp;battle.foeMaxHp = battle.arena.enemyMaxHp;
+      battle.focus = battle.arena.focus;battle.phase = battle.arena.phase;
+      if (battle.phase === "won") battle.log.push("你透過觀察、走位與職業戰技，尋回了這段回聲。");
+      if (battle.phase === "lost") battle.log.push("你退回安全的地方。所有生活成長與收藏都保留。");
+    }
   } else state.weeklyTarget = data.target;
 }

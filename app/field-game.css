@@ -1,0 +1,217 @@
+/* Direct play: the world is the primary surface; menus remain secondary. */
+.rpg-shell {--scene-top:102px;--scene-bottom:86px;}
+.scene-shell {--scene-top:88px;--scene-bottom:78px; height:100dvh;min-height:0;padding:0;overflow:hidden;background:#111e22;}
+.scene-shell>.game-header {height:calc(62px + env(safe-area-inset-top,0px));padding-top:env(safe-area-inset-top,0px);background:#101b23f2;}
+.scene-shell>.preview-mode-note {position:fixed;top:calc(62px + env(safe-area-inset-top,0px));left:0;right:0;height:26px;z-index:39;padding:3px 12px;font-size:10px;background:#14252de8;}
+.scene-shell>.game-nav {bottom:0;left:0;right:0;transform:none;width:100%;height:calc(78px + env(safe-area-inset-bottom,0px));padding:0 max(10px,calc((100vw - 650px)/2)) env(safe-area-inset-bottom,0px);border-radius:0;border-bottom:0;background:#101c25f5;}
+.scene-shell>.game-nav button {font-size:11px;gap:5px;}
+.rpg-shell .game-header-actions {gap:9px;}
+.sound-dialog [data-slot=dialog-title],.field-help-dialog [data-slot=dialog-title],.field-map-dialog [data-slot=dialog-title],.bell-dialog [data-slot=dialog-title] {font-family:"Songti TC","Noto Serif TC",serif;font-size:24px;color:#eddfc0;line-height:1.5;}
+.sound-dialog {width:min(440px,calc(100vw - 28px));padding:28px;background:linear-gradient(150deg,#253b43,#15222e);border:1px solid #a18c614d;gap:18px;}
+.sound-dialog [data-slot=dialog-description] {font-size:13px;line-height:1.9;color:#b7c6ca;}
+.sound-dialog>.primary-button {justify-content:center;min-height:48px;}
+.sound-slider {display:block;color:#ddd8ca;font-size:13px;}
+.sound-slider>span {display:flex;align-items:center;justify-content:space-between;}
+.sound-slider output {font-size:12px;color:#cbb682;}
+.sound-slider input {width:100%;height:44px;accent-color:#d4b77b;cursor:pointer;}
+.growth-navigation {display:flex;width:min(100% - 36px,712px);margin:20px auto 0;border-bottom:1px solid #bdab8038;}
+.growth-navigation button {flex:1;background:transparent;border:0;color:#a9b7c1;min-height:48px;font-size:13px;}
+.growth-navigation button[aria-pressed=true] {color:#e5cb92;border-bottom:2px solid #d6b778;}
+.town-experience,.scene-loading {position:fixed;inset:calc(var(--scene-top,88px) + env(safe-area-inset-top,0px)) 0 calc(var(--scene-bottom,78px) + env(safe-area-inset-bottom,0px));overflow:hidden;isolation:isolate;background:#192d30;}
+.scene-loading {display:flex;flex-direction:column;align-items:center;justify-content:center;gap:15px;background:radial-gradient(ellipse,#31463f,#14232c);color:#cbb78b;}
+.scene-loading h1 {font:24px "Songti TC",serif;letter-spacing:3px;color:#f0e1c2;}
+.scene-loading p {font-size:12px;color:#a6bdb7;}
+.town-viewport {position:absolute;inset:0;overflow:hidden;touch-action:none;outline-offset:-4px;}
+.town-world {position:absolute;left:0;top:0;transform-origin:0 0;will-change:transform;}
+.town-ground {position:absolute;inset:0;background:url(/art/morningbell-playfield.webp) center/100% 100% no-repeat;}
+.town-vignette {position:absolute;inset:0;pointer-events:none;box-shadow:inset 0 90px 70px -55px #0a182aaa,inset 0 -95px 70px -50px #101e2bc4;z-index:2;}
+.tower-light {position:absolute;top:120px;left:505px;width:210px;height:250px;background:radial-gradient(ellipse,#ffe4a066,transparent 65%);filter:blur(7px);mix-blend-mode:screen;pointer-events:none;}
+.world-place {position:absolute;transform:translate(-50%,-100%);width:74px;height:100px;border:0;background:none;padding:0;display:grid;place-items:end center;touch-action:none;}
+.world-place .character-avatar.profession-art,.field-player .character-avatar.profession-art {position:relative;display:block;inset:auto;width:72px;height:96px;aspect-ratio:3/4;background-size:400% 200%;mask-image:none;filter:drop-shadow(0 4px 3px #172626a8);margin:0;}
+.npc-ground-shadow {position:absolute;bottom:-1px;width:49px;height:15px;border-radius:50%;background:#15202555;filter:blur(2px);}
+.field-npc-sprite {display:block;width:108px;height:108px;background:url(/art/npc-field-atlas.webp) no-repeat;background-size:300% 200%;filter:drop-shadow(0 3px 3px #152a2580);pointer-events:none;}
+.world-place .place-label {position:absolute;top:-17px;left:50%;transform:translateX(-50%);display:flex;gap:5px;align-items:center;white-space:nowrap;font:600 12px/1.5 var(--game-font);color:#f7edce;text-shadow:0 1px 3px #000,0 0 8px #000;padding:2px 7px;border-radius:3px;background:#14222a77;}
+.world-place.tracked .place-label {background:#293e3cce;color:#ffe09d;border:1px solid #d7b66870;}
+.world-place .place-label b {color:#eac37d;font:700 17px/1 var(--game-font);}
+.world-place.nearby .place-label {box-shadow:0 0 14px #f4d89955;}
+.world-place.echo {width:54px;height:52px;}
+.world-place.echo .place-label {top:55px;color:#d7f7ed;font-size:10px;}
+.world-place.echo .place-object {width:42px;height:42px;border-radius:50%;background:radial-gradient(circle,#d5ffe9b0,#b0ffe326,transparent 70%);filter:drop-shadow(0 0 12px #bdfff1);color:#edfff3;animation:echo-hover 2.7s ease-in-out infinite;}
+.world-place.bell {height:52px;width:56px;}
+.world-place.bell .place-object {display:grid;place-items:center;width:38px;height:43px;border-radius:18px 18px 6px 6px;background:linear-gradient(120deg,#647d83,#263e4b);border:2px solid #bac7b6;box-shadow:0 6px 5px #15212577,inset 0 0 12px #e3cda155;color:#ecdaa5;}
+.world-place.bell .place-label {top:-20px;font-size:10px;}
+.world-place.portal {width:82px;height:110px;}
+.world-place.portal .place-object {display:grid;place-items:center;width:65px;height:95px;border-radius:50% 50% 15% 15%;border:3px solid #a9e3d98c;box-shadow:0 0 24px #abebdf77,inset 0 0 22px #a5f4de55;color:#d9fff0;background:radial-gradient(ellipse,#84dadb4d,#102f354f);animation:portal-breathe 3s ease-in-out infinite;}
+.field-player {position:absolute;transform:translate(-50%,-100%);height:104px;width:78px;pointer-events:none;display:grid;place-items:end center;}
+.field-player .character-avatar.profession-art {width:78px;height:104px;transform:scaleX(var(--facing,1));filter:drop-shadow(0 4px 5px #0007) drop-shadow(0 0 8px #bce9eb44);}
+.field-player>span:last-child {position:absolute;bottom:-23px;left:50%;transform:translateX(-50%);white-space:nowrap;font-size:10px;font-weight:600;color:#eafff4;background:#183237b8;padding:1px 7px;border-radius:3px;text-shadow:0 1px 2px #000;}
+.player-ground-ring {position:absolute;width:56px;height:18px;bottom:-3px;left:50%;transform:translateX(-50%);border:1px solid #daefcc9e;border-radius:50%;background:#c9f2d01a;box-shadow:0 0 9px #c9f2d088;}
+.field-player.is-walking .character-avatar {animation:field-walk .32s linear infinite;}
+.field-destination {position:absolute;width:25px;height:11px;border:1px solid #f4e2a4;border-radius:50%;transform:translate(-50%,-50%);box-shadow:0 0 15px #f4e2a4a6;z-index:790;pointer-events:none;}
+.field-fireflies {position:absolute;inset:0;pointer-events:none;z-index:800;}
+.field-fireflies i {position:absolute;width:3px;height:3px;background:#ecffd8;border-radius:50%;box-shadow:0 0 9px #e5f7a4;animation:field-firefly 5s ease-in-out infinite;}
+.scene-character-hud {position:absolute;top:17px;left:18px;z-index:4;display:flex;align-items:center;gap:15px;pointer-events:none;}
+.scene-character-hud>button {display:flex;align-items:center;gap:8px;pointer-events:auto;background:linear-gradient(100deg,#14232ee8,#14232e8c);padding:7px 13px 7px 5px;border:1px solid #b4c8b333;border-radius:4px;box-shadow:0 3px 16px #0003;text-align:left;color:#f0e8d0;}
+.scene-character-hud .character-avatar.profession-art {width:34px;height:45px;aspect-ratio:3/4;filter:none;}
+.scene-character-hud button>span:last-child {display:block;min-width:117px;}
+.scene-character-hud strong {font-size:13px;display:block;letter-spacing:.03em;}
+.scene-character-hud small {font-size:10px;display:block;color:#d1cab2;margin-top:3px;}
+.scene-character-hud i {display:block;width:110px;height:3px;background:#e3ecea22;margin-top:7px;border-radius:2px;overflow:hidden;}
+.scene-character-hud b {display:block;height:100%;background:#d5c07f;}
+.scene-location {font:18px "Songti TC",serif;color:#f6e8c7;text-shadow:0 2px 4px #000b;letter-spacing:2px;display:none;}
+.scene-location small {font:10px var(--game-font);letter-spacing:3px;display:block;margin-top:5px;}
+.scene-tools {position:absolute;right:16px;top:17px;z-index:4;display:flex;flex-direction:column;gap:8px;}
+.scene-tools>button {display:grid;place-items:center;width:43px;height:43px;border-radius:50%;background:#14252fc9;backdrop-filter:blur(7px);border:1px solid #becaba61;color:#e8dec0;box-shadow:0 2px 8px #0004;}
+.scene-objective {position:absolute;top:97px;left:18px;z-index:4;width:min(282px,calc(100% - 90px));display:flex;align-items:center;gap:9px;border:0;border-left:2px solid #d4b778;padding:10px 10px 10px 8px;background:linear-gradient(90deg,#142430e8,#142430b2 78%,#14243028);text-align:left;color:#ede4cb;border-radius:0 3px 3px 0;}
+.objective-gem {color:#e2c188;font-size:26px;flex-shrink:0;}
+.scene-objective>span:nth-child(2) {min-width:0;}
+.scene-objective small {font-size:9px;display:block;color:#c7b486;}
+.scene-objective strong {display:block;font-size:13px;line-height:1.6;font-weight:500;}
+.scene-objective em {font-size:10px;line-height:1.6;font-style:normal;color:#b9cdc9;display:block;margin-top:3px;}
+.objective-distance {margin-left:auto;align-self:center;font-size:10px;color:#cbd7bc;display:flex;flex-direction:column;align-items:center;gap:4px;flex-shrink:0;}
+.scene-resume {position:absolute;left:18px;top:199px;z-index:4;display:flex;align-items:center;gap:6px;font-size:11px;color:#efd495;background:#273e3af0;border:1px solid #b9b67a6b;border-radius:4px;padding:9px 11px;min-height:44px;}
+.scene-controls {position:absolute;bottom:54px;left:20px;right:20px;z-index:5;display:flex;align-items:flex-end;justify-content:space-between;gap:12px;pointer-events:none;}
+.movement-pad {position:relative;flex-shrink:0;pointer-events:auto;}
+.movement-stick {width:108px;height:108px;border-radius:50%;background:radial-gradient(circle,#c4d7d519,#10202e33 65%,#e1e4cb26 66%,#263f493d 68%);border:1px solid #e3e0b840;box-shadow:inset 0 2px 12px #0002,0 3px 10px #14202444;touch-action:none;position:relative;display:grid;place-items:center;user-select:none;}
+.stick-thumb {position:absolute;width:46px;height:46px;border-radius:50%;border:1px solid #e0dfb97d;background:radial-gradient(circle at 35% 28%,#b7c7bb9e,#496b708c 70%);box-shadow:0 3px 12px #14262c50;pointer-events:none;}
+.stick-guides {font-size:95px;line-height:1;font-weight:100;color:#c8d4bc34;pointer-events:none;}
+.movement-digital {position:absolute;inset:auto 0 -22px;display:flex;gap:0;justify-content:center;opacity:0;pointer-events:none;}
+.movement-digital:focus-within {opacity:1;pointer-events:auto;}
+.movement-digital button {display:grid;place-items:center;background:#1e3543;color:#e5dfc6;border:1px solid #abc6c277;min-width:35px;height:30px;border-radius:2px;}
+.scene-interaction {display:flex;flex-direction:column;align-items:center;gap:7px;pointer-events:auto;max-width:170px;}
+.scene-interaction>span {font-size:10px;color:#f1e6c8;text-shadow:0 1px 4px #000b;}
+.scene-interaction>button {min-width:151px;min-height:64px;display:flex;align-items:center;justify-content:center;gap:8px;background:linear-gradient(125deg,#1e333fe8,#122531db);border:1px solid #b8c8bd59;color:#c3d1ca;border-radius:5px;box-shadow:0 3px 14px #0003;backdrop-filter:blur(6px);padding:10px 12px;}
+.scene-interaction>button.can-interact {background:linear-gradient(120deg,#d8c28e,#b4a071);color:#15282b;border-color:#ede1ba;box-shadow:0 0 24px #edd59e33,0 4px 15px #0004;}
+.scene-interaction strong {font-size:12px;font-weight:600;}
+.scene-interaction small {border:1px solid currentColor;font-size:9px;width:17px;height:17px;display:grid;place-items:center;opacity:.6;}
+.scene-enable-audio {position:absolute;left:50%;bottom:14px;transform:translateX(-50%);display:flex;align-items:center;gap:5px;z-index:5;min-height:34px;font-size:10px;white-space:nowrap;background:#10232bdd;color:#ecdcac;border:1px solid #d0c19054;border-radius:20px;padding:6px 12px;}
+.scene-first-hint {position:absolute;left:50%;transform:translateX(-50%);bottom:155px;z-index:3;white-space:nowrap;font-size:11px;color:#fcf3da;text-shadow:0 2px 4px #000,0 0 14px #13282d;background:#15312b61;padding:5px 10px;border-radius:3px;pointer-events:none;}
+.scene-notice,.scene-error {position:absolute;left:50%;top:47%;transform:translate(-50%,-50%);z-index:8;width:min(340px,calc(100% - 38px));display:flex;align-items:center;gap:12px;padding:18px;background:linear-gradient(120deg,#203d3aee,#1a2c39f5);border:1px solid #b4c18e70;box-shadow:0 5px 25px #0005;border-radius:5px;color:#efe3bd;font-size:13px;line-height:1.8;pointer-events:none;}
+.scene-notice svg {flex-shrink:0;}
+.scene-error {top:230px;background:#3a2927ee;color:#f3c8bd;pointer-events:auto;}
+.field-npc-dialog {padding:0;overflow:hidden;background:linear-gradient(135deg,#233e43,#15232e);border-color:#ab98714d;gap:0;max-width:480px;width:calc(100vw - 28px);max-height:calc(100dvh - 30px);overflow-y:auto;}
+.field-npc-scene {position:relative;height:172px;background:linear-gradient(90deg,#19313455,#19313411),url(/art/morningbell-playfield.webp) center 44%/210% auto;border-bottom:1px solid #c9b88238;}
+.field-npc-scene .npc-portrait {position:absolute;width:160px;height:205px;bottom:0;right:20px;}
+.field-npc-scene>span {position:absolute;bottom:17px;left:23px;color:#efdec0;font-size:11px;text-shadow:0 1px 4px #000;}
+.field-npc-dialog [data-slot=dialog-header] {padding:23px 25px 10px;gap:7px;}
+.field-npc-dialog [data-slot=dialog-title] {font:29px "Songti TC",serif;color:#eddfbc;}
+.field-npc-dialog [data-slot=dialog-description] {font-size:14px;line-height:1.9;color:#ccdad4;margin-top:5px;}
+.field-npc-options {display:grid;gap:9px;padding:12px 25px 23px;}
+.field-npc-options .primary-button,.field-npc-options .secondary-button {justify-content:center;min-height:48px;font-size:12px;}
+.field-npc-options .text-button {justify-content:center;min-height:40px;}
+.field-help-dialog,.field-map-dialog,.bell-dialog {background:linear-gradient(140deg,#243c43,#152430);border-color:#a5996e56;padding:28px;width:min(490px,calc(100vw - 26px));max-height:calc(100dvh - 28px);overflow-y:auto;gap:16px;}
+.field-help-dialog [data-slot=dialog-description],.field-map-dialog [data-slot=dialog-description],.bell-dialog [data-slot=dialog-description] {font-size:13px;color:#b7cbc9;line-height:1.9;}
+.field-help-dialog ol {display:grid;gap:16px;margin:6px 0 0;padding-left:24px;color:#d2be90;list-style:decimal;}
+.field-help-dialog li strong {font-size:14px;color:#ece1c2;}
+.field-help-dialog li p {color:#b8ccc9;font-size:12px;line-height:1.8;margin:4px 0 0;}
+.field-keyboard {font-size:11px;line-height:1.8;color:#b5c4c7;padding:12px;background:#0f202755;}
+.field-help-dialog>.primary-button,.bell-dialog>.primary-button {justify-content:center;}
+.field-map-preview {height:200px;background:url(/art/morningbell-playfield.webp) center/100% 100%;position:relative;border:1px solid #c5c39455;}
+.field-map-preview>span {position:absolute;width:10px;height:10px;background:#eddf92;border:2px solid #fff6cb;box-shadow:0 0 9px #f6e59c;border-radius:50%;transform:translate(-50%,-50%);}
+.field-place-list {display:grid;grid-template-columns:1fr 1fr;gap:6px;}
+.field-place-list button {padding:10px;min-height:48px;background:#12263080;border:1px solid #adbea936;border-radius:3px;color:#d4dccb;text-align:left;display:grid;gap:7px;}
+.field-place-list button>span {display:flex;align-items:center;gap:5px;font-size:12px;}
+.field-place-list button>small {display:flex;align-items:center;justify-content:space-between;color:#9eb6b3;font-size:10px;}
+.bell-sequence {display:flex;justify-content:center;gap:20px;padding:12px 0;}
+.bell-sequence>span {width:66px;height:82px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:8px;border:1px solid #adc0b744;color:#8ca9ab;border-radius:35px 35px 6px 6px;font-size:10px;}
+.bell-sequence strong {font:23px "Songti TC",serif;color:#dfd5ad;}
+.bell-sequence .lit {background:#d0ce9e22;border-color:#e8dba8;box-shadow:0 0 16px #d3e4a735;}
+.bell-dialog>p {font-size:11px;color:#b6c9c4;line-height:1.8;}
+.encounter-mode {display:none;}
+.encounter-dialogue>div+div {margin-top:16px;}
+.encounter-dialogue p {font-size:13px;line-height:1.9;}
+.encounter-dialogue small {font-size:10px;color:#ccb981;}
+.life-focus-dialog {padding:27px;background:linear-gradient(145deg,#27433e,#182b34 65%,#172631);border-color:#b9ac7a50;width:min(475px,calc(100vw - 26px));max-height:calc(100dvh - 30px);overflow:auto;gap:20px;}
+.life-focus-back {width:max-content;font-size:11px;color:#a9c2bd;}
+.life-focus-dialog [data-slot=dialog-title] {font:25px/1.7 "Songti TC",serif;color:#eee4c8;}
+.life-focus-dialog [data-slot=dialog-description] {font-size:12px;color:#b4c9c0;line-height:1.8;}
+.life-step-path {display:flex;align-items:center;gap:12px;}
+.life-step-path>span {width:32px;height:32px;border:1px solid #aabeb94d;border-radius:50%;display:grid;place-items:center;font-size:11px;color:#89aaa7;}
+.life-step-path .current {color:#e9d89e;border-color:#e9d89e;box-shadow:0 0 15px #b7d8ab22;}
+.life-step-path .done {color:#bcdfc3;background:#769d7744;}
+.life-action-card {padding:22px 20px;background:#0f252950;border:1px solid #b4c9aa29;border-radius:4px;}
+.life-action-card>span {display:flex;align-items:center;gap:6px;font-size:11px;color:#accab9;}
+.life-action-card h2 {font:22px/1.8 "Songti TC",serif;color:#f1e5c6;margin:12px 0;}
+.life-action-card p {font-size:12px;line-height:1.9;color:#c0d3c9;}
+.life-focus-primary {justify-content:center;min-height:52px;font-size:13px;}
+.life-reward-note {display:flex;align-items:center;justify-content:center;gap:6px;font-size:10px;color:#c4c49b;}
+.life-focus-dialog>.text-button {justify-content:center;font-size:12px;}
+.life-complete {text-align:center;padding:15px 0;display:grid;justify-items:center;gap:20px;color:#cbe3bc;}
+.life-complete h2 {font:24px "Songti TC",serif;color:#eee1bb;}
+.life-complete p {font-size:13px;line-height:1.9;color:#b6cfc5;}
+/* Combat uses the same direct controls, with readable, shape-coded telegraphs. */
+.action-arena {position:fixed;inset:calc(var(--scene-top,102px) + env(safe-area-inset-top,0px)) 0 calc(var(--scene-bottom,86px) + env(safe-area-inset-bottom,0px));z-index:30;background:#152a2c;display:flex;flex-direction:column;align-items:stretch;overflow:hidden;isolation:isolate;padding:0 max(0px,calc((100vw - 680px)/2));}
+.arena-topline {display:flex;align-items:center;justify-content:space-between;gap:8px;padding:8px 15px;background:#13252df2;color:#b8c8c1;font-size:10px;flex-shrink:0;}
+.arena-topline>button {display:flex;align-items:center;gap:5px;background:transparent;color:#e4d9bb;border:0;min-height:35px;min-width:53px;font-size:11px;padding:0;}
+.arena-save {display:flex;align-items:center;gap:4px;font-size:9px;color:#a1bcb2;}
+.arena-enemy-bar {padding:5px 20px 12px;background:#13252df2;flex-shrink:0;}
+.arena-enemy-bar>span {display:flex;align-items:center;gap:6px;font-size:13px;color:#e5ddc5;}
+.arena-enemy-bar b {margin-left:auto;font-size:10px;color:#a8c4bc;font-weight:500;font-variant-numeric:tabular-nums;}
+.arena-enemy-bar>div {height:5px;background:#f6dad322;margin-top:8px;overflow:hidden;border-radius:3px;}
+.arena-enemy-bar i {display:block;height:100%;background:linear-gradient(90deg,#ad7771,#d0a17c);transition:width .16s;}
+.arena-playfield {position:relative;flex:1;min-height:100px;overflow:hidden;touch-action:none;outline-offset:-4px;background:#244238;}
+.arena-ground {position:absolute;inset:0;background:linear-gradient(#11232c22,#172d2b11),url(/art/echo-playfield.webp) center/cover;box-shadow:inset 0 0 65px #0d1d2d77;pointer-events:none;}
+.arena-player,.arena-opponent {position:absolute;transform:translate(-50%,-100%);pointer-events:none;z-index:4;}
+.arena-player {width:64px;height:85px;display:grid;align-items:end;justify-items:center;}
+.arena-player .character-avatar.profession-art {position:relative;width:64px;height:85px;aspect-ratio:3/4;filter:drop-shadow(0 3px 3px #0009);}
+.arena-player.evading {filter:drop-shadow(0 0 10px #d5fff0);opacity:.68;}
+.arena-player.striking .character-avatar {animation:arena-strike .3s ease-out;}
+.arena-player>span:last-child {position:absolute;bottom:-17px;left:50%;transform:translateX(-50%);font-size:9px;white-space:nowrap;color:#ecf9de;text-shadow:0 1px 4px #000;}
+.arena-opponent {width:120px;height:120px;display:grid;place-items:end center;}
+.echo-creature {display:block;width:120px;height:120px;background:url(/art/echo-creatures-atlas.webp) no-repeat;background-size:300% 200%;filter:drop-shadow(0 3px 7px #14212a88);}
+.arena-opponent>span:last-child {position:absolute;bottom:-17px;color:#e7dcc0;font-size:10px;white-space:nowrap;text-shadow:0 1px 4px #000;}
+.arena-opponent.was-hit .echo-creature {animation:arena-impact .27s ease-out;}
+.arena-hazard {position:absolute;transform:translate(-50%,-50%);border:2px dashed #ffce9f;border-radius:50%;background:#e8846944;box-shadow:inset 0 0 20px #da705950,0 0 10px #dd756544;pointer-events:none;z-index:2;}
+.arena-hazard>i {position:absolute;inset:calc(var(--warning-progress)*30%);border:1px solid #ffd6aabb;border-radius:50%;background:#f9ad7750;}
+.arena-hazard>b {position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);font-size:10px;color:#fff1db;text-shadow:0 1px 3px #792d24;white-space:nowrap;}
+.arena-hazard.ring {background:transparent;border:15px solid #f69a7655;box-shadow:0 0 0 2px #ffc29a,0 0 14px #ff967766;}
+.arena-hazard.ring>i {inset:30%;background:#639e8d33;border:1px dashed #cce9bd;}
+.arena-hazard.ring>b {top:12%;}
+.arena-intent {position:absolute;bottom:9px;left:50%;transform:translateX(-50%);z-index:6;display:flex;align-items:center;justify-content:center;gap:5px;width:max-content;max-width:calc(100% - 20px);font-size:10px;padding:7px 10px;color:#d9dfc8;background:#142c30df;border:1px solid #c3d3b947;border-radius:4px;pointer-events:none;}
+.arena-intent.urgent {background:#6b3930e8;color:#ffedce;border-color:#eeb389;}
+.arena-feedback {position:absolute;transform:translate(-50%,-120%);font-size:25px;font-weight:700;pointer-events:none;color:#ffe3a8;text-shadow:0 2px 4px #233039;z-index:7;animation:damage-rise .55s ease-out both;}
+.arena-feedback.hurt {color:#ffd3bd;}.arena-feedback.heal {color:#bef6d6;}.arena-feedback.dash {font-size:12px;color:#e2ffe5;}.arena-feedback.swing {font-size:54px;color:#f6dfb9;}
+.arena-vitals {display:flex;align-items:center;gap:9px;padding:10px 18px;background:#15282ff5;color:#d2e9d9;flex-shrink:0;}
+.arena-vitals>span:first-child {display:flex;align-items:center;gap:4px;font-size:13px;}
+.arena-vitals small {font-size:9px;color:#a2bfb6;}
+.arena-hp {height:5px;background:#d1e9db22;flex:1;border-radius:3px;overflow:hidden;}
+.arena-hp i {display:block;height:100%;background:#92bba6;transition:width .12s;}
+.arena-focus {display:flex;align-items:center;gap:4px;}
+.arena-focus>i {width:7px;height:10px;transform:skew(-12deg);background:#b9d7dc25;border:1px solid #b9d7dc44;}
+.arena-focus>i.lit {background:#d6bd80;border-color:#f0d39c;box-shadow:0 0 6px #e1be6570;}
+.arena-focus>small {margin-left:3px;}
+.arena-controls {display:flex;align-items:center;justify-content:space-between;padding:7px 17px 14px;background:linear-gradient(#15282ff5,#101f2afc);gap:9px;flex-shrink:0;}
+.arena-controls .movement-stick {width:94px;height:94px;}
+.arena-controls .stick-thumb {width:41px;height:41px;}
+.arena-actions {display:grid;grid-template-columns:47px 58px 78px;grid-template-rows:54px 47px;gap:5px;align-items:center;}
+.arena-actions>button {display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px;border:1px solid #9cbbad88;background:linear-gradient(140deg,#3d5959c9,#1e353e);color:#e4dbc0;border-radius:50%;min-width:44px;min-height:44px;padding:4px;touch-action:manipulation;}
+.arena-actions>button:disabled {opacity:.42;cursor:default;}
+.arena-actions span,.arena-actions small {font-size:8px;line-height:1.4;white-space:nowrap;}
+.arena-actions .arena-attack {grid-column:3;grid-row:1/3;width:78px;height:78px;border:2px solid #d1bc85;background:radial-gradient(ellipse at 35% 20%,#6f7861,#263e42 75%);box-shadow:0 0 0 4px #d7be7e12,inset 0 0 14px #d4c19222;}
+.arena-actions .arena-attack span {font-size:10px;}
+.arena-actions .arena-attack.is-active {background:radial-gradient(ellipse,#c4b87e,#676f4f);color:#142b2b;box-shadow:0 0 20px #cfbc7266;}
+.arena-actions .arena-skill {grid-column:2;grid-row:1;width:54px;height:54px;}
+.arena-actions .arena-dash {grid-column:2;grid-row:2;width:46px;height:46px;justify-self:center;}
+.arena-actions .arena-heal {grid-column:1;grid-row:2;width:44px;height:44px;}
+.arena-pause-backdrop {position:absolute;inset:0;background:#0b1b27b5;backdrop-filter:blur(3px);z-index:10;display:flex;align-items:center;justify-content:center;padding:17px;overflow-y:auto;}
+.arena-pause-panel {background:linear-gradient(145deg,#26433f,#162e38);border:1px solid #c1b47a70;border-radius:6px;width:min(100%,390px);max-height:100%;overflow-y:auto;padding:26px;box-shadow:0 14px 50px #0006;display:flex;flex-direction:column;align-items:stretch;text-align:center;gap:14px;color:#e6d6ab;}
+.arena-pause-panel>svg {align-self:center;}
+.arena-pause-panel h2 {font:25px/1.5 "Songti TC",serif;color:#eddfbb;}
+.arena-pause-panel p {font-size:12px;line-height:1.9;color:#c3d5cd;margin:0;}
+.arena-pause-panel .arena-key-hint {font-size:10px;color:#a0c2b9;background:#11282a88;padding:11px;}
+.arena-pause-panel>button {justify-content:center;min-height:44px;}
+.arena-pause-panel>small {font-size:10px;color:#a6c1b3;line-height:1.7;}
+.arena-save-error {border-top:1px solid #d9bd8255;padding-top:12px;display:grid;gap:10px;}
+.arena-save-error p {color:#f0c5ab;}
+.arena-save-error button {justify-content:center;font-size:11px;}
+@keyframes echo-hover {50% {transform:translateY(-7px);filter:drop-shadow(0 0 18px #c6fff3);}}
+@keyframes portal-breathe {50% {filter:brightness(1.25);}}
+@keyframes field-walk {0%,100% {transform:scaleX(var(--facing)) rotate(-2deg) translateY(0);}50% {transform:scaleX(var(--facing)) rotate(2deg) translateY(-4px);}}
+@keyframes field-firefly {0%,100% {opacity:.1;transform:translate(0,0);}50% {opacity:.9;transform:translate(11px,-22px);}}
+@keyframes arena-strike {50% {transform:translate(6px,-3px) rotate(7deg);}}
+@keyframes arena-impact {40% {filter:brightness(1.9) drop-shadow(0 0 8px #e9e1a8);transform:translateX(3px);}}
+@keyframes damage-rise {0% {opacity:1;transform:translate(-50%,-160%);}100% {opacity:0;transform:translate(-50%,-260%);}}
+@media(min-width:700px) {.town-experience {inset-inline:max(0px,calc((100vw - 1300px)/2));}.scene-location {display:block;}.scene-objective {width:310px;top:106px;padding:14px 12px;}.scene-objective strong {font-size:15px;}.scene-objective em {font-size:12px;}.scene-objective small {font-size:10px;}.scene-tools {flex-direction:row;}.scene-controls {left:35px;right:35px;bottom:54px;}.scene-first-hint {bottom:175px;}.scene-character-hud {left:25px;top:22px;}.scene-resume {top:225px;}.arena-controls {padding-bottom:17px;}.arena-opponent,.arena-opponent .echo-creature {width:145px;height:145px;}}
+@media(max-width:380px) {.rpg-shell .game-header-actions {gap:6px;}.rpg-shell>.game-header {padding-inline:14px;}.rpg-shell .game-brand {gap:5px;}.rpg-shell .game-brand small {font-size:7px;letter-spacing:1.2px;}.rpg-shell .save-state {display:none;}.rpg-shell .currency-pill {padding:7px;}.scene-character-hud {left:12px;}.scene-tools {right:12px;}.scene-objective {left:12px;top:93px;padding:8px 7px;}.scene-character-hud button>span:last-child {min-width:100px;}.scene-controls {left:13px;right:13px;bottom:54px;}.movement-stick {width:91px;height:91px;}.scene-interaction>button {min-width:142px;min-height:60px;padding:9px;gap:6px;}.scene-interaction strong {font-size:11px;}.scene-interaction small {display:none;}.scene-enable-audio {font-size:9px;bottom:7px;padding:5px 10px;}.scene-first-hint {font-size:10px;bottom:135px;}.arena-controls {padding-inline:10px;gap:5px;}.arena-controls .movement-stick {width:80px;height:80px;}.arena-actions {grid-template-columns:44px 50px 68px;gap:4px;}.arena-actions .arena-attack {width:68px;height:68px;}.arena-actions .arena-skill {width:49px;height:49px;}.arena-actions .arena-attack span {font-size:9px;}.arena-player .character-avatar.profession-art {width:53px;height:71px;}.arena-player {height:71px;width:53px;}.arena-opponent,.arena-opponent .echo-creature {width:102px;height:102px;}.arena-topline {padding-inline:11px;}.arena-enemy-bar {padding-inline:13px;}.arena-pause-panel {padding:20px;gap:11px;}.arena-pause-panel h2 {font-size:22px;}.life-focus-dialog {padding:22px 19px;gap:15px;}.life-focus-dialog [data-slot=dialog-title] {font-size:23px;}.field-help-dialog,.field-map-dialog,.bell-dialog {padding:25px 20px;}}
+@media(max-height:700px) {.scene-objective {top:87px;padding-block:7px;}.scene-character-hud {top:11px;}.scene-tools {top:11px;}.scene-first-hint {bottom:134px;}.scene-controls {bottom:54px;}.scene-resume {top:180px;}.arena-topline {padding-block:3px;}.arena-enemy-bar {padding-bottom:8px;}.arena-enemy-bar>span {font-size:11px;}.arena-controls {padding-block:4px 8px;}.arena-controls .movement-stick {width:76px;height:76px;}.arena-actions {grid-template-rows:44px 42px;}.arena-actions .arena-attack {width:68px;height:68px;}.arena-vitals {padding-block:7px;}.arena-pause-panel {gap:9px;padding:18px 21px;}.arena-pause-panel .arena-key-hint {display:none;}}
+@media(prefers-reduced-motion:reduce) {.field-fireflies,.tower-light {display:none;}.world-place.echo .place-object,.world-place.portal .place-object,.field-player.is-walking .character-avatar,.arena-player.striking .character-avatar,.arena-opponent.was-hit .echo-creature {animation:none;}.arena-feedback {animation:none;}.arena-hp i,.arena-enemy-bar i {transition:none;}}
