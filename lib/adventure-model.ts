@@ -4,7 +4,7 @@ import type {Dream} from "./dream-model.ts";
 import {npcs, questCategory, type NpcId} from "./quest-model.ts";
 import {enemyOf, enemyPatterns, episodeOf, mainEpisodes, materials, regions, runes, storyEpisodes, type MaterialId, type RuneId, type StoryEpisode} from "./adventure-catalog.ts";
 import {createArena, stepArena, type ArenaState} from "./arena-engine.ts";
-import {initialField, touchField, walkable, type FieldProgress} from "./field-engine.ts";
+import {initialField, normalizeField, touchField, walkable, type FieldProgress} from "./field-engine.ts";
 
 export type BattleMove = "strike" | "skill" | "guard" | "mend";
 export type Battle = {
@@ -35,6 +35,7 @@ export function validateAdventure(value: AdventureState) {
     Number.isFinite(value.goldEarned) && Number.isFinite(value.goldSpent) && [2, 4, 6].includes(value.weeklyTarget), "冒險紀錄版本暫時無法讀取，原紀錄已保留", 503);
   value.field ??= initialField();
   requireThat(Array.isArray(value.field.discovered) && Array.isArray(value.field.bellSequence) && Number.isFinite(value.field.x) && Number.isFinite(value.field.y), "場景紀錄暫時無法讀取，原紀錄已保留", 503);
+  normalizeField(value.field);
   return value;
 }
 const hasCompleted = (context: AdventureContext, dreamId: string) => context.receipts.some(receipt => receipt.dreamId === dreamId && receipt.kind === "dream");
@@ -164,8 +165,8 @@ const actionSchema = z.discriminatedUnion("action", [
   z.object({action: z.literal("equipRune"), runeId: z.string().nullable()}).strict(),
   z.object({action: z.literal("equipTitle"), title: z.string().nullable()}).strict(),
   z.object({action: z.literal("setRhythm"), target: z.union([z.literal(2), z.literal(4), z.literal(6)])}).strict(),
-  z.object({action: z.literal("saveField"), x: z.number().finite(), y: z.number().finite()}).strict(),
-  z.object({action: z.literal("fieldInteract"), placeId: z.string(), x: z.number().finite(), y: z.number().finite()}).strict(),
+  z.object({action: z.literal("saveField"), x: z.number().finite(), y: z.number().finite(), zone:z.enum(["town","woods","library"]).optional()}).strict(),
+  z.object({action: z.literal("fieldInteract"), placeId: z.string(), x: z.number().finite(), y: z.number().finite(), zone:z.enum(["town","woods","library"]).optional()}).strict(),
   z.object({action: z.literal("arenaAdvance"), battleId: z.string(), fromTick: z.number().int().min(0), frames: z.array(z.object({x: z.number().min(-1).max(1), y: z.number().min(-1).max(1), attack: z.boolean(), dash: z.boolean(), skill: z.boolean(), mend: z.boolean()}).strict()).min(1).max(45)}).strict(),
   z.object({action: z.literal("arenaAssist"), battleId: z.string(), fromTick: z.number().int().min(0), enabled: z.boolean()}).strict(),
 ]);
@@ -220,8 +221,9 @@ export function adventureAction(state: AdventureState, input: unknown, context: 
     requireThat(data.title === null || unlockedTitles(state).includes(data.title), "這個稱號尚未解鎖");
     state.equippedTitle = data.title;
   } else if (data.action === "saveField") {
-    requireThat(walkable(data), "這裡不是可行走的道路");state.field.x = data.x;state.field.y = data.y;
+    requireThat((data.zone??"town")===(state.field.zone??"town"),"所在區域已變更，請重新載入",409);requireThat(walkable(data,state.field.zone??"town"), "這裡不是可行走的道路");state.field.x = data.x;state.field.y = data.y;
   } else if (data.action === "fieldInteract") {
+    requireThat((data.zone??"town")===(state.field.zone??"town"),"所在區域已變更，請重新載入",409);
     try {touchField(state.field, data.placeId, data);} catch (error) {throw new AdventureError(error instanceof Error ? error.message : "先靠近互動目標");}
   } else if (data.action === "arenaAdvance" || data.action === "arenaAssist") {
     const battle = state.battle;

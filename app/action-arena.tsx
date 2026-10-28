@@ -7,7 +7,9 @@ import {professionMoves} from "@/lib/adventure-model";
 import {enemyOf} from "@/lib/adventure-catalog";
 import type {CharacterState} from "@/lib/character-model";
 import {PixelActor, PixelEnemy} from "./pixel-actor";
-import {facingFromVector, walkPose} from "@/lib/pixel-actors";
+import {facingFromVector} from "@/lib/pixel-actors";
+import {walkFrame} from "@/lib/sprite-catalog";
+import {CombatGround} from "./combat-ground";
 import {bindGround} from "@/lib/touch-controls";
 import {GameButton, MovementPad} from "./field-controls";
 import {useGameSound} from "./game-sound";
@@ -92,15 +94,16 @@ export default function ActionArena({data, character, error, onAction, onBack, o
   }
   async function leave() {if (await drain()) onBack();}
   function retryLatest() {live.current = structuredClone(data.battle!.arena!);ack.current = live.current.tick;queue.current = [];setFrame(structuredClone(live.current));setSaveError("");}
+  const swing=frame.events.findLast(event=>event.kind==="swing"&&frame.tick-event.tick<12);
   const recent = frame.events.filter(event => frame.tick - event.tick <= 15);
   return <main className="action-arena" aria-label="可操作的回聲試煉">
     <div className="arena-topline"><GameButton aria-label="暫停試煉" onActivate={() => void pause()}><Pause size={19}/><span>暫停</span></GameButton><span>回聲試煉{battle.practice ? "・再次挑戰" : "・初次挑戰"}</span><span className="arena-save">{data.battle?.arena?.tick === frame.tick ? <Check size={13}/> : <LoaderCircle size={13}/>}戰況保存</span></div>
     <div className="arena-enemy-bar"><span>{enemy.boss && <Crown size={15}/>}<strong>{enemy.name}</strong><b>{frame.enemyHp} / {frame.enemyMaxHp}</b></span><div><i style={{width: frame.enemyHp / frame.enemyMaxHp * 100 + "%"}}/></div></div>
     <div className="arena-playfield" role="application" aria-label="試煉戰場：點選地面移動，也可用方向鍵" tabIndex={0} ref={stage}>
-      <div className="arena-ground"/>
+      <CombatGround/>
       {frame.hazards.map(hazard => <span key={hazard.id} className={"arena-hazard " + hazard.kind} style={{...locate(hazard.x, hazard.y), width: hazard.radius * 2 / ARENA.width * 100 + "%", height: hazard.radius * 2 / ARENA.height * 100 + "%", "--warning-progress": Math.max(0, hazard.remaining / (frame.assist ? 2.1 : 1.35))} as CSSProperties}><i/><b>{hazard.kind === "ring" ? "環形衝擊" : "落雷範圍"}</b></span>)}
       <div className={"arena-opponent " + (recent.some(event => event.kind === "hit") ? "was-hit" : "")} style={locate(frame.enemyX, frame.enemyY)} aria-label="試煉對手"><PixelEnemy kind={enemy.kind} pose={!isPaused && frame.phase === "active" ? Math.floor(frame.tick / 9) % 3 : 1} label={enemy.name}/><span>{enemy.name}</span></div>
-      <div data-player-x={frame.x.toFixed(1)} data-player-y={frame.y.toFixed(1)} className={"arena-player " + (frame.invulnerable > 0 ? "evading" : "") + (frame.attackCd > .35 ? "striking" : "")} style={locate(frame.x, frame.y)}><PixelActor identity={frame.profession} direction={facingFromVector(Math.cos(frame.facing), Math.sin(frame.facing))} pose={!isPaused && frame.phase === "active" && frame.tick - (frame.lastMoveTick ?? -10) < 3 ? walkPose(frame.travelled ?? 0) : 1} tier={character.advancements[frame.profession]} label={character.name}/><span>{character.name}</span></div>
+      <div data-player-x={frame.x.toFixed(1)} data-player-y={frame.y.toFixed(1)} className={"arena-player " + (frame.invulnerable > 0 ? "evading" : "") + (frame.attackCd > .35 ? "striking" : "")} style={locate(frame.x, frame.y)}><PixelActor identity={frame.profession} direction={swing?facingFromVector(frame.enemyX-frame.x,frame.enemyY-frame.y):facingFromVector(Math.cos(frame.facing), Math.sin(frame.facing))} action={swing?"slash":"walk"} pose={swing?Math.min(5,Math.floor((frame.tick-swing.tick)/2)):!isPaused && frame.phase === "active" && frame.tick - (frame.lastMoveTick ?? -10) < 3 ? walkFrame(frame.travelled ?? 0) : 0} tier={character.advancements[frame.profession]} label={character.name}/><span>{character.name}</span></div>
       {recent.map(event => <span key={event.id} className={"arena-feedback " + event.kind} style={locate(event.x, event.y)}>{event.kind === "hit" ? event.value : event.kind === "hurt" ? `−${event.value}` : event.kind === "heal" ? `+${event.value}` : event.kind === "dash" ? "閃避" : event.kind === "swing" ? "✧" : ""}</span>)}
       <div className={"arena-intent " + (frame.hazards.length ? "urgent" : "")} role="status">{frame.hazards.length ? <Wind size={16}/> : <Swords size={15}/>}<span>{arenaHint(frame)}</span></div>
     </div>

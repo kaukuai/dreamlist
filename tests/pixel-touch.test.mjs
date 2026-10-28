@@ -1,6 +1,10 @@
 import assert from 'node:assert/strict';
 import test from 'node:test';
-import {pixelCharacter,pixelEnemy,pixelLooks,facingFromVector,walkPose} from '../lib/pixel-actors.ts';
+import {facingFromVector} from '../lib/pixel-actors.ts';
+import {spriteLooks,spriteLayers,spriteRows,walkFrame} from '../lib/sprite-catalog.ts';
+import {readFileSync} from 'node:fs';
+import {createHash} from 'node:crypto';
+const manifest=JSON.parse(readFileSync(new URL('../public/art/lpc/manifest.json',import.meta.url)));
 import {bindContact,bindTap,bindGround} from '../lib/touch-controls.ts';
 class Target extends EventTarget {
  disabled=false;hidden=false;ownerDocument;defaultView=new EventTarget();
@@ -11,25 +15,16 @@ class Target extends EventTarget {
 }
 function fire(target,type,props={}){const event=new Event(type,{cancelable:true});Object.assign(event,props);target.dispatchEvent(event);return event;}
 const touch=(identifier,x=20,y=20)=>({identifier,clientX:x,clientY:y});
-test('13 identities have four distinct facing frames, three poses and anchored feet',()=>{
- assert.equal(Object.keys(pixelLooks).length,13);
- for(const look of Object.values(pixelLooks)){
-  const facings=[];
-  for(const direction of ['down','up','left','right']){
-   const poses=[];
-   for(const pose of [0,1,2]){
-    const art=pixelCharacter(look,direction,pose,2);poses.push(JSON.stringify(art));
-    assert.equal(Math.max(...art.map(p=>p.y+p.h)),48);
-    for(const p of art){assert.ok([p.x,p.y,p.w,p.h].every(Number.isInteger));assert.ok(p.x>=0&&p.y>=0&&p.w>0&&p.h>0&&p.x+p.w<=32&&p.y+p.h<=48);}
-   }
-   assert.equal(new Set(poses).size,3);facings.push(poses[1]);
-  }
-  assert.equal(new Set(facings).size,4);
+test('all 13 identities have licensed walk and attack layers, with four directions and measured feet',()=>{
+ assert.equal(Object.keys(spriteLooks).length,13);assert.deepEqual(Object.values(spriteRows).sort(),[0,1,2,3]);
+ for(const identity of Object.keys(spriteLooks))for(const layer of spriteLayers(identity))for(const action of ['walk','slash']){
+  const record=manifest.assets.find(a=>a.file===`${layer.part}-${action}.png`)??manifest.assets.find(a=>a.file===`${layer.part}-walk.png`);assert.ok(record,`${identity} ${layer.part} ${action}`);assert.ok(record.cell>=64&&record.columns>=6);assert.ok(record.authors&&record.license&&record.source);
  }
+ for(const body of ['body-m','body-f'])for(const action of ['walk','slash']){const a=manifest.assets.find(a=>a.file===`${body}-${action}.png`);assert.equal(a.feet.length,4);for(const row of a.feet){assert.equal(row.length,a.columns);assert.ok(row.every(y=>y>48&&y<=64));}}
+ assert.deepEqual(Array.from({length:8},(_,i)=>walkFrame(i*7)),[1,2,3,4,5,6,7,8]);assert.equal(facingFromVector(0,-1),'up');
 });
-test('six pixel enemies stay within their fixed foot anchor',()=>{
- for(const kind of ['wisp','thorn','guardian','eye','knight','crown'])for(const pose of [0,1,2])for(const p of pixelEnemy(kind,pose))assert.ok(p.x>=0&&p.y>=0&&p.x+p.w<=40&&p.y+p.h<=48);
- assert.equal(facingFromVector(0,-1),'up');assert.equal(facingFromVector(0,0,'left'),'left');assert.deepEqual([0,18,36,54,72].map(walkPose),[0,1,2,1,0]);
+test('all imported PNGs match their recorded source hashes and have valid sprite dimensions',()=>{
+ for(const asset of manifest.assets){const bytes=readFileSync(new URL('../public/art/lpc/'+asset.file,import.meta.url));assert.equal(createHash('sha256').update(bytes).digest('hex'),asset.sha256);assert.equal(bytes.readUInt32BE(16),asset.width);assert.equal(bytes.readUInt32BE(20),asset.height);}
 });
 test('document tracking works when pointer capture throws',()=>{
  const doc=new Target(),el=new Target(doc),positions=[],ends=[];const off=bindContact(el,{start:p=>positions.push(p),move:p=>positions.push(p),end:c=>ends.push(c)});

@@ -1,6 +1,9 @@
+import {fieldNotes, groundAt, validZone, worldWalkable, zoneInfo, type ZoneId} from "./world-map.ts";
+export {fieldNotes, groundAt, zoneInfo};
+export type {ZoneId};
 export type Point = {x: number; y: number};
-export const FIELD = {width: 1200, height: 800, speed: 170, start: {x: 580, y: 605}};
-export const fieldPlaces = [
+export const FIELD = {width: 1200, height: 800, speed: 128, start: {x: 580, y: 605}};
+const townPlaces = [
   {id: "echo", name: "散落的微光", x: 510, y: 535, kind: "echo"},
   {id: "lorne", name: "洛恩", x: 715, y: 490, kind: "npc"},
   {id: "selene", name: "賽琳", x: 345, y: 375, kind: "npc"},
@@ -13,42 +16,53 @@ export const fieldPlaces = [
   {id: "bell-mid", name: "中音共鳴石", x: 610, y: 285, kind: "bell"},
   {id: "portal", name: "回聲之門", x: 1030, y: 410, kind: "portal"},
 ] as const;
-export type FieldPlace = typeof fieldPlaces[number];
-export type FieldProgress = Point & {discovered: string[]; bellSequence: string[]; bellSolved: boolean};
-export const initialField = (): FieldProgress => ({...FIELD.start, discovered: [], bellSequence: [], bellSolved: false});
-export const distance = (a: Point, b: Point) => Math.hypot(a.x - b.x, a.y - b.y);
-// Feet collide with building footprints, fountain and planted edges; not with roof artwork.
-const walls = [
-  {x: 465, y: 40, width: 285, height: 185},
-  {x: 95, y: 75, width: 240, height: 210},
-  {x: 865, y: 70, width: 250, height: 200},
-  {x: 90, y: 560, width: 220, height: 175},
-  {x: 875, y: 615, width: 200, height: 135},
+export type FieldPlace = {id:string;name:string;x:number;y:number;kind:"echo"|"npc"|"bell"|"portal"|"exit"|"lore"|"shrine";zone:ZoneId;npcId?:string;to?:ZoneId;arrival?:Point};
+export const fieldPlaces: readonly FieldPlace[] = [
+ ...townPlaces.map(place=>({...place,zone:"town" as const})),
+ {id:"library-door",name:"進入星頁書庫",x:224,y:336,kind:"exit",zone:"town",to:"library",arrival:{x:600,y:650}},
+ {id:"forest-gate",name:"前往月痕林",x:1100,y:480,kind:"exit",zone:"town",to:"woods",arrival:{x:144,y:480}},
+ {id:"library-exit",name:"返回晨鐘鎮",x:600,y:688,kind:"exit",zone:"library",to:"town",arrival:{x:224,y:352}},
+ {id:"forest-exit",name:"返回晨鐘鎮",x:80,y:480,kind:"exit",zone:"woods",to:"town",arrival:{x:1060,y:480}},
+ {id:"library-selene",npcId:"selene",name:"賽琳",x:560,y:336,kind:"npc",zone:"library"},
+ {id:"forest-eira",npcId:"eira",name:"艾菈",x:416,y:464,kind:"npc",zone:"woods"},
+ {id:"town-notice",name:"巡路告示",x:416,y:464,kind:"lore",zone:"town"},
+ {id:"town-letter",name:"未寄出的信",x:856,y:656,kind:"lore",zone:"town"},
+ {id:"library-history",name:"晨鐘鎮誌",x:448,y:400,kind:"lore",zone:"library"},
+ {id:"library-margin",name:"書頁旁的筆記",x:736,y:336,kind:"lore",zone:"library"},
+ {id:"woods-page-1",name:"營火旁的手記",x:368,y:544,kind:"lore",zone:"woods"},
+ {id:"woods-page-2",name:"溪橋的刻痕",x:700,y:480,kind:"lore",zone:"woods"},
+ {id:"woods-page-3",name:"石階上的書頁",x:832,y:400,kind:"lore",zone:"woods"},
+ {id:"grove-restored",name:"聆聽舊鐘亭",x:944,y:608,kind:"shrine",zone:"woods"},
 ];
-export function walkable(point: Point) {
-  return point.x >= 120 && point.x <= 1100 && point.y >= 225 && point.y <= 740 &&
-    !walls.some(wall => point.x >= wall.x - 10 && point.x <= wall.x + wall.width + 10 && point.y >= wall.y - 10 && point.y <= wall.y + wall.height + 10) &&
-    Math.hypot((point.x - 600) / 1.15, point.y - 335) >= 43;
+export const placesIn = (zone:ZoneId="town")=>fieldPlaces.filter(place=>place.zone===zone);
+export type FieldProgress = Point & {zone?:ZoneId;visitedZones?:ZoneId[];discovered: string[]; bellSequence: string[]; bellSolved: boolean};
+export const initialField = (): FieldProgress => ({...FIELD.start, zone:"town",visitedZones:["town"], discovered: [], bellSequence: [], bellSolved: false});
+export const distance = (a: Point, b: Point) => Math.hypot(a.x - b.x, a.y - b.y);
+export function normalizeField(progress:FieldProgress) {
+ progress.zone=validZone(progress.zone)?progress.zone:"town";progress.visitedZones??=["town"];if(!progress.visitedZones.includes(progress.zone))progress.visitedZones.push(progress.zone);
+ if(!walkable(progress,progress.zone)){const spawn=zoneInfo[progress.zone].spawn;progress.x=spawn.x;progress.y=spawn.y;}
+ return progress;
 }
-export function moveField(position: Point, direction: Point, dt: number): Point {
+export const walkable = (point:Point,zone:ZoneId="town")=>worldWalkable(point,zone);
+export function moveField(position: Point, direction: Point, dt: number, zone:ZoneId="town"): Point {
   const size = Math.max(1, Math.hypot(direction.x, direction.y));
   const length = FIELD.speed * Math.min(.05, Math.max(0, dt));
   let result = {...position};
   const horizontal = {x: position.x + direction.x / size * length, y: position.y};
-  if (walkable(horizontal)) result = horizontal;
+  if (walkable(horizontal,zone)) result = horizontal;
   const vertical = {x: result.x, y: result.y + direction.y / size * length};
-  if (walkable(vertical)) result = vertical;
+  if (walkable(vertical,zone)) result = vertical;
   return result;
 }
 /** Grid BFS provides tap-to-walk around obstacles instead of sliding through buildings. */
-export function fieldPath(from: Point, destination: Point): Point[] {
-  const cell = 25, columns = 49, rows = 33;
+export function fieldPath(from: Point, destination: Point,zone:ZoneId="town"): Point[] {
+  const cell = 16, columns = 76, rows = 51;
   const toCell = (point: Point) => ({x: Math.round(point.x / cell), y: Math.round(point.y / cell)});
   const start = toCell(from), requested = toCell(destination);
   let end = requested;
-  if (!walkable({x: end.x * cell, y: end.y * cell})) {
+  if (!walkable({x: end.x * cell, y: end.y * cell},zone)) {
     const possible: {x: number; y: number}[] = [];
-    for (let y = 0; y < rows; y++) for (let x = 0; x < columns; x++) if (walkable({x: x * cell, y: y * cell})) possible.push({x, y});
+    for (let y = 0; y < rows; y++) for (let x = 0; x < columns; x++) if (walkable({x: x * cell, y: y * cell},zone)) possible.push({x, y});
     end = possible.sort((a, b) => distance(a, requested) - distance(b, requested))[0];
   }
   const key = (point: Point) => point.y * columns + point.x;
@@ -58,27 +72,29 @@ export function fieldPath(from: Point, destination: Point): Point[] {
     if (key(current) === key(end)) break;
     for (const offset of [{x: 1, y: 0}, {x: -1, y: 0}, {x: 0, y: 1}, {x: 0, y: -1}]) {
       const next = {x: current.x + offset.x, y: current.y + offset.y};
-      if (!previous.has(key(next)) && walkable({x: next.x * cell, y: next.y * cell})) {previous.set(key(next), current);queue.push(next);}
+      if (!previous.has(key(next)) && walkable({x: next.x * cell, y: next.y * cell},zone)) {previous.set(key(next), current);queue.push(next);}
     }
   }
   if (!previous.has(key(end))) return [];
   const path: Point[] = [];
   for (let node: Point | null = end; node && key(node) !== key(start); node = previous.get(key(node)) ?? null) path.unshift({x: node.x * cell, y: node.y * cell});
-  if (walkable(destination)) path.push(destination);
+  if (walkable(destination,zone)) path.push(destination);
   return path;
 }
-export function nearbyPlace(position: Point, places: readonly FieldPlace[] = fieldPlaces) {
+export function nearbyPlace(position: Point, places: readonly FieldPlace[] = placesIn("town")) {
   return places.filter(place => distance(position, place) <= 83).sort((a, b) => distance(position, a) - distance(position, b))[0] ?? null;
 }
 export const bellSolution = ["bell-low", "bell-high", "bell-mid"];
 export function touchField(progress: FieldProgress, placeId: string, position: Point) {
-  const place = fieldPlaces.find(place => place.id === placeId);
-  if (!place || !walkable(position) || distance(place, position) > 90) throw new Error("先靠近這個地方，再與它互動");
+  const place = fieldPlaces.find(place => place.id === placeId && place.zone === (progress.zone??"town"));
+  if (!place || !walkable(position,progress.zone??"town") || distance(place, position) > 90) throw new Error("先靠近這個地方，再與它互動");
+  if(place.kind==="shrine" && !["woods-page-1","woods-page-2","woods-page-3"].every(id=>progress.discovered.includes(id)))throw new Error("鐘亭留下三個空缺。先沿林徑尋找三段巡林手記。");
   Object.assign(progress, position);
   if (!progress.discovered.includes(place.id)) progress.discovered.push(place.id);
   if (place.kind === "bell" && !progress.bellSolved) {
     progress.bellSequence.push(place.id);progress.bellSequence = progress.bellSequence.slice(-3);
     progress.bellSolved = progress.bellSequence.join() === bellSolution.join();
   }
+  if(place.kind==="exit" && place.to && place.arrival){progress.zone=place.to;Object.assign(progress,place.arrival);progress.visitedZones??=["town"];if(!progress.visitedZones.includes(place.to))progress.visitedZones.push(place.to);}
   return place;
 }

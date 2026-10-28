@@ -2,7 +2,7 @@ import assert from "node:assert/strict";
 import {test} from "node:test";
 import {createBrowserPreviewStore, PREVIEW_STORAGE_KEY} from "../lib/browser-preview-store.ts";
 import {ARENA, arenaHint, createArena, emptyArenaInput, stepArena} from "../lib/arena-engine.ts";
-import {FIELD, bellSolution, distance, fieldPath, fieldPlaces, initialField, moveField, touchField, walkable} from "../lib/field-engine.ts";
+import {FIELD, bellSolution, distance, fieldPath, fieldPlaces, initialField, moveField, touchField, walkable,placesIn} from "../lib/field-engine.ts";
 import {mainEpisodes} from "../lib/adventure-catalog.ts";
 import {defaultSound, readSoundSettings} from "../lib/game-audio.ts";
 
@@ -33,8 +33,8 @@ function controls(state) {
 }
 test("tap navigation reaches every town interaction around footprints, with bounded diagonal movement", () => {
   assert.equal(walkable({x: 600, y: 335}), false, "fountain is solid");
-  assert.equal(walkable({x: 200, y: 200}), false, "library footprint is solid");
-  for (const place of fieldPlaces) {
+  assert.equal(walkable({x: 200, y: 280}), false, "library footprint is solid");
+  for (const place of placesIn("town")) {
     let position = {...FIELD.start};const path = fieldPath(position, place);assert.ok(path.length, place.id);
     for (const point of path) {
       let frames = 0;

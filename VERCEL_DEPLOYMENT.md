@@ -59,3 +59,8 @@ npm run start:vercel -- --hostname 127.0.0.1
 
 
 本輪觸控／像素調整（2026-10-28）：地圖與戰鬥採四方向像素人物，選單與對話保留 CG；預設可見十字鍵，可切換搖桿。原生觸控、雙指動作與 click 備援支援內嵌視窗，頁面真正進入背景才自動暫停。實作與證據／限制見 [PIXEL_TOUCH_RESEARCH.md](PIXEL_TOUCH_RESEARCH.md)。Vercel 版本標記 pixel-touch-rpg-v1，存檔鍵不變。
+
+
+## 2026-10-28：分層世界與全螢幕手機 RPG
+
+最新要求取代舊固定頁首／底部分頁與簡略方塊人物方向。先讀 WORLD_RPG_RESEARCH.md：瀏覽器版採單一 Canvas 的分層場景、LPC 完整步態與腳底排序，養成入口收進角落旅人手札。晨鐘鎮、星頁書庫、月痕林為三個可走動區域，含溪橋與八段探索文字；原 v1 存檔只加 zone／visitedZones，生活成長與獎勵不重置。CG 角色／任務／對話保留，素材署名可由手札開啟。仍非完整大型商業 RPG，不宣稱實體手機或 ChatGPT 原生 App 已驗收。
