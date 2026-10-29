@@ -365,3 +365,30 @@
 .field-map-dialog>* {flex-shrink:0;}
 .field-map-preview canvas {position:absolute;inset:0;pointer-events:none;}
 .scene-minimap canvas {pointer-events:none;}
+/* Conversation is a readable scene with optional topics and explicit commissions. */
+.field-npc-dialog {display:flex!important;flex-direction:column;gap:0;max-height:calc(100dvh - 22px);}
+.field-npc-dialog>.field-npc-scene {flex-shrink:0;height:210px;}
+.field-npc-dialog .npc-full-figure {height:210px;width:210px;}
+.npc-conversation-body {padding:4px 24px 22px;display:flex;flex-direction:column;gap:13px;color:#dbdfce;}
+.npc-topic-list {display:flex;flex-direction:column;gap:8px;}
+.npc-topic-list>button {display:flex;align-items:center;justify-content:space-between;gap:9px;min-height:47px;padding:10px 12px;text-align:left;background:#0f252b6b;border:1px solid #bba97a44;border-radius:3px;color:#ece0bc;font-size:12px;line-height:1.7;}
+.npc-topic-list>button.primary-button {background:#c0ab75;color:#172c2c;}
+.npc-topic-list>button>span {font-size:10px;color:#b8c6b3;}
+.npc-dialogue-text {font:15px/2.05 "Songti TC",serif;white-space:pre-line;color:#e4dcc4;padding:5px 0;}
+.npc-page-turn {display:flex;align-items:center;justify-content:flex-end;gap:14px;font-size:11px;}
+.npc-page-turn>span {margin-right:auto;color:#a6b8ac;}
+.npc-career-check {padding:16px;background:#12292e;border-left:2px solid #bfaa74;display:grid;gap:8px;font-size:12px;}
+.npc-career-check strong {color:#f1db9d;}.npc-career-check p {font-size:11px;line-height:1.8;color:#a9c3b7;}
+.npc-commission-list {display:grid;gap:16px;}.npc-commission {padding:16px;background:#10262b99;border:1px solid #9ba77738;border-radius:4px;}
+.npc-commission>small {color:#c7b77d;font-size:10px;}.npc-commission h3 {font:19px/1.7 "Songti TC",serif;color:#efdfb6;margin:5px 0;}
+.npc-commission p,.npc-commission li {font-size:12px;line-height:1.9;color:#c4d2c5;}.npc-commission ol {list-style:decimal;padding-left:19px;margin-block:9px;}.npc-commission li small {display:block;color:#8fafa0;}
+.npc-commission .secondary-button {width:100%;justify-content:center;font-size:12px;min-height:44px;margin-top:12px;}.npc-commission.locked {opacity:.65;}
+.npc-commission-reward {display:flex;align-items:center;gap:3px;color:#dec88b;font-size:11px;}
+.npc-pixel-signature {display:flex;align-items:center;gap:8px;border-top:1px solid #b6a47733;padding-top:8px;margin-top:6px;}
+.npc-pixel-signature .pixel-actor {width:80px;height:80px;}.npc-pixel-signature>span {font-size:10px;line-height:1.8;color:#9bb4aa;}
+.hero-sprite-preview {display:flex;align-items:center;gap:12px;padding:10px 18px;margin:12px 0;background:radial-gradient(ellipse at 15% 85%,#58716a33,transparent 60%),#152c30;border:1px solid #a3b49c26;border-radius:4px;}
+.hero-sprite-preview .pixel-actor {width:96px;height:96px;}.hero-sprite-preview strong {font-size:12px;color:#e5d7ad;}.hero-sprite-preview p,.shop-intro {font-size:11px;line-height:1.9;color:#9eb7ac;}
+.item-fitting {display:flex;flex-direction:column;align-items:center;}.item-fitting .pixel-actor {width:96px;height:96px;}.item-fitting small {font-size:10px;color:#a4b6a5;}
+.equipment-detail-art:has(.item-fitting) {display:flex;align-items:center;justify-content:center;gap:25px;}
+@media(max-height:700px){.field-npc-dialog>.field-npc-scene,.field-npc-dialog .npc-full-figure{height:150px;width:150px}.field-npc-dialog>.field-npc-scene{width:100%}.npc-conversation-body{padding-inline:18px}}
+.npc-offer-choices {flex-wrap:wrap;}.npc-offer-choices>button {min-height:44px;white-space:normal;line-height:1.6;font-size:11px;}

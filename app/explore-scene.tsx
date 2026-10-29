@@ -9,7 +9,7 @@ import {jobTitle, type CharacterState} from "@/lib/character-model";
 import {npcOf, type NpcId, type QuestBoardState} from "@/lib/quest-model";
 import type {Dream} from "@/lib/dream-model";
 import CharacterAvatar from "./character-avatar";
-import {NpcFullFigure} from "./quest-hub";
+import {NpcConversation} from "./npc-conversation";
 import AdventureWorld from "./adventure-world";
 import {GameButton, MovementPad} from "./field-controls";
 import {useGameSound} from "./game-sound";
@@ -21,7 +21,7 @@ import WorldCanvas from "./world-canvas";
 import {followCamera} from "@/lib/world-map";
 import {walkFrame} from "@/lib/sprite-catalog";
 
-type Props = {character: CharacterState | null; dreams: Dream[]; onRefresh: () => Promise<unknown>; onQuest: (id: string) => void; onAccept: (id: string) => Promise<Dream | undefined>; onJournal: () => void};
+type Props = {character: CharacterState | null; dreams: Dream[]; onRefresh: () => Promise<unknown>; onQuest: (id: string) => void; onAccept: (id: string) => Promise<Dream | undefined>; onNavigate:(page:string)=>void; onJournal: () => void};
 type Episode = AdventureView["episodes"][number];
 export default function ExploreScene(props: Props) {
   const [data, setData] = useState<AdventureView | null>(null), [error, setError] = useState("");
@@ -43,15 +43,17 @@ export default function ExploreScene(props: Props) {
 }
 
 type TownProps = Props & {character: CharacterState; data: AdventureView; error: string; act: (action: object) => Promise<AdventureView | undefined>; reload: () => Promise<void>};
-function TownPlayfield({character, dreams, data, error, act, reload, onRefresh, onQuest, onAccept}: TownProps) {
+function TownPlayfield({character, dreams, data, error, act, reload, onRefresh, onQuest, onAccept,onNavigate}: TownProps) {
   const sound = useGameSound();
   const [position, setPosition] = useState<Point>({x: data.field.x, y: data.field.y});
   const [destination, setDestination] = useState<Point | null>(null);
+  const [selectedPlaceId,setSelectedPlaceId]=useState<string|null>(null);
   const [size, setSize] = useState({width: 390, height: 640}), [moving, setMoving] = useState(false), [direction, setDirection] = useState<Facing>("down"), [stride, setStride] = useState(0);
   const [npcId, setNpcId] = useState<NpcId | null>(null), [help, setHelp] = useState(false), [map, setMap] = useState(false), [bell, setBell] = useState(false);
   const [encounter, setEncounter] = useState<string | null>(null), [quests, setQuests] = useState<QuestBoardState | null>(null), [notice, setNotice] = useState("");
   const viewport = useRef<HTMLDivElement | null>(null), location = useRef(position), pad = useRef({x: 0, y: 0}), path = useRef<Point[]>([]), keys = useRef(new Set<string>());
   const [renderClock,setRenderClock]=useState(0),[tracks,setTracks]=useState<{x:number;y:number;at:number}[]>([]);
+  const talkWhenClose=useRef<string|null>(null);
   const travel = useRef(0),footprints=useRef<{x:number;y:number;at:number}[]>([]),lastPrint=useRef(0);
   const zone:ZoneId=data.field.zone??"town";
   const [camera,setCamera]=useState({x:Math.max(0,data.field.x-130),y:Math.max(0,data.field.y-170)}),cameraRef=useRef(camera);
@@ -62,18 +64,18 @@ function TownPlayfield({character, dreams, data, error, act, reload, onRefresh, 
   const next = data.episodes.find(episode => episode.kind === "main" && episode.status !== "cleared");
   const foundEcho = data.field.discovered.includes("echo");
   const focus = next?.status === "active" ? null : places.find(place => place.id === (!foundEcho ? "echo" : next?.status === "ready" ? "portal" : next ? next.choices[0].npcId : "bell-mid"))!;
-  const near = nearbyPlace(position, places.filter(place => place.id !== "echo" || !foundEcho));
+  const near = places.find(p=>p.id===selectedPlaceId&&distance(position,p)<=83)??nearbyPlace(position, places.filter(place => place.id !== "echo" || !foundEcho));
   const npc = npcOf(npcId ?? "");
   const npcEpisode = npcId ? data.episodes.find(episode => episode.bondNpc === npcId) : null;
   const primaryEpisode = next && npcId && (next.intro.some(line => line.speaker === npcId) || next.choices.some(choice => choice.npcId === npcId)) ? next : undefined;
   const zoom = size.width<600?1.25:size.width<1000?1.5:1.75;
-  const navigate = (point: Point) => {const route = fieldPath(location.current, point,zone);path.current = route;setDestination(route.at(-1) ?? null);setMap(false);};
+  const navigate = (point: Point) => {setSelectedPlaceId(places.find(p=>p.x===point.x&&p.y===point.y)?.id??null);const route = fieldPath(location.current, point,zone);path.current = route;setDestination(route.at(-1) ?? null);setMap(false);};
   function story(episode: Episode) {setNpcId(null);setEncounter(episode.id);sound.cue("interact");}
-  async function interact() {
-    const place = nearbyPlace(location.current, placesIn(current.current.zone).filter(place => place.id !== "echo" || !current.current.data.field.discovered.includes("echo")));
+  async function interact(placeId?:string) {
+    const place = placeId?placesIn(current.current.zone).find(p=>p.id===placeId&&distance(p,location.current)<=90):nearbyPlace(location.current, placesIn(current.current.zone).filter(place => place.id !== "echo" || !current.current.data.field.discovered.includes("echo")));
     if (!place || current.current.modal) return;
     const updated = await current.current.act({action: "fieldInteract", placeId: place.id, zone:current.current.zone, ...location.current});if (!updated) return;
-    path.current = [];pad.current = {x: 0, y: 0};keys.current.clear();
+    path.current = [];setSelectedPlaceId(null);pad.current = {x: 0, y: 0};keys.current.clear();
     if (place.kind === "npc") {
       setNpcId((place.npcId??place.id) as NpcId);sound.cue("interact");
       const response = await appFetch("/api/quests");if (response.ok) setQuests(await response.json());
@@ -92,7 +94,7 @@ function TownPlayfield({character, dreams, data, error, act, reload, onRefresh, 
       else setNotice("回聲之門尚未回應。先去和夥伴聊聊，選擇你的第一段修練。");
     }
   }
-  useLayoutEffect(() => {current.current = {act, data, sound, interact: () => void interact(), modal, zone,view:{width:size.width,height:size.height,zoom}, go: point => {if (modal) return;const box = viewport.current?.getBoundingClientRect();if (box) navigate({x: (point.x - box.x)/zoom + camera.x, y: (point.y - box.y)/zoom + camera.y});}};});
+  useLayoutEffect(() => {current.current = {act, data, sound, interact: () => void interact(near?.id), modal, zone,view:{width:size.width,height:size.height,zoom}, go: point => {if (modal) return;const box = viewport.current?.getBoundingClientRect();if (box) navigate({x: (point.x - box.x)/zoom + camera.x, y: (point.y - box.y)/zoom + camera.y});}};});
   useEffect(() => {
     const element = viewport.current;if (!element) return;
     const unbindGround = bindGround(element, point => current.current.go(point));
@@ -100,7 +102,7 @@ function TownPlayfield({character, dreams, data, error, act, reload, onRefresh, 
     const onKey = (event: KeyboardEvent) => {
       if (current.current.modal || (event.target as HTMLElement).closest("input,textarea,select,[role=dialog]")) return;
       const key = event.key.toLowerCase();if (["arrowup", "arrowdown", "arrowleft", "arrowright", "w", "a", "s", "d", "e"].includes(key)) event.preventDefault();
-      keys.current.add(key);path.current = [];
+      keys.current.add(key);path.current = [];talkWhenClose.current=null;if(["arrowup","arrowdown","arrowleft","arrowright","w","a","s","d"].includes(key))setSelectedPlaceId(null);
       if (key === "e" && !event.repeat) current.current.interact();
     };
     const release = (event: KeyboardEvent) => keys.current.delete(event.key.toLowerCase());
@@ -116,6 +118,7 @@ function TownPlayfield({character, dreams, data, error, act, reload, onRefresh, 
         let dy = pad.current.y + Number(keys.current.has("s") || keys.current.has("arrowdown")) - Number(keys.current.has("w") || keys.current.has("arrowup"));
         if (path.current.length && !dx && !dy) {const next = path.current[0], size = distance(next, location.current);if (size < 5) {path.current.shift();if (!path.current.length) setDestination(null);}else {dx = (next.x - location.current.x) / size;dy = (next.y - location.current.y) / size;}}
         const point = moveField(location.current, {x: dx, y: dy}, dt,current.current.zone), didMove = distance(point, location.current) > .01;
+        if(talkWhenClose.current&&path.current.length<2&&placesIn(current.current.zone).some(p=>p.id===talkWhenClose.current&&distance(p,point)<72)){talkWhenClose.current=null;void current.current.interact();}
         travel.current += distance(point, location.current);location.current = point;
         if (now - lastPaint > 32) {setPosition({...point});setRenderClock(now);setTracks([...footprints.current]);setMoving(didMove);setStride(didMove ? walkFrame(travel.current) : 0);if (didMove) setDirection(previous => facingFromVector(dx, dy, previous));lastPaint = now;}
         cameraRef.current=followCamera(cameraRef.current,point,current.current.view,dt);
@@ -132,16 +135,11 @@ function TownPlayfield({character, dreams, data, error, act, reload, onRefresh, 
   useEffect(() => {changeMood(modal ? "dialogue" : "town");}, [changeMood, modal]);
   useEffect(() => {if (!notice) return;const timeout = setTimeout(() => setNotice(""), 6500);return () => clearTimeout(timeout);}, [notice]);
   useEffect(()=>{const timer=setTimeout(()=>setZoneBanner(false),2800);return()=>clearTimeout(timer);},[zone]);
-  async function acceptNpc() {
-    const quest = quests?.introductions.find(quest => quest.npcId === npcId);if (!quest) return;
-    const dream = quest.dreamId ? dreams.find(dream => dream.id === quest.dreamId) : await onAccept(quest.offerId);
-    if (dream) {setNpcId(null);onQuest(dream.id);}
-  }
   const objective = !foundEcho ? "走向廣場上的微光，試著拾起它" : next?.status === "active" ? "把修練帶到生活裡，完成後再回來" : next?.status === "ready" ? "生活修練已完成・走向回聲之門" : next ? `和${npcOf(next.choices[0].npcId)?.name}聊聊，決定下一步` : "隨意走走，尋找還沒聽過的故事";
   return <main className="town-experience" aria-label="晨鐘鎮可探索場景">
     <div className="town-viewport" ref={viewport} role="application" tabIndex={0} aria-label="點選地面移動角色；方向鍵或WASD移動，E互動">
-      <WorldCanvas width={size.width} height={size.height} state={{zone,camera,zoom,player:position,identity:character.profession,direction,frame:moving&&!modal?stride:0,tier:character.advancements[character.profession],discovered:data.field.discovered,bellSolved:data.field.bellSolved,destination,time:renderClock,footprints:tracks,focus:focus?.id}}/>
-      {places.filter(place=>place.id!=="echo"||!foundEcho).map(place=><GameButton key={place.id} className={"world-hit-target "+place.kind} aria-label={`前往${place.name}`} style={{left:(place.x-camera.x)*zoom,top:(place.y-camera.y)*zoom}} onActivate={()=>navigate(place)}><span className="sr-only">{place.name}</span></GameButton>)}
+      <WorldCanvas width={size.width} height={size.height} state={{appearance:character,zone,camera,zoom,player:position,identity:character.profession,direction,frame:moving&&!modal?stride:0,tier:character.advancements[character.profession],discovered:data.field.discovered,bellSolved:data.field.bellSolved,destination,time:renderClock,footprints:tracks,focus:focus?.id}}/>
+      {places.filter(place=>place.id!=="echo"||!foundEcho).map(place=><GameButton key={place.id} className={"world-hit-target "+place.kind} aria-label={`前往${place.name}`} style={{left:(place.x-camera.x)*zoom,top:(place.y-camera.y)*zoom}} onActivate={()=>{navigate(place);talkWhenClose.current=place.kind==="npc"?place.id:null;}}><span className="sr-only">{place.name}</span></GameButton>)}
       <span className={"field-player "+(moving&&!modal?"is-walking":"")} data-player-x={position.x.toFixed(1)} data-player-y={position.y.toFixed(1)} data-facing={direction} data-frame={moving&&!modal?stride:0} style={{left:(position.x-camera.x)*zoom,top:(position.y-camera.y)*zoom}} aria-label={character.name}/>
     </div>
     {zoneBanner&&<div className="zone-arrival" key={zone}><small>{zoneInfo[zone].subtitle}</small><h1>{zoneInfo[zone].name}</h1><i/></div>}
@@ -152,9 +150,9 @@ function TownPlayfield({character, dreams, data, error, act, reload, onRefresh, 
     {data.battle?.phase === "active" && <button className="scene-resume" onClick={() => setEncounter(data.battle!.episodeId)}><Swords size={15}/>接續未結束的試煉<ArrowRight size={14}/></button>}
     {notice && <div className="scene-notice" role="status"><Sparkles size={18}/><span>{notice}</span></div>}
     {error && <div className="scene-error" role="alert">{error}</div>}
-    <div className="scene-controls"><MovementPad onMove={point => {pad.current = point;path.current = [];}}/><div className="scene-interaction" data-nearby={near?.id ?? ""}><span>{near ? near.kind === "npc" ? npcOf(near.npcId??near.id)?.role : near.name : "點地面也能移動"}</span><GameButton aria-label={near ? near.kind === "npc" ? `和${near.name}交談` : near.kind === "echo" ? "拾起微光" : near.kind === "portal" ? "進入回聲之門" : near.kind === "bell" ? "敲響共鳴石" : near.name : "探索"} className={near ? "can-interact" : ""} disabled={!near || modal} onActivate={() => void interact()}>{near?.kind === "npc" ? <MessageCircle size={25}/> : near?.kind === "portal" ? <Swords size={25}/> : <Sparkles size={25}/>}<strong>{near ? near.kind === "npc" ? `和${near.name}交談` : near.kind === "echo" ? "拾起微光" : near.kind === "portal" ? "進入回聲之門" : near.kind === "bell" ? "敲響共鳴石" : near.name : "探索"}</strong><small>E</small></GameButton></div></div>
+    <div className="scene-controls"><MovementPad onMove={point => {pad.current = point;path.current = [];talkWhenClose.current=null;if(Math.hypot(point.x,point.y)>.05)setSelectedPlaceId(null);}}/><div className="scene-interaction" data-nearby={near?.id ?? ""}><span>{near ? near.kind === "npc" ? npcOf(near.npcId??near.id)?.role : near.name : "點地面也能移動"}</span><GameButton aria-label={near ? near.kind === "npc" ? `和${near.name}交談` : near.kind === "echo" ? "拾起微光" : near.kind === "portal" ? "進入回聲之門" : near.kind === "bell" ? "敲響共鳴石" : near.name : "探索"} className={near ? "can-interact" : ""} disabled={!near || modal} onActivate={() => void interact(near?.id)}>{near?.kind === "npc" ? <MessageCircle size={25}/> : near?.kind === "portal" ? <Swords size={25}/> : <Sparkles size={25}/>}<strong>{near ? near.kind === "npc" ? `和${near.name}交談` : near.kind === "echo" ? "拾起微光" : near.kind === "portal" ? "進入回聲之門" : near.kind === "bell" ? "敲響共鳴石" : near.name : "探索"}</strong><small>E</small></GameButton></div></div>
 
-    <Dialog open={!!npc} onOpenChange={open => {if (!open) setNpcId(null);}}><DialogContent className="field-npc-dialog">{npc && <><div className="field-npc-scene"><NpcFullFigure npc={npc}/><span>{npc.location}</span></div><DialogHeader><small className="eyebrow">{npc.role}</small><DialogTitle>{npc.name}</DialogTitle><DialogDescription>{primaryEpisode ? primaryEpisode.intro.find(line => line.speaker === npc.id)?.text ?? npc.greeting : npc.greeting}</DialogDescription></DialogHeader><div className="field-npc-options">{primaryEpisode && <button className="primary-button" onClick={() => story(primaryEpisode)}><ScrollText size={18}/>{primaryEpisode.status === "active" ? "繼續我們的修練" : primaryEpisode.title}<ArrowRight size={16}/></button>}<button className="secondary-button" onClick={() => void acceptNpc()} disabled={!quests}><Compass size={17}/>{quests?.introductions.find(quest => quest.npcId === npcId)?.status === "complete" ? "回顧生活委託" : "有什麼我能在生活中練習的？"}</button>{npcEpisode && npcEpisode.status !== "locked" && <button className="text-button" onClick={() => story(npcEpisode)}>{npcEpisode.status === "cleared" ? "重溫你的故事" : "聽聽你的故事"}<ArrowRight size={14}/></button>}<button className="text-button" onClick={() => setNpcId(null)}>待會見，我再去走走</button></div></>}</DialogContent></Dialog>
+    <Dialog open={!!npc} onOpenChange={open=>{if(!open)setNpcId(null);}}><DialogContent className="field-npc-dialog">{npc&&<NpcConversation key={npc.id} npc={npc} character={character} board={quests} intro={primaryEpisode?.intro.find(line=>line.speaker===npc.id)?.text??npc.greeting} primary={primaryEpisode} bond={npcEpisode&&npcEpisode.status!=="locked"?{title:npcEpisode.status==="cleared"?"重溫你的故事":"聽聽你的故事"}:undefined} onPrimary={()=>primaryEpisode&&story(primaryEpisode)} onBond={()=>npcEpisode&&story(npcEpisode)} onAccept={onAccept} onQuest={onQuest} onClose={()=>setNpcId(null)} onNavigate={onNavigate}/>}</DialogContent></Dialog>
     <Dialog open={help} onOpenChange={setHelp}><DialogContent className="field-help-dialog"><DialogHeader><span className="eyebrow">LEARN BY EXPLORING</span><DialogTitle>先走一步，就已經在玩了。</DialogTitle><DialogDescription>這裡沒有必須照表完成的開場。先散步、和夥伴說話，或聽聽廣場上的共鳴石。</DialogDescription></DialogHeader><ol><li><strong>自己走近</strong><p>點地面移動，或按住左下十字方向鍵（也能切換搖桿）。靠近人物與物件後，右下角會出現互動。</p></li><li><strong>把一點冒險帶進生活</strong><p>和夥伴選擇一段修練，到生活中實際完成，再回來記下成長。</p></li><li><strong>親自通過試煉</strong><p>走向回聲之門，用走位、閃避和職業戰技尋回故事；失敗不扣成長。</p></li></ol><p className="field-keyboard">電腦：WASD / 方向鍵移動 · E 互動<br/>地圖可幫你找路，不會把你瞬間傳送。</p><button className="primary-button" onClick={() => setHelp(false)}>我自己去探索<Compass size={17}/></button><p className="rpg-footnote">免登入試玩・進度只存於目前瀏覽器。<br/>配樂自願開啟，聲音設定在右上角。</p></DialogContent></Dialog>
     <Dialog open={map} onOpenChange={setMap}><DialogContent className="field-map-dialog"><DialogHeader><DialogTitle>{zoneInfo[zone].name}・地圖與地點</DialogTitle><DialogDescription>選擇地點後，角色會沿道路走過去；途中隨時能改變方向。</DialogDescription></DialogHeader><div className="field-map-preview" data-zone={zone}><SceneMinimap zone={zone} player={position} focus={focus} expanded/></div><div className="field-place-list">{places.filter(place => place.kind !== "echo").map(place => <button key={place.id} data-place-id={place.id} onClick={() => navigate(place)}><span>{place.kind === "npc" ? <MessageCircle size={16}/> : place.kind === "portal" ? <Swords size={16}/> : <Music2 size={16}/>} {place.name}</span><small>{Math.round(distance(position, place) / 15)}m <ArrowRight size={13}/></small></button>)}</div></DialogContent></Dialog>
     <Dialog open={!!note} onOpenChange={open=>{if(!open)setNote(null);}}><DialogContent className="field-note-dialog"><DialogHeader><span className="eyebrow">旅途手記 · {zoneInfo[zone].name}</span><DialogTitle>{note?fieldNotes[note]?.title:""}</DialogTitle><DialogDescription>{note?fieldNotes[note]?.text:""}</DialogDescription></DialogHeader><small>已收錄 {Object.keys(fieldNotes).filter(id=>data.field.discovered.includes(id)).length} / {Object.keys(fieldNotes).length} 段文字。探索不取代生活修練，也不消耗星露。</small><button className="primary-button" onClick={()=>setNote(null)}>闔上手記，繼續走走<BookOpen size={16}/></button></DialogContent></Dialog>

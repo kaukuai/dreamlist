@@ -6,6 +6,8 @@ Vercel 原專案 `kaukuai-dreamlist.vercel.app` 現在以**免登入試看版**�
 
 本輪場景與戰鬥美術更新見 [SCENE_ART_DIRECTION.md](SCENE_ART_DIRECTION.md)：原創地標／室內陳設、實際區域小地圖、鐘亭戰場與六種敵人姿態，保留原本進度。
 
+NPC、穿戴外觀與商店這輪整合見 [NPC_GROWTH_REVIEW.md](NPC_GROWTH_REVIEW.md)。
+
 ## 目前可以玩
 
 瀏覽器版目前直接從可走動的晨鐘鎮開始：點地面、搖桿或鍵盤移動，靠近六位 NPC 交談，敲響共鳴石、選故事修練，再親自走位、閃避並使用職業戰技完成試煉。生活行動一次只呈現當前一步，可以放下手機實際去做。原創探索／戰鬥配樂與行動／環境聲需自行開啟，三類音量可獨立調整。玩法研究、來源與原型界線見 [PLAY_EXPERIENCE_RESEARCH.md](PLAY_EXPERIENCE_RESEARCH.md)。

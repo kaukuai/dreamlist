@@ -1,0 +1,52 @@
+import type {NpcId,QuestTemplate} from './quest-model.ts';
+export const npcStories:Record<NpcId,{profession:'warrior'|'mage'|'ranger'|'healer'|'artisan'|'bard';topics:{id:string;title:string;pages:string[]}[];quests:Omit<QuestTemplate,'kind'|'npcId'>[]}>={
+ selene:{profession:'mage',topics:[
+  {id:'magic',title:'妳眼中的魔法是什麼？',pages:['賽琳把掌心的藍光收進書頁。「記住咒語以前，要先分清楚：我知道的、我猜的，還有我還不懂的。很多魔法失控，只是有人不願意承認最後一項。」','「如果想走法師的路，去學一點新知，再留一小段安靜理解它。知識讓你看見可能，心靈修練讓你知道什麼時候該停手。你可以同時學劍；書庫不會因為你的手上有繭，就把門關上。」']},
+  {id:'past',title:'這本沒有名字的書？',pages:['她沒有立刻回答，先把一張空白借書卡翻到背面。那裡有一道很淡的燒痕。「這是老師留下的書。我曾以為，只要抄得夠仔細，就能把他遺忘的名字抄回來。」','「後來我發現，記憶不只在字裡。有人還記得他如何等一個學生問完問題。所以我把書庫的椅子留下了。你不必拿答案來換座位。」']},
+  {id:'town',title:'鐘聲和書庫有什麼關係？',pages:['「鎮誌裡最早的鐘聲，是為一個學會寫自己名字的人響的。那天沒有考試，也沒有人比較誰寫得漂亮。」她將索引推到你面前，紙邊還夾著巡林人的葉片。','「去看看林中的手記吧。真正被留下的，往往不是最厲害的那一頁，而是某個人願意開始的那一頁。」']}
+ ],quests:[
+  {id:'selene-quiet-ink-v1',requires:'selene-first-page-v1',skill:'mindfulness',title:'不急著回答的墨水',description:'賽琳的墨水遇到急促的呼吸就會散開。她請你把一點安靜帶回生活，練習在問題旁停留。',minutes:3,steps:[{title:'安靜坐一分鐘，讓注意力回到自然呼吸'},{title:'想起剛學的一件事，說出一個還不懂的地方'},{title:'用一句話告訴自己：可以慢慢理解'}]},
+  {id:'selene-two-sources-v1',requires:'selene-quiet-ink-v1',skill:'knowledge',title:'星頁上的兩種說法',description:'同一顆星在兩份舊圖上有不同名字。賽琳想聽的不是誰贏，而是你如何查證。',minutes:4,steps:[{title:'找一個有興趣的小問題，閱讀兩個不同來源',alternative:'聽兩段簡短說明'},{title:'記下一點相同與一點不同，留下仍需確認的部分'}]}
+ ]},
+ lorne:{profession:'warrior',topics:[
+  {id:'strength',title:'成為戰士，一定要很強壯嗎？',pages:['洛恩將木劍橫放在膝上。「力氣可以練，逞強倒是很難卸下來。巡衛的第一課，是知道自己今天能走多遠。」','「讓身體以舒服的方式活動，記得休息，也記得觀察。坐著練手指的人和跑過山路的人，都有自己正在守住的生活。等你準備好了，再來看戰士的修練條件。」']},
+  {id:'scar',title:'你的護甲為什麼留著裂痕？',pages:['他摸了摸肩甲，像是在確認一個老朋友還在。「第一次值勤，我追著腳印跑，忘了回頭看同行的人。這道裂痕，是我回去接他時留下的。」','「奧里說可以修得看不出來。我請他只補牢。我要記住，守護不是走得最快，而是知道誰還沒有跟上。」']},
+  {id:'rest',title:'巡衛也會害怕嗎？',pages:['「會。鐘聲停下的那天，我把巡邏路線多走了三遍，以為忙起來就不會想。」洛恩笑了一下。「結果，連靴帶鬆了都沒發現。」','「米菈只問我渴不渴。有時候，把今天安穩地過完，就是你能做的守護。若你也累了，今天的訓練可以從放鬆肩膀開始。」']}
+ ],quests:[
+  {id:'lorne-rest-route-v1',requires:'lorne-first-training-v1',skill:'mindfulness',title:'巡衛休息的空白格',description:'洛恩的值勤表沒有寫休息。替自己的今天留一格，讓他學會把守護也留給自己。',minutes:2,steps:[{title:'留意身體一個緊繃或疲累的位置'},{title:'用舒服的姿勢休息一分鐘，鬆開那個位置'}]},
+  {id:'lorne-steady-step-v1',requires:'lorne-rest-route-v1',skill:'fitness',title:'不搶快的巡路練習',description:'這次洛恩收起計時沙漏，請你練習能夠持續的步調。',minutes:4,steps:[{title:'以舒服的速度活動身體三分鐘',alternative:'坐姿活動手腕與雙腳兩分鐘'},{title:'停下來感受呼吸，記下一個適合自己的節奏'}]}
+ ]},
+ eira:{profession:'ranger',topics:[
+  {id:'route',title:'怎麼走上遊俠的路？',pages:['艾菈把地圖轉向你，空白比線條還多。「先觀察，再動手試。看見路的人很多，願意替路做一個新記號的人，就少一些。」','「探索幫你發現可能，工藝讓你用手把它變成方法。不必去危險的地方；重新認識房間的一個角落，也能練習遊俠需要的眼睛。」']},
+  {id:'compass',title:'妳的羅盤為什麼不指北？',pages:['「它壞了。」她說得很坦然，隨即把羅盤蓋好。「以前我覺得嚮導不能迷路，所以一直假裝它還能用。後來迷了路，才學會看河流和樹影。」','「現在留著它，是提醒自己可以問人。你不需要一開始就有夢想地圖，先把今天注意到的東西記下來，我們再一起補。」']},
+  {id:'bridge',title:'溪橋另一端有什麼？',pages:['「有一座不再報時的鐘亭，也有我沒走完的一條小路。手記分散在橋前和橋後，慢慢找就能接起來。」','「過橋別只盯著對岸。看看水往哪裡走，聽聽木板的聲音。如果想改變方向，橋也會讓你走回來。」']}
+ ],quests:[
+  {id:'eira-mark-route-v1',requires:'eira-first-map-v1',skill:'craft',title:'給迷路的人一個記號',description:'艾菈想做不必依靠羅盤的路標。用日常物件試做一個能讓人理解的小記號。',minutes:3,steps:[{title:'挑一個常混淆的抽屜、資料夾或生活角落'},{title:'畫或寫一個清楚的小標記，放在適合的位置'},{title:'想想第一次看見它的人能否理解'}]},
+  {id:'eira-same-window-v1',requires:'eira-mark-route-v1',skill:'exploration',title:'同一扇窗的新地圖',description:'路不一定要越走越遠。艾菈邀你回到熟悉之處，看見上次漏掉的故事。',minutes:3,steps:[{title:'再看一次熟悉的地方，找一個光影或聲音的變化'},{title:'記下它和上次有何不同，替這個地方取一個小名字'}]}
+ ]},
+ mira:{profession:'healer',topics:[
+  {id:'care',title:'療癒師從哪裡開始？',pages:['米菈將茶杯往你這邊挪了一點。「從注意到需要開始。不是每種不舒服都要立刻解決，也不是每個沉默的人都在等建議。」','「先練習覺察自己的狀態，再學會回應它。心靈修練是療癒師的基礎；你也可以繼續學其他技能，照顧人不會要求你放下所有好奇。」']},
+  {id:'mint',title:'妳為什麼種這麼多薄荷？',pages:['「因為第一次照料的那盆枯掉了。」她沒有避開你的目光。「我照著書每天澆水，卻沒發現窗邊太冷。那時才知道，認真和理解並不是同一件事。」','「現在我每天都看看葉子，不再只看日曆。人也一樣。同樣的練習，有時適合今天，有時要換個方式。」']},
+  {id:'chair',title:'這張空椅子留給誰？',pages:['「留給還不知道怎麼開口的人。可以坐著，不必帶來一個值得被傾聽的大問題。」她將另一杯茶留在桌邊。','「如果今天做不到預定的事，也可以先回來喝水。已經學會的、已經走過的，不會因為你需要休息就被拿走。」']}
+ ],quests:[
+  {id:'mira-listen-cup-v1',requires:'mira-first-rest-v1',skill:'expression',title:'先聽完，再端茶',description:'米菈想替茶桌寫一張提醒：在給建議以前，先讓一句話被聽完。',minutes:3,steps:[{title:'聽自己或一位願意分享的人說完一件小事'},{title:'用一句話回述你聽見的感受，不急著給建議'}]},
+  {id:'mira-small-care-v1',requires:'mira-listen-cup-v1',skill:'mindfulness',title:'把自己也算進去',description:'米菈的照護名單總漏掉自己。請在今天替自己完成一個小小照顧。',minutes:2,steps:[{title:'辨認自己現在的一個需要：水、休息或舒適的姿勢'},{title:'做一個能回應需要的小動作，停留片刻感受變化'}]}
+ ]},
+ ori:{profession:'artisan',topics:[
+  {id:'work',title:'做工匠需要很有天分嗎？',pages:['奧里把一隻翅膀歪掉的木鳥放到桌上。「第一隻。我留著它，是免得自己忘記，第二隻從哪裡開始。」','「創作工藝包含手作、烹飪、程式和整理方法。先做小一點，讓你能看見一次修改帶來的差別。進工坊不用證明你有天分，帶著想動手的念頭就行。」']},
+  {id:'shop',title:'這些裝備怎麼買？',pages:['「用星露換。你完成生活行動時得到的那些亮光，就是付款的星露。商店標的是完整價格，購買一次就永久收藏。」','他敲了敲展示架。「買下來還要穿戴，外觀和屬性才會換上。想知道差多少，先看試穿圖；喜歡原來的樣子也能免費卸下。我不賣神祕箱子，架上放什麼就給你什麼。」']},
+  {id:'bell',title:'你修得好沉默的鐘嗎？',pages:['「金屬可以補，鐘裡忘掉的事，我就沒辦法了。」奧里將一枚小零件放在掌心。「洛恩說先修支架，賽琳說先找記錄。我想，他們都對。」','「大東西也得從能做的小部分開始。你帶回生活裡的練習，我把能修的地方修好；等故事接起來，鐘也許就知道為誰響了。」']}
+ ],quests:[
+  {id:'ori-observe-tool-v1',requires:'ori-first-workshop-v1',skill:'exploration',title:'工具放錯地方的原因',description:'奧里不想再責怪自己的壞記性。觀察一個不順手的地方，找找環境能怎麼幫忙。',minutes:3,steps:[{title:'觀察一個經常找不到的物品或檔案'},{title:'找出使用它時最自然的位置，記下一個改善想法'}]},
+  {id:'ori-second-bird-v1',requires:'ori-observe-tool-v1',skill:'craft',title:'第二隻木鳥',description:'不用抹去第一件作品。挑一個小地方修改，為下一次動手留下方法。',minutes:4,steps:[{title:'選一件小作品或日常安排，動手改進一個細節'},{title:'用一句話記下修改前後的差別，不必追求完美'}]}
+ ]},
+ lucien:{profession:'bard',topics:[
+  {id:'voice',title:'要怎麼成為旅歌詩人？',pages:['露榭輕撥一根弦，等餘音散去才說話。「把一件事好好表達出來，就已經在練習。歌、文字、說話，都能讓另一個人靠近你的世界。」','「表達共鳴是詩人的基礎。音準可以慢慢學，但先別把自己的聲音收起來。只唱給自己聽，也是一段完整的練習。」']},
+  {id:'song',title:'你最珍惜的是哪首歌？',pages:['「還沒寫完的那首。只有洗杯子、等雨停、走回家的腳步聲，沒有英雄。」他將琴抱近了一點。','「以前我總想寫足以傳唱的故事。後來才發現，有些人只是需要聽見：平凡的一天，也有人願意替它留下一段旋律。」']},
+  {id:'silence',title:'鐘不響了，你怎麼還在唱？',pages:['「因為安靜和沉默不一樣。安靜讓你聽清楚，沉默卻可能把一句還沒說完的話關住。」','「我不打算用歌把鐘聲蓋過去。只是先在這裡留一個聲音，等某個人願意接下一句。」']}
+ ],quests:[
+  {id:'lucien-listen-pause-v1',requires:'lucien-first-song-v1',skill:'mindfulness',title:'旋律之間的空拍',description:'露榭的新曲少了一段休止。試著不急著填滿安靜，聽見旋律之外的聲音。',minutes:2,steps:[{title:'安靜聽一分鐘身邊的聲音，不急著評斷'},{title:'選一個最輕微的聲音，記下它帶來的感覺'}]},
+  {id:'lucien-evening-line-v1',requires:'lucien-listen-pause-v1',skill:'expression',title:'寫給普通一天的副歌',description:'露榭把歌本留出一行，請你為今天一個平凡片刻配上自己的句子。',minutes:3,steps:[{title:'想起今天一個普通卻想留下的小片刻'},{title:'用一句話、三行短文或一小段旋律表達它'}]}
+ ]}
+};
+export const companionQuests:QuestTemplate[]=Object.entries(npcStories).flatMap(([npcId,story])=>story.quests.map(q=>({...q,npcId:npcId as NpcId,kind:'npc' as const})));

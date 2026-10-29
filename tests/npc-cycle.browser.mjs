@@ -1,0 +1,40 @@
+import assert from 'node:assert/strict';import{mkdirSync}from'node:fs';import{pathToFileURL}from'node:url';
+import{equipment}from'../lib/character-model.ts';
+const modulePath=process.env.PLAYWRIGHT_MODULE;
+if(!modulePath)throw new Error('Set PLAYWRIGHT_MODULE to an installed Playwright index.mjs');
+const pw=await import(pathToFileURL(modulePath).href),engine=process.env.BROWSER_ENGINE??'chromium',base=process.env.DREAMLIST_FIELD_URL??'http://127.0.0.1:3197';
+let options={};
+if(engine==='webkit'){
+ const root=process.env.WEBKIT_RUNTIME_DIR,deps=process.env.WEBKIT_DEPS_DIR;if(!root||!deps)throw new Error('Set WebKit runtime and verified library directories');
+ options={executablePath:root+'/bin/MiniBrowser',env:{...process.env,WEBKIT_EXEC_PATH:root+'/bin',WEBKIT_INJECTED_BUNDLE_PATH:root+'/lib',WEBKIT_INSPECTOR_RESOURCES_PATH:root+'/share',LD_LIBRARY_PATH:root+'/lib:'+root+'/sys/lib:'+deps}};
+}else{
+ if(!process.env.CHROMIUM_MODULE)throw new Error('Set CHROMIUM_MODULE');const {default:chromium}=await import(pathToFileURL(process.env.CHROMIUM_MODULE).href);options={executablePath:await chromium.executablePath(),args:chromium.args.filter(x=>!['--single-process','--disable-web-security','--allow-running-insecure-content'].includes(x))};
+}
+let transport;
+if(base.startsWith('https:')&&process.env.HTTPS_PROXY){const u=new URL(process.env.HTTPS_PROXY),proxy={server:u.protocol+'//'+u.host};if(u.username)proxy.username=decodeURIComponent(u.username);if(u.password)proxy.password=decodeURIComponent(u.password);transport=await pw.request.newContext({proxy,ignoreHTTPSErrors:false});}
+const browser=await pw[engine].launch(options),context=await browser.newContext({viewport:{width:390,height:844},isMobile:true,hasTouch:true}),page=await context.newPage();
+
+const errors=[];page.on('pageerror',e=>errors.push(e.message));
+if(transport)await context.route(new URL(base).origin+'/**',async route=>{const response=await transport.fetch(route.request(),{maxRedirects:0});await route.fulfill({response});});
+mkdirSync('outputs/npc-cycle',{recursive:true});
+const key='dreamlist:browser-preview:v1',state=()=>page.evaluate(k=>JSON.parse(localStorage.getItem(k)),key);
+async function go(id){await page.getByRole('button',{name:'地圖與地點',exact:true}).click();await page.locator('[data-place-id="'+id+'"]').click();await page.waitForFunction(id=>document.querySelector('.scene-interaction')?.dataset.nearby===id,id,{timeout:30000});await page.locator('.scene-interaction>button').click();await page.locator('.npc-conversation-body').waitFor();}
+async function complete(){await page.locator('.life-focus-dialog').waitFor();while(await page.getByRole('button',{name:'我已在生活中完成',exact:true}).count()){const old=(await state()).receipts.length;await page.getByRole('button',{name:'我已在生活中完成',exact:true}).click();await page.waitForFunction(({key,old})=>JSON.parse(localStorage.getItem(key)).receipts.length>old,{key,old});await page.waitForTimeout(100);}await page.getByRole('button',{name:'回到冒險',exact:true}).click();}
+try{
+await page.goto(base);await page.locator('.world-canvas[data-ready=true]').waitFor({timeout:60000});
+await go('selene');await page.getByRole('button',{name:'如何成為星語法師？',exact:true}).click();await page.getByText('你的修練進度 · 星語法師',{exact:true}).waitFor();await page.screenshot({path:'outputs/npc-cycle/mage-guide.png'});await page.getByRole('button',{name:'回到交談選項',exact:true}).click();await page.getByRole('button',{name:'這本沒有名字的書？',exact:true}).click();await page.getByRole('button',{name:'繼續聽',exact:true}).click();await page.getByText('你不必拿答案來換座位。',{exact:false}).waitFor();await page.getByRole('button',{name:'再聊點別的',exact:true}).click();
+await page.getByRole('button',{name:'有什麼我能在生活中練習的？',exact:false}).click();assert.equal(await page.locator('.npc-commission.locked').count(),2);await page.locator('.npc-commission.available').getByRole('button',{name:'接下這份委託',exact:true}).click();await complete();console.log('PASS first quest');
+assert.equal((await state()).receipts.reduce((n,r)=>n+r.coins,0),175);
+await go('selene');await page.getByRole('button',{name:'有什麼我能在生活中練習的？',exact:false}).click();assert.equal(await page.locator('.npc-commission.available').count(),1);await page.locator('.npc-commission.available').getByRole('button',{name:'接下這份委託',exact:true}).click();await complete();console.log('PASS followup');
+await go('ori');await page.getByRole('button',{name:'逛木光星露商店',exact:false}).click();await page.getByText('木光星露商店',{exact:true}).waitFor();await page.locator('.hero-sprite-preview .pixel-actor[data-ready=true]').waitFor();const before=await page.locator('.hero-sprite-preview .pixel-actor').evaluate(e=>e.toDataURL());const balanceBefore=Number(await page.locator('.resource-tag').innerText());
+await page.getByRole('button',{name:'星紋秘杖，60 星露',exact:true}).click();await page.getByRole('button',{name:'60 星露 · 購買',exact:true}).click();await page.getByRole('button',{name:'穿戴裝備',exact:true}).click();await page.waitForFunction(()=>document.querySelector('.hero-sprite-preview .pixel-actor')?.dataset.appearance.includes('oak-staff'));await page.keyboard.press('Escape');const after=await page.locator('.hero-sprite-preview .pixel-actor').evaluate(e=>e.toDataURL());assert.notEqual(after,before,'equipped staff must change actual rendered pixels');await page.screenshot({path:'outputs/npc-cycle/shop-equipped.png'});assert.equal((await state()).inventory.filter(i=>i.itemId==='oak-staff').length,1);assert.equal(Number(await page.locator('.resource-tag').innerText()),balanceBefore-60);
+for(const item of equipment){await page.getByRole('button',{name:item.name+'，'+item.cost+' 星露',exact:true}).click();await page.locator('.item-fitting .pixel-actor[data-ready=true]').waitFor();const preview=await page.locator('.item-fitting .pixel-actor').evaluate(e=>e.toDataURL());if(item.id!=='oak-staff')assert.notEqual(preview,after,item.id+' must change actual preview pixels');if(item.level>3)assert.equal(await page.getByRole('button',{name:'Lv.'+item.level+' 解鎖',exact:true}).isEnabled(),false);await page.keyboard.press('Escape');}
+console.log('PASS thirteen actual pixel previews and level gates');
+for(const width of [320,390,428,768,1440]){await page.setViewportSize({width,height:width===320?640:844});assert.equal(await page.evaluate(()=>document.documentElement.scrollWidth>innerWidth),false);}
+await page.setViewportSize({width:390,height:844});
+await page.getByRole('button',{name:'返回冒險',exact:true}).click();await page.locator('.world-canvas[data-ready=true]').waitFor();await page.screenshot({path:'outputs/npc-cycle/mage-staff-world.png'});await page.reload();await page.locator('.world-canvas[data-ready=true]').waitFor();assert.equal((await state()).equipped.weapon,'oak-staff');
+await page.getByRole('button',{name:'更多選單',exact:true}).click();await page.getByRole('navigation',{name:'主要導覽'}).getByRole('button',{name:'星露商店',exact:true}).waitFor();assert.equal(await page.getByRole('navigation',{name:'主要導覽'}).getByRole('button',{name:'營地',exact:true}).count(),0);await page.keyboard.press('Escape');
+for(const id of ['eira','lorne','selene','mira','ori','lucien']){console.log('NPC',id);await go(id);await page.locator('.npc-pixel-signature .pixel-actor[data-ready=true]').waitFor();await page.locator('.npc-pixel-signature').scrollIntoViewIfNeeded();await page.screenshot({path:'outputs/npc-cycle/'+id+'.png'});await page.keyboard.press('Escape');}
+await go('eira');await page.keyboard.press('Escape');await page.getByRole('button',{name:'前往艾菈',exact:true}).click();await page.locator('.npc-conversation-body[data-npc=eira]').waitFor();
+assert.deepEqual(errors,[]);console.log('PASS all NPCs, career guide, branch dialogue, gated quests, earned wallet, buy/equip pixels, reload, shop entry and no camp');
+}catch(e){console.log('ERRORS',errors);await page.screenshot({path:'outputs/npc-cycle/failure.png'});throw e;}finally{await page.waitForLoadState('networkidle').catch(()=>{});await context.unrouteAll({behavior:"wait"});await context.close();await browser.close();await transport?.dispose();}

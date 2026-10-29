@@ -9,7 +9,7 @@ import type {Dream} from "@/lib/dream-model";
 import {appFetch} from "@/lib/client-api";
 
 type Props = {dreams: Dream[]; busy: boolean; loading: boolean; onAccept: (offerId: string) => Promise<Dream | undefined>; onSelect: (dream: Dream) => void};
-const statusText = {available: "可以接取", active: "修練中", complete: "已完成", archived: "已收起"};
+const statusText = {available: "可以接取", active: "修練中", complete: "已完成", archived: "已收起",locked:"完成前篇解鎖"};
 export function NpcFullFigure({npc}: {npc: Npc}) {
   return <span className="npc-full-figure" role="img" aria-label={npc.name + "完整立繪"} style={{backgroundPosition: `${npc.portrait % 3 / 2 * 100}% ${Math.floor(npc.portrait / 3) * 100}%`}}/>;
 }
@@ -42,7 +42,7 @@ export default function QuestHub({dreams, busy, loading, onAccept, onSelect}: Pr
   }, [data]);
 
   const npc = selected ? npcOf(selected.npcId) : null;
-  const choices = data && npc ? [...data.daily.filter(offer => offer.npcId === npc.id), ...data.introductions.filter(offer => offer.npcId === npc.id)] : [];
+  const choices = data && npc ? [...data.daily.filter(offer => offer.npcId === npc.id), ...(data.sideQuests??[]).filter(offer=>offer.npcId===npc.id), ...data.introductions.filter(offer => offer.npcId === npc.id)] : [];
   const offer = choices.find(offer => offer.offerId === selected?.offerId) ?? choices.find(offer => offer.status === "available") ?? choices[0];
   const openExisting = (offer: QuestOffer) => {const dream = dreams.find(dream => dream.id === offer.dreamId); if (dream) {setSelected(null); onSelect(dream);} else setRefresh(value => value + 1);};
   async function accept(offer: QuestOffer) {
@@ -71,7 +71,7 @@ export default function QuestHub({dreams, busy, loading, onAccept, onSelect}: Pr
     <Dialog open={Boolean(npc && offer)} onOpenChange={open => {if (!open && !busy) setSelected(null);}}><DialogContent className="npc-dialog">{npc && offer && <>
       <div className="npc-dialog-scene" style={{"--npc-color": npc.color} as CSSProperties}><NpcPortrait npc={npc}/><DialogHeader><span className="eyebrow">{npc.location}</span><DialogTitle>{npc.name}<small>{npc.role}</small></DialogTitle><DialogDescription>{offer.status === "complete" ? npc.thanks : npc.greeting}</DialogDescription></DialogHeader></div>
       <div className="npc-dialog-body"><details className="npc-lore"><summary>關於{npc.name}</summary><p>{npc.personality}</p></details>
-        {choices.length > 1 && <div className="npc-offer-choices" aria-label="這位 NPC 的委託">{choices.map(choice => <button key={choice.offerId} aria-pressed={choice.offerId === offer.offerId} onClick={() => setSelected({npcId: npc.id, offerId: choice.offerId})}>{choice.kind === "daily" ? "今日委託" : "初識委託"}{choice.status === "complete" && <Check size={12}/>}</button>)}</div>}
+        {choices.length > 1 && <div className="npc-offer-choices" aria-label="這位 NPC 的委託">{choices.map(choice => <button key={choice.offerId} aria-pressed={choice.offerId === offer.offerId} onClick={() => setSelected({npcId: npc.id, offerId: choice.offerId})}>{choice.kind === "daily" ? "今日委託" : choice.requires?choice.title:"初識委託"}{choice.status === "complete" && <Check size={12}/>}</button>)}</div>}
         <div className="npc-quest-title"><div><span className="quest-difficulty"><Clock3 size={12}/>輕鬆・約 {offer.minutes} 分鐘</span><h3>{offer.title}</h3></div><span className="npc-skill-tag"><SkillIcon skill={offer.skill} size={15}/>{skillOf(offer.skill)?.name}</span></div><p className="npc-quest-description">{offer.description}</p>
         <ol className="npc-quest-steps">{offer.steps.map((step, index) => <li key={step.title}><span>{String(index + 1).padStart(2, "0")}</span><div><strong>{step.title}</strong>{step.alternative && <small>也可以：{step.alternative}</small>}</div></li>)}</ol>
         <div className="npc-quest-rewards"><span>首次完成整份委託</span><strong>{offer.xp} <small>XP</small></strong><strong><Sparkles size={14}/>{offer.coins} <small>星露</small></strong></div>

@@ -124,3 +124,23 @@ test("corrupt storage and quota failures are reported without overwriting prior 
   assert.equal((await blocked.request("/api/character", "POST", {action: "profile", name: "不能保存", avatarColor: "mint"})).status, 503);
   assert.equal(healthy.values.get(PREVIEW_STORAGE_KEY), before);
 });
+
+test('six companion chains unlock only after earned completion and preserve once-only receipts and wallet',async()=>{
+ const values=new Map(),store=createBrowserPreviewStore({getItem:k=>values.get(k)??null,setItem:(k,v)=>values.set(k,v)});
+ const req=async(path,method='GET',body)=>{const r=await store.request(path,method,body);return{status:r.status,...await r.json()};};
+ let b=await req('/api/quests');assert.equal(b.sideQuests.length,12);assert.ok(b.sideQuests.every(q=>q.status==='locked'));
+ const blocked=await req('/api/quests','POST',{offerId:b.sideQuests[0].offerId});assert.equal(blocked.status,409);
+ let earned=(await req("/api/island")).island.balance;
+ for(const npc of ['selene','lorne','eira','mira','ori','lucien']){
+  b=await req('/api/quests');const first=b.introductions.find(q=>q.npcId===npc),sides=b.sideQuests.filter(q=>q.npcId===npc);
+  for(const q of [first,...sides]){
+   const now=await req('/api/quests'),offer=[...now.introductions,...now.sideQuests].find(x=>x.id===q.id);assert.equal(offer.status,'available');
+   const accepted=await req('/api/quests','POST',{offerId:q.offerId});assert.equal(accepted.status,200);
+   assert.equal((await req('/api/quests','POST',{offerId:q.offerId})).dream.id,accepted.dream.id);
+   const dream=accepted.dream;await req('/api/dreams/'+dream.id,'PUT',{...dream,tasks:dream.tasks.map(t=>({...t,done:true}))});earned+=q.coins;
+   const updated=(await req('/api/dreams')).dreams.find(d=>d.id===dream.id);await req('/api/dreams/'+dream.id,'PUT',{...updated,tasks:updated.tasks.map(t=>({...t,done:false}))});const reset=(await req('/api/dreams')).dreams.find(d=>d.id===dream.id);await req('/api/dreams/'+dream.id,'PUT',{...reset,tasks:reset.tasks.map(t=>({...t,done:true}))});
+   assert.equal((await req('/api/island')).island.balance,earned,'rechecking cannot farm coins');
+  }
+ }
+ const saved=values.get(PREVIEW_STORAGE_KEY),reopened=createBrowserPreviewStore({getItem:k=>values.get(k)??null,setItem:(k,v)=>values.set(k,v)});b=await(await reopened.request('/api/quests')).json();assert.ok(b.sideQuests.every(q=>q.status==='complete'));assert.equal(values.get(PREVIEW_STORAGE_KEY),saved);assert.equal((await req('/api/island')).island.balance,earned);
+});

@@ -1,3 +1,4 @@
+import {companionQuests} from "./npc-stories.ts";
 import {z} from "zod";
 import {attributeIds, avatarColors, canAdvance, canBecome, canLearnTalent, characterPower, defaultTraining, DREAM_XP, equipment, equipmentSlots, equipmentStats, professionBonuses, professionIds, professionOf, progression, SKILL_XP, STEP_XP, talents, type CharacterState, type EquipmentSlot, type LeaderboardState, type ProfessionId, type RewardTotal, type SkillId, type TalentId} from "./character-model.ts";
 import {inputSchema, normalizeTasks} from "./dream-validation.ts";
@@ -95,11 +96,11 @@ async function questBoard(state: PreviewState, now: Date): Promise<QuestBoardSta
     const contract = state.contracts.find(contract => contract.offerId === offerId);
     const dream = contract ? state.dreams.find(dream => dream.id === contract.dreamId) : null;
     const rewarded = contract && state.receipts.some(receipt => receipt.dreamId === contract.dreamId && receipt.kind === "dream");
-    return {...quest, offerId, status: !contract ? "available" : rewarded ? "complete" : !dream || dream.deleted ? "archived" : "active",
+    return {...quest, offerId, status: !contract ? quest.requires&&!state.contracts.some(c=>c.offerId===`npc:${quest.requires}`&&state.receipts.some(r=>r.dreamId===c.dreamId&&r.kind==="dream")) ? "locked" : "available" : rewarded ? "complete" : !dream || dream.deleted ? "archived" : "active",
       dreamId: dream && !dream.deleted ? dream.id : null, completedSteps: dream?.tasks.filter(task => task.done).length ?? 0,
       xp: quest.steps.length * STEP_XP + DREAM_XP, coins: quest.steps.length * 25 + 100};
   };
-  return {...clock, serverTime: now.toISOString(), daily: daily.map(quest => offer(quest!)), introductions: npcQuests.map(offer)};
+  return {...clock, serverTime: now.toISOString(), daily: daily.map(quest => offer(quest!)), introductions: npcQuests.map(offer),sideQuests:companionQuests.map(offer)};
 }
 
 async function dispatch(state: PreviewState, path: string, method: string, body: unknown, now: Date): Promise<unknown> {
@@ -144,7 +145,8 @@ async function dispatch(state: PreviewState, path: string, method: string, body:
       return {dream, created: false};
     }
     const board = await questBoard(state, now);
-    const offer = [...board.daily, ...board.introductions].find(offer => offer.offerId === offerId) ?? reject("委託已更新，請重新整理清單");
+    const offer = [...board.daily, ...board.introductions,...(board.sideQuests??[])].find(offer => offer.offerId === offerId) ?? reject("委託已更新，請重新整理清單");
+    if(offer.status==="locked")reject("先完成前一份夥伴委託，再來接取這段故事",409);
     const id = crypto.randomUUID();
     const dream: StoredDream = {id, title: offer.title, description: offer.description, category: questCategory(offer.skill), targetDate: "", revision: 1, createdAt: now.toISOString(),
       tasks: offer.steps.map((step, index) => ({id: `quest-${id}-${index + 1}`, title: questStepTitle(step), training: offer.skill, done: false, completedAt: null})),

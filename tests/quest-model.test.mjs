@@ -37,7 +37,7 @@ test('starter assignments are short, provide movement alternatives, and have val
   for (const quest of questTemplates) {
     assert.ok(npcs.some(npc => npc.id === quest.npcId));
     assert.ok(quest.minutes >= 1 && quest.minutes <= 5);
-    assert.equal(quest.steps.length, quest.kind === 'daily' ? 1 : 3);
+    if(quest.requires){assert.ok(questTemplates.some(q=>q.id===quest.requires&&q.npcId===quest.npcId));assert.ok(quest.steps.length>=2&&quest.steps.length<=3);}else assert.equal(quest.steps.length, quest.kind === 'daily' ? 1 : 3);
     assert.ok(quest.steps.every(step => questStepTitle(step).length <= 200));
     if (quest.kind === 'daily' && quest.skill === 'fitness') assert.ok(quest.steps[0].alternative, 'movement always has a seated alternative');
   }

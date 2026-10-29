@@ -1,3 +1,4 @@
+import {companionQuests} from "./npc-stories.ts";
 import type {SkillId} from "./character-model";
 
 export const npcIds = ["eira", "lorne", "selene", "mira", "ori", "lucien"] as const;
@@ -5,7 +6,7 @@ export type NpcId = typeof npcIds[number];
 export type QuestKind = "daily" | "npc";
 export type QuestSource = {kind: QuestKind; npcId: NpcId; templateId: string; dayKey: string};
 export type QuestStep = {title: string; alternative?: string};
-export type QuestTemplate = {id: string; kind: QuestKind; npcId: NpcId; skill: SkillId; title: string; description: string; minutes: number; steps: QuestStep[]};
+export type QuestTemplate = {id: string; kind: QuestKind; npcId: NpcId; skill: SkillId; title: string; description: string; minutes: number; steps: QuestStep[]; requires?:string};
 export type Npc = {id: NpcId; name: string; role: string; location: string; personality: string; greeting: string; thanks: string; color: string; portrait: number};
 
 export const npcs: Npc[] = [
@@ -48,7 +49,7 @@ export const dailyQuests: QuestTemplate[] = [
   {id: "daily-curiosity-v1", kind: "daily", npcId: "eira", skill: "exploration", title: "換個角度看日常", description: "小小的改變，也能讓熟悉的生活有新發現。", minutes: 2, steps: [{title: "換個位置或視角觀察身邊，記下一個發現"}]},
 ];
 
-export const questTemplates = [...npcQuests, ...dailyQuests];
+export const questTemplates = [...npcQuests, ...dailyQuests, ...companionQuests];
 export const questOf = (id: string) => questTemplates.find(quest => quest.id === id);
 export const questStepTitle = (step: QuestStep) => step.title + (step.alternative ? `（或${step.alternative}）` : "");
 export const questCategory = (skill: SkillId) => ({fitness: "health", knowledge: "growth", mindfulness: "life", exploration: "travel", craft: "career", expression: "growth"})[skill];
@@ -73,5 +74,5 @@ export async function drawDailyQuests(ownerId: string, dayKey: string) {
   return shuffle([select("fitness"), ...other.map(select)]);
 }
 
-export type QuestOffer = QuestTemplate & {offerId: string; status: "available" | "active" | "complete" | "archived"; dreamId: string | null; completedSteps: number; xp: number; coins: number};
-export type QuestBoardState = {dayKey: string; serverTime: string; nextResetAt: string; daily: QuestOffer[]; introductions: QuestOffer[]};
+export type QuestOffer = QuestTemplate & {offerId: string; status: "available" | "active" | "complete" | "archived" | "locked"; dreamId: string | null; completedSteps: number; xp: number; coins: number};
+export type QuestBoardState = {dayKey: string; serverTime: string; nextResetAt: string; daily: QuestOffer[]; introductions: QuestOffer[]; sideQuests?:QuestOffer[]};

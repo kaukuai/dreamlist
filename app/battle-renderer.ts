@@ -1,3 +1,4 @@
+import type {HeroAppearance} from "@/lib/sprite-appearance";
 import type {ArenaState} from "@/lib/arena-engine";
 import {arenaSafeRadius,arenaView} from "@/lib/arena-view";
 import {facingFromVector} from "@/lib/pixel-actors";
@@ -8,7 +9,7 @@ export type BattleTheme="sanctuary"|"archive"|"rift";
 const colors={wanderer:"#f5dfad",warrior:"#ffd19c",mage:"#a3dafa",ranger:"#bcf2c8",bard:"#e9c5ff",artisan:"#ffc997",healer:"#a5efda"};
 function ring(ctx:CanvasRenderingContext2D,x:number,y:number,r:number,color:string,width=1){ctx.strokeStyle=color;ctx.lineWidth=width;ctx.beginPath();ctx.arc(x,y,r,0,Math.PI*2);ctx.stroke();}
 function spark(ctx:CanvasRenderingContext2D,x:number,y:number,size:number,color:string){ctx.fillStyle=color;ctx.beginPath();ctx.moveTo(x,y-size);ctx.lineTo(x+size*.25,y-size*.25);ctx.lineTo(x+size,y);ctx.lineTo(x+size*.25,y+size*.25);ctx.lineTo(x,y+size);ctx.lineTo(x-size*.25,y+size*.25);ctx.lineTo(x-size,y);ctx.lineTo(x-size*.25,y-size*.25);ctx.closePath();ctx.fill();}
-export function paintBattle(ctx:CanvasRenderingContext2D,width:number,height:number,state:ArenaState,kind:string,tier:number,theme:BattleTheme,reduced:boolean){
+export function paintBattle(ctx:CanvasRenderingContext2D,width:number,height:number,state:ArenaState,kind:string,tier:number,theme:BattleTheme,reduced:boolean,appearance?:HeroAppearance){
  const view=arenaView(width,height,state.x),time=state.tick/30,art=sanctuaryArt();ctx.imageSmoothingEnabled=false;
  ctx.fillStyle="#132322";ctx.fillRect(0,0,width,height);
  if(art){const scale=Math.max(width/art.width,height/art.height);ctx.save();ctx.globalAlpha=.32;ctx.drawImage(art,(width-art.width*scale)/2,(height-art.height*scale)/2,art.width*scale,art.height*scale);ctx.restore();}
@@ -32,10 +33,10 @@ export function paintBattle(ctx:CanvasRenderingContext2D,width:number,height:num
  }
  const swing=recent.findLast(e=>e.kind==="swing"&&state.tick-e.tick<12);
  const actor=()=>{
-  if(state.dashTime>0&&!reduced){ctx.save();ctx.globalAlpha=.18;drawSprite(ctx,state.profession,state.x-state.dashX*23,state.y-state.dashY*23,facingFromVector(state.dashX,state.dashY),walkFrame(state.travelled??0));ctx.restore();}
+  if(state.dashTime>0&&!reduced){ctx.save();ctx.globalAlpha=.18;drawSprite(ctx,state.profession,state.x-state.dashX*23,state.y-state.dashY*23,facingFromVector(state.dashX,state.dashY),walkFrame(state.travelled??0),"walk",tier,appearance);ctx.restore();}
   ctx.save();if(state.invulnerable>0)ctx.globalAlpha=.65;
   const facing=swing?facingFromVector(state.enemyX-state.x,state.enemyY-state.y):facingFromVector(Math.cos(state.facing),Math.sin(state.facing));
-  drawSprite(ctx,state.profession,state.x,state.y,facing,swing?Math.min(5,Math.floor((state.tick-swing.tick)/2)):state.tick-(state.lastMoveTick??-10)<3?walkFrame(state.travelled??0):0,swing?"slash":"walk",tier);ctx.restore();
+  drawSprite(ctx,state.profession,state.x,state.y,facing,swing?Math.min(5,Math.floor((state.tick-swing.tick)/2)):state.tick-(state.lastMoveTick??-10)<3?walkFrame(state.travelled??0):0,swing?"slash":"walk",tier,appearance);ctx.restore();
  };
  const opponent=()=>{ctx.save();if(recent.some(e=>e.kind==="hit"&&state.tick-e.tick<3))ctx.filter="brightness(1.55)";drawSceneryEnemy(ctx,kind,state.enemyX,state.enemyY,Math.floor(state.tick/9)%3);ctx.restore();};
  if(state.y<state.enemyY){actor();opponent();}else{opponent();actor();}

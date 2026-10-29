@@ -1,3 +1,4 @@
+import {companionQuests} from "./npc-stories";
 import {ApiError, findDream, prepared} from "./dream-store";
 import {DREAM_XP, STEP_XP} from "./character-model";
 import {drawDailyQuests, npcQuests, questCategory, questDay, questOf, questStepTitle, type QuestBoardState, type QuestOffer, type QuestTemplate} from "./quest-model";
@@ -33,10 +34,10 @@ export async function questBoardState(ownerId: string, now = new Date()): Promis
     const tasks: Task[] = contract?.tasks ? JSON.parse(contract.tasks) : [];
     const completedSteps = tasks.filter(task => task.done).length;
     const present = Boolean(contract?.goal_present && !contract.deleted_at);
-    const status = !contract ? "available" : contract.rewarded ? "complete" : !present ? "archived" : "active";
+    const status = !contract ? quest.requires&&!contracts.results.some(c=>c.offer_id===`npc:${quest.requires}`&&c.rewarded) ? "locked" : "available" : contract.rewarded ? "complete" : !present ? "archived" : "active";
     return {...quest, offerId, status, dreamId: present ? contract!.dream_id : null, completedSteps, xp: quest.steps.length * STEP_XP + DREAM_XP, coins: quest.steps.length * 25 + 100};
   };
-  return {...clock, serverTime, daily: daily.map(offer), introductions: npcQuests.map(offer)};
+  return {...clock, serverTime, daily: daily.map(offer), introductions: npcQuests.map(offer),sideQuests:companionQuests.map(offer)};
 }
 
 export async function acceptQuest(ownerId: string, offerId: string, now = new Date()) {
@@ -45,8 +46,9 @@ export async function acceptQuest(ownerId: string, offerId: string, now = new Da
   const existing = await db.prepare("SELECT dream_id FROM quest_contracts WHERE owner_id=? AND offer_id=?").bind(ownerId, offerId).first<{dream_id: string}>();
   if (existing) return {dream: await existingDream(existing.dream_id, ownerId), created: false};
   const board = await questBoardState(ownerId, now);
-  const offer = [...board.daily, ...board.introductions].find(offer => offer.offerId === offerId);
+  const offer = [...board.daily, ...board.introductions,...(board.sideQuests??[])].find(offer => offer.offerId === offerId);
   if (!offer) throw new ApiError(400, "這份委託不在目前的清單中；每日委託可能已更新，請重新整理");
+  if(offer.status==="locked")throw new ApiError(409,"先完成前一份夥伴委託，再來接取這段故事");
   const id = crypto.randomUUID(), timestamp = now.toISOString();
   const tasks: Task[] = offer.steps.map((step, index) => ({id: `quest-${id}-${index + 1}`, title: questStepTitle(step), training: offer.skill, done: false, completedAt: null}));
   const dayKey = offer.kind === "daily" ? board.dayKey : "";
