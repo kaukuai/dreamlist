@@ -1,9 +1,10 @@
 import {z} from "zod";
 import type {CharacterState, ProfessionId} from "./character-model.ts";
 import type {Dream} from "./dream-model.ts";
+import {masteryStage} from "./profession-mastery.ts";
 import {npcs, questCategory, type NpcId} from "./quest-model.ts";
-import {enemyOf, enemyPatterns, episodeOf, mainEpisodes, materials, regions, runes, storyEpisodes, type MaterialId, type RuneId, type StoryEpisode} from "./adventure-catalog.ts";
-import {createArena, stepArena, type ArenaState} from "./arena-engine.ts";
+import {enemyOf, enemyPatterns, episodeOf, mainEpisodes, volumeOneEpisodes, materials, regions, runes, storyEpisodes, type MaterialId, type RuneId, type StoryEpisode} from "./adventure-catalog.ts";
+import {createArena, stepArena, type ArenaState,type CombatTraits} from "./arena-engine.ts";
 import {initialField, normalizeField, touchField, walkable, type FieldProgress} from "./field-engine.ts";
 
 export type BattleMove = "strike" | "skill" | "guard" | "mend";
@@ -11,7 +12,7 @@ export type Battle = {
   id: string; episodeId: string; enemyId: string; phase: "active" | "won" | "lost";
   turn: number; hp: number; maxHp: number; foeHp: number; foeMaxHp: number; focus: number;
   attack: number; armor: number; healing: number; profession: ProfessionId; runeId: RuneId | null; practice: boolean; log: string[];
-  arena?: ArenaState;
+  arena?: ArenaState;combat?:CombatTraits;enemyKind?:ArenaState["enemyKind"];boss?:boolean;
 };
 export type AdventureState = {
   version: 1; entries: Record<string, {dreamId: string; choiceId: string; claimedAt?: string}>;
@@ -76,7 +77,8 @@ export function startBattle(episode: StoryEpisode, state: AdventureState, contex
   const primary = ({warrior: "vitality", mage: "intellect", ranger: "agility", bard: "charisma", artisan: "agility", healer: "spirit", wanderer: "luck"} as const)[player.profession];
   const power = player.profession === "wanderer" ? Math.max(...Object.values(player.effectiveAttributes)) : player.effectiveAttributes[primary];
   const maxHp = Math.round(100 + player.level * 6 + player.effectiveAttributes.vitality * 1.5 + (rune?.hp ?? 0));
-  return {id: crypto.randomUUID(), episodeId: episode.id, enemyId: foe.id, phase: "active", turn: 1, hp: maxHp, maxHp,
+  const resonance=Object.fromEntries(["intellect","vitality","agility","spirit","charisma","luck"].map(id=>[id,player.talents[`${id}-resonance` as keyof typeof player.talents]??0]));
+  return {combat:{mastery:masteryStage(player),resonance},enemyKind:foe.kind,boss:foe.boss,id: crypto.randomUUID(), episodeId: episode.id, enemyId: foe.id, phase: "active", turn: 1, hp: maxHp, maxHp,
     foeHp: foe.hp, foeMaxHp: foe.hp, focus: 3, attack: Math.round(12 + player.level * 2 + power * .55 + (rune?.attack ?? 0)),
     armor: Math.floor(player.effectiveAttributes.vitality * .12) + (rune?.armor ?? 0), healing: rune?.healing ?? 0,
     profession: player.profession, runeId: state.equippedRune, practice: Boolean(state.entries[episode.id]?.claimedAt),
@@ -144,13 +146,13 @@ export function adventureView(state: AdventureState, context: AdventureContext) 
     memories: episodes.filter(episode => episode.status === "cleared").map(episode => ({id: episode.id, ...episode.memory, ending: episode.ending, npcId: episode.choices.find(choice => choice.id === episode.entry?.choiceId)?.npcId})),
     titles: unlockedTitles(state), equippedTitle: state.equippedTitle, battle: state.battle ? {...state.battle, intent: battleIntent(state.battle)} : null,
     rhythm: rhythm(context, state.weeklyTarget), balance: context.balance, field: state.field,
-    ending: cleared === mainEpisodes.length ? endingReflection(state) : null,
+    ending: volumeOneEpisodes.every(episode=>state.entries[episode.id]?.claimedAt) ? endingReflection(state) : null,
   };
 }
 export type AdventureView = ReturnType<typeof adventureView>;
 function endingReflection(state: AdventureState) {
   const values = {courage: 0, curiosity: 0, care: 0};
-  for (const episode of mainEpisodes) {const choice = episode.choices.find(choice => choice.id === state.entries[episode.id]?.choiceId);if (choice) values[choice.vow] += 1;}
+  for (const episode of volumeOneEpisodes) {const choice = episode.choices.find(choice => choice.id === state.entries[episode.id]?.choiceId);if (choice) values[choice.vow] += 1;}
   const strongest = (Object.keys(values) as (keyof typeof values)[]).sort((a, b) => values[b] - values[a])[0];
   return {values, text: ({courage: "大家記得，你在不確定的時候仍願意踏出一步。勇氣不是沒有猶豫，而是讓猶豫的自己也能出發。", curiosity: "大家記得，你總願意再多問一個問題。那些細小的好奇，替失落的世界找回了方向。", care: "大家記得，你替疲憊與不完美留了位置。正因為有人願意照顧彼此，晨鐘才又有了回聲。"})[strongest]};
 }

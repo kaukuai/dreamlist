@@ -82,7 +82,7 @@ test("guard counters a telegraphed heavy attack, mage pierces guard, and turns c
   assert.equal(f.values.get(PREVIEW_STORAGE_KEY), before);
 });
 
-test("new player can finish all nine main chapters with real life quests, tactical combat and an ending", async () => {
+test("new player can finish all twelve main chapters including the three after-stories with real life quests, tactical combat and an ending", async () => {
   const f = fixture();let longest = 0;
   for (const [index, episode] of mainEpisodes.entries()) {
     await beginAndComplete(f, episode, episode.choices[index % 2].id);
@@ -94,12 +94,14 @@ test("new player can finish all nine main chapters with real life quests, tactic
     await f.act({action: "claimEpisode", episodeId: episode.id});
     assert.equal(f.values.get(PREVIEW_STORAGE_KEY), raw, "first story loot is idempotent");
     assert.equal(claimed.character.totalXp, xpBefore);
+    if(episode.id === "bell-09"){assert.ok(claimed.adventure.ending);assert.equal(claimed.adventure.episodes.find(e=>e.id==="echo-01").status,"available");}
+    if(index<8)assert.equal(claimed.adventure.ending,null);
   }
   const data = await view(f);
-  assert.equal(data.mainCleared, 9);assert.equal(data.memories.length, 9);assert.equal(data.titles.length, 3);
+  assert.equal(data.mainCleared, 12);assert.equal(data.memories.length, 12);assert.equal(data.titles.length, 4);
   assert.ok(data.regions.every(region => region.unlocked));assert.ok(data.ending.text.length > 20);
   assert.equal(Object.values(data.ending.values).reduce((sum, value) => sum + value, 0), 9);
-  assert.equal((await f.request("/api/character")).character.totalXp, 9 * 220);
+  assert.equal((await f.request("/api/character")).character.totalXp, 12 * 220);
   await f.act({action: "equipTitle", title: "喚鐘者"});assert.equal((await f.request("/api/character")).character.title, "喚鐘者");
   for (const episode of storyEpisodes.filter(episode => episode.kind === "bond")) {
     if ((await view(f)).episodes.find(item => item.id === episode.id).status === "locked") {
@@ -110,7 +112,7 @@ test("new player can finish all nine main chapters with real life quests, tactic
     }
     await beginAndComplete(f, episode);await f.act({action: "claimEpisode", episodeId: episode.id});
   }
-  assert.equal((await view(f)).memories.length, 15, "all six companion stories can be completed after the main story");
+  assert.equal((await view(f)).memories.length, 18, "all six companion stories can be completed after the main story");
   console.log("Full campaign completed without equipment or class shortcuts; longest encounter:", longest, "turns");
 });
 

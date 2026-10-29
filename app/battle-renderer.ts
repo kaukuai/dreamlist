@@ -1,5 +1,5 @@
 import type {HeroAppearance} from "@/lib/sprite-appearance";
-import type {ArenaState} from "@/lib/arena-engine";
+import {laneHalfWidth,type ArenaState} from "@/lib/arena-engine";
 import {arenaSafeRadius,arenaView} from "@/lib/arena-view";
 import {facingFromVector} from "@/lib/pixel-actors";
 import {walkFrame} from "@/lib/sprite-catalog";
@@ -22,6 +22,11 @@ export function paintBattle(ctx:CanvasRenderingContext2D,width:number,height:num
  ring(ctx,state.enemyX,state.enemyY,27,"#c0a57377");
  for(const hazard of state.hazards){
   const progress=Math.max(0,Math.min(1,1-hazard.remaining/(state.assist?2.1:1.35)));
+  if(hazard.kind==="lane"){
+   ctx.save();ctx.translate(hazard.x,hazard.y);ctx.rotate(hazard.angle??0);ctx.fillStyle="#e65d3845";ctx.fillRect(-20,-laneHalfWidth,hazard.radius+20,laneHalfWidth*2);ctx.strokeStyle="#ffdb9d";ctx.lineWidth=2;ctx.strokeRect(-20,-laneHalfWidth,hazard.radius+20,laneHalfWidth*2);
+   ctx.fillStyle="#ffbb7d55";ctx.fillRect(-20,-laneHalfWidth,(hazard.radius+20)*progress,laneHalfWidth*2);
+   ctx.strokeStyle="#ffe4b1";for(let x=20;x<hazard.radius;x+=40){ctx.beginPath();ctx.moveTo(x-5,-7);ctx.lineTo(x+3,0);ctx.lineTo(x-5,7);ctx.stroke();}ctx.restore();continue;
+  }
   ctx.fillStyle="#e65d383d";ctx.beginPath();ctx.arc(hazard.x,hazard.y,hazard.radius,0,Math.PI*2);
   if(hazard.kind==="ring")ctx.arc(hazard.x,hazard.y,arenaSafeRadius,0,Math.PI*2,true);
   ctx.fill("evenodd");ring(ctx,hazard.x,hazard.y,hazard.radius,"#ffdb9d",2);

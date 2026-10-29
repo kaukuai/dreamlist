@@ -41,7 +41,7 @@ function composeSprite(ctx:CanvasRenderingContext2D,identity:SpriteIdentity,x:nu
  if(weapon&&!["sword","bow"].includes(weapon)){
   const side=direction==="left"?-1:1,wx=Math.round(x+side*13),wy=Math.round(y-24);
   ctx.fillStyle="#493a33";ctx.fillRect(wx,wy-19,3,40);ctx.fillStyle=tier>0?"#e4ce84":"#bda56b";ctx.fillRect(wx,wy-19,1,30);
-  if(weapon==="staff"){ctx.fillStyle="#514f69";ctx.fillRect(wx-4,wy-27,10,11);ctx.fillStyle="#d8bd79";ctx.fillRect(wx-3,wy-26,8,9);ctx.fillStyle="#93d9e8";ctx.fillRect(wx-1,wy-25,4,6);ctx.fillStyle="#e5fbf0";ctx.fillRect(wx,wy-24,1,3);}
+  if(weapon==="staff"){ctx.fillStyle="#514f69";ctx.fillRect(wx-4,wy-27,10,11);ctx.fillStyle="#d8bd79";ctx.fillRect(wx-3,wy-26,8,9);ctx.fillStyle=appearance?.equipped.weapon==="moon-scepter"?"#b4edc5":appearance?.equipped.weapon==="meteor-staff"?"#c1a2ed":"#93d9e8";ctx.fillRect(wx-1,wy-25,4,6);ctx.fillStyle="#e5fbf0";ctx.fillRect(wx,wy-24,1,3);}
   else if(weapon==="hammer"){ctx.fillStyle="#46505b";ctx.fillRect(wx-5,wy-19,12,7);ctx.fillStyle="#9ca5a6";ctx.fillRect(wx-4,wy-19,10,2);}
   else{ctx.fillStyle="#473b35";ctx.fillRect(wx-4,wy-4,10,11);ctx.fillStyle="#ba9665";ctx.fillRect(wx-3,wy-3,8,9);ctx.fillStyle="#54423c";ctx.fillRect(wx,wy-2,2,6);}
  }
@@ -52,7 +52,7 @@ function composeSprite(ctx:CanvasRenderingContext2D,identity:SpriteIdentity,x:nu
   if(tier>0){ctx.fillStyle="#f2d58e";for(let i=0;i<tier;i++)ctx.fillRect(cx-5+i*4,chestY-3,2,2);}
   if(appearance.equipped.head==="astral-crown"){ctx.fillStyle="#e5c879";ctx.fillRect(cx-8,headY,16,3);for(const dx of [-7,-1,5])ctx.fillRect(cx+dx,headY-4,2,5);ctx.fillStyle="#9dd9ed";ctx.fillRect(cx-1,headY,2,2);}
   if(appearance.equipped.outfit==="craft-apron"){ctx.fillStyle="#b28e62";ctx.fillRect(cx-7,chestY+2,14,17);ctx.fillStyle="#594a3a";ctx.fillRect(cx-3,chestY+7,6,5);}
-  if(appearance.equipped.charm&&front){ctx.fillStyle=appearance.equipped.charm==="lucky-pin"?"#a1d39d":"#d3dce7";ctx.fillRect(cx+5,chestY+3,3,3);ctx.fillStyle="#e9e0ad";ctx.fillRect(cx+6,chestY+4,1,1);}
+  if(appearance.equipped.charm&&front){ctx.fillStyle=appearance.equipped.charm==="lucky-pin"?"#a1d39d":appearance.equipped.charm==="starglass-pendant"?"#bd9ce1":"#d3dce7";ctx.fillRect(cx+5,chestY+3,3,3);ctx.fillStyle="#e9e0ad";ctx.fillRect(cx+6,chestY+4,1,1);}
   if(appearance.equipped.offhand==="runic-orb"){ctx.strokeStyle="#b6dcdf";ctx.lineWidth=1;ctx.beginPath();ctx.arc(cx+(direction==="left"?14:-14),chestY+11,5,0,Math.PI*2);ctx.stroke();ctx.fillStyle="#8eb8cf";ctx.fillRect(cx+(direction==="left"?12:-16),chestY+9,4,4);}
  }
 

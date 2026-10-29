@@ -20,7 +20,7 @@
     "start:vercel": "node scripts/run-vercel.mjs start",
     "db:migrate:vercel": "node --experimental-strip-types scripts/migrate-vercel.mjs",
     "test:vercel": "node --experimental-strip-types --test tests/vercel-runtime.test.mjs",
-    "test:preview": "node --experimental-strip-types --test tests/browser-preview.test.mjs",
+    "test:preview": "node --experimental-strip-types --test tests/browser-preview.test.mjs tests/opening-growth.test.mjs",
     "test:adventure": "node --experimental-strip-types --test tests/adventure.test.mjs",
     "test:field": "node --experimental-strip-types --test tests/field-game.test.mjs tests/pixel-touch.test.mjs tests/world-map.test.mjs"
   },

@@ -44,12 +44,14 @@ export function levelProgress(totalXp: number) {
 }
 export function skillRank(xp: number) {return Math.min(10, Math.floor(Math.max(0, xp) / SKILL_RANK_XP));}
 
-export type TalentId = AttributeId | `${AttributeId}-mastery` | `${AttributeId}-awakening`;
+export type TalentId = AttributeId | `${AttributeId}-mastery` | `${AttributeId}-awakening` | `${AttributeId}-resonance`;
 export type Talent = {id: TalentId; attribute: AttributeId; name: string; description: string; maxRank: number; minLevel: number; gain: number; prerequisite?: {id: TalentId; rank: number}};
+export const resonanceDescriptions:Record<AttributeId,string>={intellect:"每階戰鬥射程 +8，永久智力 +2",vitality:"每階試煉承傷減少4%，永久體能 +2",agility:"每階移動速度 +4%，永久敏捷 +2",spirit:"每階調息多恢復3生命，永久意志 +2",charisma:"每階戰技冷卻縮短0.12秒，永久魅力 +2",luck:"每階閃避冷卻縮短0.08秒，永久幸運 +2"};
 const rootTalentNames: Record<AttributeId, string> = {intellect: "求知之心", vitality: "堅韌之軀", agility: "靈巧雙手", spirit: "安定意志", charisma: "共鳴之聲", luck: "發現之眼"};
 export const talents: Talent[] = attributeIds.flatMap(attribute => [
   {id: attribute, attribute, name: rootTalentNames[attribute], description: `每階永久增加 2 ${attributeNames[attribute]}`, maxRank: 3, minLevel: 2, gain: 2},
   {id: `${attribute}-mastery` as TalentId, attribute, name: `${attributeNames[attribute]}專精`, description: `每階永久增加 3 ${attributeNames[attribute]}`, maxRank: 3, minLevel: 8, gain: 3, prerequisite: {id: attribute, rank: 2}},
+  {id: `${attribute}-resonance` as TalentId, attribute, name: `${attributeNames[attribute]}共鳴`, description:resonanceDescriptions[attribute],maxRank:2,minLevel:12,gain:2,prerequisite:{id:attribute,rank:3}},
   {id: `${attribute}-awakening` as TalentId, attribute, name: `${attributeNames[attribute]}覺醒`, description: `永久增加 6 ${attributeNames[attribute]}`, maxRank: 1, minLevel: 20, gain: 6, prerequisite: {id: `${attribute}-mastery` as TalentId, rank: 3}},
 ]);
 export const talentIds = talents.map(talent => talent.id) as [TalentId, ...TalentId[]];
@@ -84,7 +86,7 @@ export function characterPower(level: number, attributes: Attributes, equippedCo
 export const equipmentSlots = ["weapon", "head", "offhand", "outfit", "boots", "charm"] as const;
 export type EquipmentSlot = typeof equipmentSlots[number];
 export const slotNames: Record<EquipmentSlot, string> = {weapon: "主手", head: "頭部", offhand: "副手", outfit: "護甲", boots: "足部", charm: "飾品"};
-export type Equipment = {id: string; name: string; slot: EquipmentSlot; cost: number; level: number; description: string; bonuses: Partial<Attributes>; motif: "sword" | "staff" | "bow" | "cloak" | "apron" | "clover" | "moon" | "helm" | "shield" | "boots"};
+export type Equipment = {id: string; name: string; slot: EquipmentSlot; cost: number; level: number; description: string; bonuses: Partial<Attributes>; motif: "hammer" | "lute" | "sword" | "staff" | "bow" | "cloak" | "apron" | "clover" | "moon" | "helm" | "shield" | "boots"};
 export const equipment: Equipment[] = [
   {id: "training-sword", name: "黎明鋼劍", slot: "weapon", cost: 45, level: 1, description: "記住每一次願意出發的自己。", bonuses: {vitality: 2}, motif: "sword"},
   {id: "oak-staff", name: "星紋秘杖", slot: "weapon", cost: 60, level: 1, description: "每一個新知，都是微小的魔法。", bonuses: {intellect: 2}, motif: "staff"},
@@ -99,6 +101,17 @@ export const equipment: Equipment[] = [
   {id: "runic-orb", name: "奧術法器", slot: "offhand", cost: 110, level: 5, description: "凝聚知識與意志的符文核心。", bonuses: {intellect: 2, spirit: 1}, motif: "staff"},
   {id: "vanguard-cuirass", name: "先鋒重甲", slot: "outfit", cost: 180, level: 10, description: "承載長期修練的進階戰甲。", bonuses: {vitality: 4, spirit: 2}, motif: "shield"},
   {id: "astral-crown", name: "星界冠冕", slot: "head", cost: 200, level: 10, description: "為持續探索知識的旅人加冕。", bonuses: {intellect: 4, spirit: 2}, motif: "helm"},
+  {id:"workshop-hammer",name:"木光工匠錘",slot:"weapon",cost:65,level:2,description:"奧里親手校準的輕錘，讓每次動手都更有把握。",bonuses:{agility:2,intellect:1},motif:"hammer"},
+  {id:"echo-lute",name:"旅歌琉特琴",slot:"weapon",cost:80,level:2,description:"露榭為第一位願意開口的旅人調好琴弦。",bonuses:{charisma:3},motif:"lute"},
+  {id:"moon-scepter",name:"月泉枝杖",slot:"weapon",cost:115,level:5,description:"白木杖頭映著月泉的顏色，記住照顧自己的約定。",bonuses:{spirit:3,vitality:1},motif:"staff"},
+  {id:"oath-blade",name:"晨誓長刃",slot:"weapon",cost:260,level:10,description:"刃脊刻著巡衛的誓言：不讓同行的人被遺落。",bonuses:{vitality:5,spirit:2},motif:"sword"},
+  {id:"meteor-staff",name:"星墜秘杖",slot:"weapon",cost:275,level:10,description:"流星碎片嵌入法杖，回應長久積累的理解。",bonuses:{intellect:5,spirit:2},motif:"staff"},
+  {id:"hawk-bow",name:"蒼羽獵弓",slot:"weapon",cost:250,level:10,description:"青金弓臂像展開的羽翼，為新的路留下準星。",bonuses:{agility:5,luck:2},motif:"bow"},
+  {id:"moon-vestments",name:"月泉祭衣",slot:"outfit",cost:155,level:5,description:"米菈以月白與薄荷綠配成的輕衣，陪伴長途修練。",bonuses:{spirit:3,charisma:1},motif:"cloak"},
+  {id:"voyager-hood",name:"遠行者兜帽",slot:"head",cost:95,level:3,description:"擋住山間的晚風，也留著抬頭看路的空間。",bonuses:{agility:2,luck:1},motif:"helm"},
+  {id:"scholar-boots",name:"星頁行靴",slot:"boots",cost:120,level:5,description:"書庫到林徑之間，每一條路都算研習的一部分。",bonuses:{intellect:2,agility:2},motif:"boots"},
+  {id:"starglass-pendant",name:"回聲星玻璃",slot:"charm",cost:170,level:8,description:"鐘亭留下的微光凝在玻璃裡，像一段仍有溫度的記憶。",bonuses:{luck:3,spirit:2},motif:"moon"},
+
 ];
 export const avatarColors = ["mint", "lilac", "sunset"] as const;
 export type AvatarColor = typeof avatarColors[number];

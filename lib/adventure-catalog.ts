@@ -41,6 +41,9 @@ export const enemies = [
   {id: "ember-sentinel", name: "餘燼巡衛", kind: "knight", hp: 225, attack: 25, boss: false, tell: "巡衛的重擊很沉，留一點專注給調息。", lore: "盔甲裡還留著一句來不及說完的『我會回來』。"},
   {id: "broken-echo", name: "斷橋回聲", kind: "thorn", hp: 265, attack: 28, boss: false, tell: "不要急著連續進攻，防禦同樣能恢復專注。", lore: "橋斷了，曾經一起走過橋的人卻沒有消失。"},
   {id: "silent-crown", name: "無聲王冠", kind: "crown", hp: 330, attack: 32, boss: true, tell: "它的蓄力傷害很高。觀察、防禦、調息，比一味進攻更重要。", lore: "沉默不是空無，而是太多沒有人願意聽完的聲音。"},
+  {id: "river-lantern", name: "逆流的燈影", kind: "wisp", hp: 300, attack: 30, boss: false, tell: "燈光落下前會留下圓形預警；走出光圈，再回身出手。", lore: "它帶著沒有送達的祝福，一遍又一遍走向上游。"},
+  {id: "sealed-page", name: "封頁巡衛", kind: "knight", hp: 325, attack: 32, boss: false, tell: "長條預警標出突進方向，向側面走位。重擊回合可防禦。", lore: "他把未完成的故事鎖起來，以為這樣就不會再有人失望。"},
+  {id: "unwritten-echo", name: "無名回音", kind: "crown", hp: 360, attack: 34, boss: true, tell: "直線與環形預警交替，半血後節奏加快；留意場地上的安全區。", lore: "它不是下一個要被消滅的名字，而是一個還沒學會開口的人。"},
 ] as const;
 export type EnemyId = typeof enemies[number]["id"];
 export const enemyPatterns: Record<EnemyId, readonly ("strike" | "charge" | "guard")[]> = {
@@ -53,6 +56,9 @@ export const enemyPatterns: Record<EnemyId, readonly ("strike" | "charge" | "gua
   "ember-sentinel": ["strike", "charge", "strike", "guard"],
   "broken-echo": ["charge", "guard", "strike", "guard"],
   "silent-crown": ["strike", "charge", "guard"],
+  "river-lantern": ["guard", "strike", "charge", "guard"],
+  "sealed-page": ["charge", "guard", "strike", "guard"],
+  "unwritten-echo": ["strike", "guard", "charge", "guard"],
 };
 
 const choice = (id: string, label: string, npcId: NpcId, skill: SkillId, vow: Vow, response: string, steps: string[]): StoryChoice => ({id, label, npcId, skill, vow, response, steps});
@@ -129,7 +135,33 @@ export const mainEpisodes: StoryEpisode[] = [
     ending: "晨鐘響起時，大家先聽見的不是宏大的勝利，而是彼此的名字。你帶回的勇氣、好奇與照顧，讓這個世界重新有了明天。第一卷《無聲晨鐘》完。",
     reward: {gold: 100, materials: {ember: 3, fiber: 3, ink: 3}, title: "喚鐘者"}, memory: {title: "為明天留下的鐘聲", text: "傳說沒有替你完成生活。它只是記住，你真的為自己踏出了那些小小的步伐。"},
   },
+
+  {
+    id:"echo-01",kind:"main",number:"外01",act:"卷外篇・星頁餘響",title:"逆流而上的紙燈",region:"mistwood",requires:"bell-09",enemyId:"river-lantern",
+    summary:"鐘響之後，一盞寫著明天日期的紙燈，沿溪水往上游漂去。",
+    intro:[{speaker:"eira",text:"我確認過三次，水沒有倒流。是那盞燈一直往回走……像有人在等昨天的自己。"},{speaker:"lucien",text:"燈面上不是名字，是一句『等我準備好』。我以前也把這句話唱進很多首沒有結尾的歌。"},{speaker:"narrator",text:"紙燈在橋邊停住，投下比河水更深的影子。燈裡夾著星頁書庫的借閱籤，歸還日期卻是明天。"}],
+    choices:[choice("begin","跟艾菈為下一步畫個記號","eira","exploration","courage","不用等整條路都看得見。今天能開始的地方，也能畫進地圖。",["想一件一直在等準備好的小事","把它縮成今天能試的第一個動作","實際試做 1 分鐘，記下新的發現"]),choice("refrain","陪露榭改寫那句歌詞","lucien","expression","care","我們把『準備好才開始』，改成『開始時可以還沒準備好』。",["寫下一句最近常對自己說的話","用對朋友說話的語氣，改寫其中一小段","朗讀或默念新句子，留下你想保留的版本"])],
+    ending:"燈影退去，紙燈終於順著水流遠行。借閱籤背面浮出賽琳的字跡：『未完成之頁，請勿歸檔。』可她從不記得自己寫過這句話。",
+    reward:{gold:85,materials:{fiber:2,ink:2}},memory:{title:"順流而行的第一盞燈",text:"準備未必先於出發。有時，是那一步讓你知道自己還需要什麼。"},
+  },
+  {
+    id:"echo-02",kind:"main",number:"外02",act:"卷外篇・星頁餘響",title:"不准歸檔的那一頁",region:"archive",requires:"echo-01",enemyId:"sealed-page",
+    summary:"書庫最下層藏著一本不能合上的索引，裡面只有未完成的故事。",
+    intro:[{speaker:"selene",text:"這是我的筆記。我把每一個沒有答案的問題都抄在這裡，後來卻開始假裝它們不存在。"},{speaker:"ori",text:"封條不是鎖，是一個壞掉的書脊。越用力把它合上，其他頁也會被扯破。先讓它鬆一點吧。"},{speaker:"narrator",text:"盔甲巡衛從書脊的影子裡站起。它守著的規則只有一句：沒有寫好，就不能交出去。"}],
+    choices:[choice("margin","和賽琳留下理解中的旁註","selene","knowledge","curiosity","索引可以寫『尚待確認』。誠實留下邊界，也是知識的一部分。",["挑一個學過但還不確定的概念","分別記下一點已理解與一點待確認的部分","找到一個可供下次查證的來源或問題"]),choice("hinge","幫奧里鬆開過緊的書脊","ori","craft","care","不是每件東西都要一次修好。先讓它恢復能用的那一點空間。",["選一份未完成的小作品或整理項目","只修改一處會阻礙下一步的細節","留下目前版本，寫下一個下次可接續的動作"])],
+    ending:"封條鬆開時，巡衛沒有倒下，而是替他們拉開了椅子。賽琳讀到索引最後一行：『寫信給旅人的人，也忘記了自己的名字。』她翻過那一頁，背面正是你最初收到的信。",
+    reward:{gold:90,materials:{ink:3,ember:1}},memory:{title:"尚待確認的索引",text:"留一個未完成的位置，能讓未來的自己知道從哪裡接著走。"},
+  },
+  {
+    id:"echo-03",kind:"main",number:"外03",act:"卷外篇終章・星頁餘響",title:"信裡還沒有寫下的名字",region:"dawnrift",requires:"echo-02",enemyId:"unwritten-echo",
+    summary:"那封信並非寄自過去；它來自每一個願意繼續的明天。",
+    intro:[{speaker:"selene",text:"我記得了。這封信不是某個人寫完的。我們每個人在想放棄時，都替它多寫了一行。"},{speaker:"mira",text:"所以沒有署名。不是沒有人，而是有人還在學著用自己的聲音說話。"},{speaker:"lorne",text:"這次守住的不是一扇門。是讓一個還沒有答案的人，也能從門裡走出來。"},{speaker:"narrator",text:"裂隙裡的回音凝成空白王冠。它問你：如果明天的故事還不知道該怎麼寫，你仍願意讓鐘聲響起嗎？"}],
+    choices:[choice("future","為未來的自己留一封短信","mira","mindfulness","care","信不用預測明天。只要讓讀到的人知道，今天有人願意理解他。",["暫時移開螢幕，舒服地休息 1 分鐘","寫一句現在願意對未來自己說的話","安排一件不費力的小照顧，實際做完它"]),choice("oath","和洛恩立下一個可以改變的約定","lorne","fitness","courage","約定不是不准退後。是知道可以調整步伐之後，仍願意好好走。",["用舒服的幅度活動肩膀或腳踝","選一個下次願意繼續的輕量活動","以舒服節奏試做 1 分鐘，記下可調整的幅度"])],
+    ending:"空白王冠落成一枚小小的書籤。上面沒有標準答案，只有你今天選擇留下的那一行字。鐘聲從鎮上一路傳向遠方，賽琳在手札最後添上一頁：『下一段旅程，等我們有了想問的問題，再出發。』卷外篇《星頁餘響》完。",
+    reward:{gold:120,materials:{ember:3,fiber:2,ink:3},title:"星頁續寫者"},memory:{title:"給未來旅人的信",text:"故事可以還沒有結局。願意為明天留一頁，就已經是一種回答。"},
+  },
 ];
+export const volumeOneEpisodes=mainEpisodes.filter(episode=>episode.id.startsWith("bell-"));
 
 const bonds: {npc: NpcId; region: RegionId; title: string; summary: string; intro: string; ending: string; memory: string; choices: StoryChoice[]}[] = [
   {npc: "eira", region: "morningbell", title: "嚮導也會迷路", summary: "艾菈的私人地圖上，有一條她從沒敢走的路。", intro: "我總告訴別人不用怕迷路，卻把自己的那條路折進地圖裡了。你願意陪我，先看一小眼嗎？", ending: "艾菈在那條路旁畫了一個小圓點：『不是終點，是我願意開始的地方。』", memory: "帶路的人也可以說不知道。同行，並不要求誰先有完整答案。", choices: [choice("look", "陪她發現一個小細節", "eira", "exploration", "curiosity", "原來熟悉的地方，也會等人重新看見。", ["在熟悉的環境中找一個新細節", "用一句話記下它讓你想到的可能"]), choice("tell", "告訴她你也曾經猶豫", "eira", "expression", "care", "謝謝你讓我知道，不確定的時候也可以有人陪著。", ["想一件你曾經猶豫的小事", "說一句你願意給當時自己的話"])]},

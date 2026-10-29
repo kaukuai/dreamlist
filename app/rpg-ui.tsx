@@ -18,6 +18,8 @@ export function PaperDoll({character, onSlot, compact = false}: {character: Char
   })}<span className="portrait-class-label"><ProfessionIcon profession={character.profession} size={13}/>{jobTitle(character.profession, character.advancements[character.profession])}</span></section>;
 }
 export function GearArt({item}: {item: Equipment}) {
-  const index = equipment.findIndex(gear => gear.id === item.id);
-  return <span className="gear-art" aria-hidden="true" style={{"--gear-index": index, backgroundPosition: `${index % 4 / 3 * 100}% ${Math.floor(index / 4) / 3 * 100}%`} as CSSProperties}><EquipmentIcon motif={item.motif} size={34}/></span>;
+  const originalIndex = equipment.findIndex(gear => gear.id === item.id);
+  const expanded=originalIndex>=13,index=expanded?originalIndex-13:originalIndex;
+  const position={"--gear-index":index,backgroundPosition:`${index % 4 / 3 * 100}% ${Math.floor(index / 4) / (expanded?2:3) * 100}%`} as CSSProperties;
+  return <span className={"gear-art"+(expanded?" gear-expansion":"")} aria-hidden="true" style={expanded?undefined:position}><EquipmentIcon motif={item.motif} size={34}/>{expanded&&<span className="expanded-gear-image" style={position}/>}</span>;
 }

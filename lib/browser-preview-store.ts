@@ -1,3 +1,5 @@
+import {FIELD,placesIn} from "./field-engine.ts";
+import {initialOpening,advanceOpening,openingScenes,guideIds,type OpeningProgress,type GuideId} from "./opening-model.ts";
 import {companionQuests} from "./npc-stories.ts";
 import {z} from "zod";
 import {attributeIds, avatarColors, canAdvance, canBecome, canLearnTalent, characterPower, defaultTraining, DREAM_XP, equipment, equipmentSlots, equipmentStats, professionBonuses, professionIds, professionOf, progression, SKILL_XP, STEP_XP, talents, type CharacterState, type EquipmentSlot, type LeaderboardState, type ProfessionId, type RewardTotal, type SkillId, type TalentId} from "./character-model.ts";
@@ -17,7 +19,7 @@ type PreviewState = {
   inventory: {itemId: string; cost: number}[]; equipped: Record<EquipmentSlot, string | null>;
   island: {name: string; items: IslandItem[]}; dailyBoards: Record<string, string[]>;
   contracts: {offerId: string; dreamId: string}[];
-  adventure: AdventureState;
+  adventure: AdventureState; opening?:OpeningProgress;
 };
 type PreviewStorage = Pick<Storage, "getItem" | "setItem">;
 
@@ -32,7 +34,7 @@ function initialState(): PreviewState {
     profile: {name: "初行旅人", profession: "wanderer", avatarColor: "mint"}, talents: {},
     advancements: Object.fromEntries(professionIds.map(id => [id, 0])) as PreviewState["advancements"],
     inventory: [], equipped: Object.fromEntries(equipmentSlots.map(slot => [slot, null])) as PreviewState["equipped"],
-    island: {name: "曙光小島", items: []}, dailyBoards: {}, contracts: [], adventure: initialAdventure()};
+    island: {name: "曙光小島", items: []}, dailyBoards: {}, contracts: [], adventure: initialAdventure(),opening:initialOpening()};
 }
 
 function readState(raw: string | null): PreviewState {
@@ -43,6 +45,9 @@ function readState(raw: string | null): PreviewState {
       !Array.isArray(value.receipts) || !Array.isArray(value.inventory) || !Array.isArray(value.contracts) ||
       !value.profile || !value.equipped || !value.advancements || !value.talents || !value.dailyBoards || !Array.isArray(value.island?.items)) throw new Error();
     value.adventure = value.adventure ? validateAdventure(value.adventure) : initialAdventure();
+    const returning=value.receipts.length>0||value.dreams.length>0||value.inventory.length>0||value.adventure.field.discovered.length>0||Math.hypot(value.adventure.field.x-FIELD.start.x,value.adventure.field.y-FIELD.start.y)>24||Object.keys(value.adventure.entries).length>0;
+    value.opening??=initialOpening(returning);
+    if(value.opening.version!==1||!Number.isInteger(value.opening.scene)||value.opening.scene<0||value.opening.scene>=openingScenes.length||typeof value.opening.seen!=="boolean"||typeof value.opening.guideDismissed!=="boolean"||!Array.isArray(value.opening.completed)||value.opening.completed.some(id=>!guideIds.includes(id)))throw new Error();
     return value;
   } catch {return reject("此瀏覽器的試玩紀錄暫時無法讀取，原紀錄已保留，請勿清除網站資料。", 503);}
 }
@@ -104,6 +109,14 @@ async function questBoard(state: PreviewState, now: Date): Promise<QuestBoardSta
 }
 
 async function dispatch(state: PreviewState, path: string, method: string, body: unknown, now: Date): Promise<unknown> {
+  if(path==="/api/opening"){
+    const progress=state.opening??=initialOpening(),player=character(state),field=state.adventure.field;
+    const earned:Partial<Record<GuideId,boolean>>={walk:Math.hypot(field.x-FIELD.start.x,field.y-FIELD.start.y)>24||field.discovered.length>0||(field.zone??"town")!=="town",talk:field.discovered.some(id=>[...placesIn("town"),...placesIn("woods"),...placesIn("library")].some(place=>place.id===id&&place.kind==="npc")),life:state.receipts.some(r=>r.kind==="step"),equip:Object.values(state.equipped).some(Boolean),growth:player.profession!=="wanderer"||Object.values(state.talents).some(n=>n&&n>0),trial:Boolean(state.adventure.battle?.arena?.tick)||Object.values(state.adventure.entries).some(e=>e.claimedAt)};
+    progress.completed=[...new Set([...progress.completed,...guideIds.filter(id=>earned[id])])];
+    if(method==="POST"){const action=z.object({scene:z.number().int().min(0).max(openingScenes.length-1).optional(),finish:z.boolean().optional(),dismissGuide:z.boolean().optional()}).strict().parse(body);advanceOpening(progress,action);}
+    else if(method!=="GET")reject("不支援的序章操作");
+    return{opening:progress};
+  }
   const adventureContext = () => ({dreams: state.dreams, receipts: state.receipts, player: character(state), balance: island(state).balance, now});
   if (path === "/api/adventure" && method === "GET") return {adventure: adventureView(state.adventure, adventureContext())};
   if (path === "/api/adventure" && method === "POST") {

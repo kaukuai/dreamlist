@@ -87,7 +87,7 @@ test("persisted combat replays bounded controls and rejects stale turns or fabri
   assert.equal(f.values.get(PREVIEW_STORAGE_KEY), before);
   assert.equal((await f.request("/api/adventure", "POST", {action: "claimEpisode", episodeId: "bell-01"})).status, 400);
 });
-test("a new unarmed wanderer can complete all nine action trials; combat never farms life XP or repeated story loot", async () => {
+test("a new unarmed wanderer can complete all twelve action trials; combat never farms life XP or repeated story loot", async () => {
   const f = fixture();let totalTicks = 0;
   for (const episode of mainEpisodes) {
     let data = await f.prepare(episode), batches = 0;
@@ -101,8 +101,8 @@ test("a new unarmed wanderer can complete all nine action trials; combat never f
     assert.equal((await f.request("/api/character")).character.totalXp, xp);
     await f.act({action: "claimEpisode", episodeId: episode.id});const once = f.values.get(PREVIEW_STORAGE_KEY);await f.act({action: "claimEpisode", episodeId: episode.id});assert.equal(f.values.get(PREVIEW_STORAGE_KEY), once);
   }
-  assert.equal((await f.request("/api/adventure")).adventure.mainCleared, 9);
-  console.log("Nine action trials completed with movement and telegraph avoidance in", Math.round(totalTicks / 30), "simulation seconds");
+  assert.equal((await f.request("/api/adventure")).adventure.mainCleared, 12);
+  console.log("Twelve action trials completed with movement and telegraph avoidance in", Math.round(totalTicks / 30), "simulation seconds");
 });
 test("failed combat checkpoint is atomic, then the same controls can be saved once storage recovers", async () => {
   const f = fixture(), data = await f.prepare(), before = f.values.get(PREVIEW_STORAGE_KEY);

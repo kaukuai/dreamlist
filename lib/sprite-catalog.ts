@@ -1,3 +1,4 @@
+import {equipment} from "./character-model.ts";
 import type {HeroAppearance} from "./sprite-appearance.ts";
 import type {Facing} from "./pixel-actors.ts";
 export type SpriteIdentity = "wanderer"|"warrior"|"mage"|"ranger"|"artisan"|"bard"|"healer"|"lorne"|"selene"|"mira"|"ori"|"lucien"|"eira";
@@ -29,23 +30,23 @@ export const npcPalette:Partial<Record<SpriteIdentity,{hair:string;cloth:string;
  lucien:{hair:"#cdd5df",cloth:"#6d4868",cape:"#4b999e"}
 };
 export function spriteWeapon(identity:SpriteIdentity,appearance?:HeroAppearance){
- if(appearance)return appearance.equipped.weapon==="training-sword"?"sword":appearance.equipped.weapon==="trail-bow"?"bow":appearance.equipped.weapon==="oak-staff"?"staff":undefined;
+ if(appearance){const motif=equipment.find(e=>e.id===appearance.equipped.weapon)?.motif;return motif==="sword"||motif==="bow"||motif==="staff"||motif==="hammer"?motif:motif==="lute"?"lute":undefined;}
  return spriteLooks[identity]?.weapon;
 }
 export function spriteLayers(identity:SpriteIdentity,appearance?:HeroAppearance):SpriteLayer[]{
  const base=spriteLooks[identity]??spriteLooks.wanderer,look={...base},npc=npcPalette[identity];
  if(identity==="selene")look.weapon=undefined;
- if(appearance){look.weapon=spriteWeapon(identity,appearance);look.shield=appearance.equipped.offhand==="iron-buckler";look.armor=appearance.equipped.outfit==="vanguard-cuirass"?"plate":appearance.equipped.outfit==="craft-apron"?"leather":base.armor;look.cape=appearance.equipped.outfit==="linen-cloak"?"hue-rotate(90deg) saturate(.6)":base.cape;look.hood=base.hood&&!appearance.equipped.head;}
+ if(appearance){look.weapon=spriteWeapon(identity,appearance);look.shield=appearance.equipped.offhand==="iron-buckler";look.armor=appearance.equipped.outfit==="vanguard-cuirass"?"plate":appearance.equipped.outfit==="craft-apron"?"leather":base.armor;look.cape=appearance.equipped.outfit==="moon-vestments"?"saturate(.2) brightness(1.6)":appearance.equipped.outfit==="linen-cloak"?"hue-rotate(90deg) saturate(.6)":base.cape;look.hood=base.hood&&!appearance.equipped.head;}
 
  return [
- ...(look.weapon==="bow"?[{part:"bow-bg"}]:look.weapon==="sword"?[{part:"sword-bg"}]:[]),
+ ...(look.weapon==="bow"?[{part:"bow-bg",filter:appearance?.equipped.weapon==="hawk-bow"?"hue-rotate(135deg) saturate(.7) brightness(1.4)":undefined}]:look.weapon==="sword"?[{part:"sword-bg",tint:appearance?.equipped.weapon==="oath-blade"?"#e6d39e":undefined}]:[]),
  ...(look.cape||npc?.cape?[{part:"cape-bg",filter:npc?undefined:look.cape,tint:npc?.cape}]:[]),
  ...(npc?.ponytail?[{part:"pony-bg",tint:npc.hair}]:[]),
  ...(identity==="mira"?[{part:"hair-wave-bg",tint:npc!.hair}]:[]),
- {part:`body-${look.body}`},{part:`head-${look.body}`},{part:`pants-${look.body}`,filter:"saturate(.3) brightness(.65)"},{part:`boots-${look.body}`,tint:appearance?.equipped.boots?"#9a7548":"#3b3330"},
+ {part:`body-${look.body}`},{part:`head-${look.body}`},{part:`pants-${look.body}`,filter:"saturate(.3) brightness(.65)"},{part:`boots-${look.body}`,tint:appearance?.equipped.boots==="scholar-boots"?"#68879d":appearance?.equipped.boots?"#9a7548":"#3b3330"},
  {part:`tunic-${look.body}`,filter:npc?undefined:"sepia(.9) saturate(2) brightness(.8) "+look.cloth,tint:appearance?{mint:"#607c83",lilac:"#736781",sunset:"#96754f"}[appearance.avatarColor]:npc?.cloth},...(npc?.robe?[{part:"robe-f",tint:npc.cloth}]:[]),...(look.armor?[{part:look.armor,filter:look.armor==="leather"?"brightness(.8)":"saturate(.5)",tint:appearance?.equipped.outfit==="vanguard-cuirass"?"#a3b7c5":undefined}]:[]),
- {part:identity==="mira"?"hair-wave-fg":look.hair??"hair",filter:npc?undefined:look.hairFilter,tint:npc?.hair},...(npc?.ponytail?[{part:"pony-fg",tint:npc.hair}]:[]),...(appearance?.equipped.head==="sentinel-helm"?[{part:"helmet"}]:[]),...(look.hood?[{part:"hood",filter:"sepia(.9) saturate(2) brightness(.8) "+look.cloth}]:[]),
+ {part:identity==="mira"?"hair-wave-fg":look.hair??"hair",filter:npc?undefined:look.hairFilter,tint:npc?.hair},...(npc?.ponytail?[{part:"pony-fg",tint:npc.hair}]:[]),...(appearance?.equipped.head==="sentinel-helm"?[{part:"helmet"}]:[]),...(appearance?.equipped.head==="voyager-hood"?[{part:"hood",tint:"#677a52"}]:[]),...(look.hood?[{part:"hood",filter:"sepia(.9) saturate(2) brightness(.8) "+look.cloth}]:[]),
  ...(look.cape||npc?.cape?[{part:"cape-fg",filter:npc?undefined:look.cape,tint:npc?.cape}]:[]),...(look.shield?[{part:"shield",filter:"saturate(.6)"}]:[]),
- ...(look.weapon==="bow"?[{part:"bow-fg"}]:look.weapon==="sword"?[{part:"sword-fg"}]:[]),
+ ...(look.weapon==="bow"?[{part:"bow-fg",filter:appearance?.equipped.weapon==="hawk-bow"?"hue-rotate(135deg) saturate(.7) brightness(1.4)":undefined}]:look.weapon==="sword"?[{part:"sword-fg",tint:appearance?.equipped.weapon==="oath-blade"?"#e6d39e":undefined}]:[]),
  ];
 }

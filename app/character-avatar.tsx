@@ -6,7 +6,7 @@ import {jobTitle, type ProfessionId, type SkillId, type AttributeId, type Equipm
 const professionIcons = {wanderer: Backpack, warrior: Sword, mage: WandSparkles, ranger: Compass, bard: Music2, artisan: Hammer, healer: HeartHandshake};
 const skillIcons = {knowledge: BookOpen, mindfulness: Flower2, fitness: Dumbbell, craft: Hammer, expression: MessageCircle, exploration: Compass};
 const attributeIcons = {intellect: Brain, vitality: Dumbbell, agility: Feather, spirit: Focus, charisma: MessageCircle, luck: Clover};
-const equipmentIcons = {sword: Sword, staff: WandSparkles, bow: Crosshair, cloak: Shirt, apron: Shirt, clover: Clover, moon: MoonStar, helm: Crown, shield: Shield, boots: Footprints};
+const equipmentIcons = {hammer:Hammer,lute:Music2,sword: Sword, staff: WandSparkles, bow: Crosshair, cloak: Shirt, apron: Shirt, clover: Clover, moon: MoonStar, helm: Crown, shield: Shield, boots: Footprints};
 export function ProfessionIcon({profession, ...props}: LucideProps & {profession: ProfessionId}) {const Icon = professionIcons[profession] ?? Backpack; return <Icon {...props} aria-hidden="true"/>;}
 export function SkillIcon({skill, ...props}: LucideProps & {skill: SkillId}) {const Icon = skillIcons[skill]; return <Icon {...props} aria-hidden="true"/>;}
 export function AttributeIcon({attribute, ...props}: LucideProps & {attribute: AttributeId}) {const Icon = attributeIcons[attribute]; return <Icon {...props} aria-hidden="true"/>;}

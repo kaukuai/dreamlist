@@ -1,0 +1,35 @@
+import assert from 'node:assert/strict';import{mkdirSync}from'node:fs';import{pathToFileURL}from'node:url';
+import{createBrowserPreviewStore,PREVIEW_STORAGE_KEY as key}from'../lib/browser-preview-store.ts';
+const modulePath=process.env.PLAYWRIGHT_MODULE;
+if(!modulePath)throw new Error('Set PLAYWRIGHT_MODULE to an installed Playwright index.mjs');
+const pw=await import(pathToFileURL(modulePath).href),engine=process.env.BROWSER_ENGINE??'chromium',base=process.env.DREAMLIST_FIELD_URL??'http://127.0.0.1:3197';
+let options={};
+if(engine==='webkit'){
+ const root=process.env.WEBKIT_RUNTIME_DIR,deps=process.env.WEBKIT_DEPS_DIR;if(!root||!deps)throw new Error('Set WebKit runtime and verified library directories');
+ options={executablePath:root+'/bin/MiniBrowser',env:{...process.env,WEBKIT_EXEC_PATH:root+'/bin',WEBKIT_INJECTED_BUNDLE_PATH:root+'/lib',WEBKIT_INSPECTOR_RESOURCES_PATH:root+'/share',LD_LIBRARY_PATH:root+'/lib:'+root+'/sys/lib:'+deps}};
+}else{
+ if(!process.env.CHROMIUM_MODULE)throw new Error('Set CHROMIUM_MODULE');const {default:chromium}=await import(pathToFileURL(process.env.CHROMIUM_MODULE).href);options={executablePath:await chromium.executablePath(),args:chromium.args.filter(x=>!['--single-process','--disable-web-security','--allow-running-insecure-content'].includes(x))};
+}
+let transport;
+if(base.startsWith('https:')&&process.env.HTTPS_PROXY){const u=new URL(process.env.HTTPS_PROXY),proxy={server:u.protocol+'//'+u.host};if(u.username)proxy.username=decodeURIComponent(u.username);if(u.password)proxy.password=decodeURIComponent(u.password);transport=await pw.request.newContext({proxy,ignoreHTTPSErrors:false});}
+const browser=await pw[engine].launch(options),context=await browser.newContext({viewport:{width:390,height:844},isMobile:true,hasTouch:true}),page=await context.newPage();
+
+const errors=[];page.on('pageerror',e=>errors.push(e.message));
+if(transport)await context.route(new URL(base).origin+'/**',async route=>{const response=await transport.fetch(route.request(),{maxRedirects:0});await route.fulfill({response});});
+const out='outputs/growth-combat/'+engine;mkdirSync(out,{recursive:true});
+const values=new Map(),store=createBrowserPreviewStore({getItem:k=>values.get(k)??null,setItem:(k,v)=>values.set(k,v)}),req=async(path,method='GET',body)=>{const r=await store.request(path,method,body),data=await r.json();assert.equal(r.status,200,data.error);return data;};
+await req('/api/opening','POST',{finish:true,dismissGuide:true});const{dream}=await req('/api/dreams','POST',{title:'自己的長期修練',category:'health',tasks:Array.from({length:180},(_,i)=>({id:'r'+i,title:'實際生活修練'+i,training:'fitness',done:false}))});await req('/api/dreams/'+dream.id,'PUT',{...dream,tasks:dream.tasks.map(t=>({...t,done:true}))});
+for(const action of[{action:'profession',profession:'warrior'},{action:'advance'},...Array(3).fill({action:'talent',talentId:'vitality'}),...Array(2).fill({action:'talent',talentId:'vitality-resonance'}),{action:'purchase',itemId:'oath-blade'},{action:'equip',slot:'weapon',itemId:'oath-blade'}])await req('/api/character','POST',action);
+async function life(id,choiceId){const r=await req('/api/adventure','POST',{action:'beginEpisode',episodeId:id,choiceId}),entry=r.adventure.episodes.find(e=>e.id===id).entry,d=(await req('/api/dreams')).dreams.find(d=>d.id===entry.dreamId);await req('/api/dreams/'+d.id,'PUT',{...d,tasks:d.tasks.map(t=>({...t,done:true}))});}
+await life('bell-01','stand');let battle=(await req('/api/adventure','POST',{action:'startBattle',episodeId:'bell-01'})).adventure.battle;
+while(battle.phase==='active')battle=(await req('/api/adventure','POST',{action:'battleAction',battleId:battle.id,turn:battle.turn,move:battle.focus>=2?'skill':'strike'})).adventure.battle;
+await req('/api/adventure','POST',{action:'claimEpisode',episodeId:'bell-01'});await life('bell-02','notice');await req('/api/adventure','POST',{action:'startBattle',episodeId:'bell-02',mode:'action'});
+const click=async name=>page.getByRole('button',{name,exact:true}).click();const menu=async name=>{await click('更多選單');await page.getByRole('navigation',{name:'主要導覽'}).getByRole('button',{name,exact:true}).click();};
+try{
+ await page.goto(base);await page.locator('.opening-screen').waitFor({timeout:60000});await page.evaluate(({key,value})=>localStorage.setItem(key,value),{key,value:values.get(key)});await page.reload();await page.locator('.scene-resume').waitFor();
+ await menu('星露商店');await page.getByRole('button',{name:'晨誓長刃，260 星露',exact:true}).click();await page.locator('.expanded-gear-image').last().waitFor();await page.screenshot({path:out+'/oath-blade.png'});await page.keyboard.press('Escape');await click('返回冒險');
+ await menu('成長');await page.getByRole('button',{name:'職業進化',exact:true}).click();await page.locator('.profession-mastery-card').waitFor();await page.getByText('預覽精修 2 / 2',{exact:true}).waitFor();await page.screenshot({path:out+'/mastery.png'});await page.getByRole('button',{name:'天賦迴路',exact:true}).click();await page.getByRole('button',{name:'體能',exact:true}).click();await page.getByText('體能共鳴',{exact:true}).waitFor();await page.locator('.talent-node').filter({has:page.getByText('體能共鳴',{exact:true})}).scrollIntoViewIfNeeded();await page.screenshot({path:out+'/resonance.png'});await click('返回冒險');
+ await page.locator('.scene-resume').click();await click('進入試煉');await page.locator('.arena-ground[data-ready=true]').waitFor();await page.waitForFunction(()=>document.querySelector('.arena-hazard-label')?.textContent.includes('直線'),null,{timeout:15000});await page.screenshot({path:out+'/lane.png'});const before=await page.locator('.arena-player').getAttribute('data-player-x');await page.keyboard.down('ArrowRight');await page.waitForFunction(x=>Number(document.querySelector('.arena-player').dataset.playerX)>Number(x)+30,before);await page.keyboard.up('ArrowRight');await menu('角色');await click('返回冒險');await page.locator('.scene-resume').click();await click('繼續戰鬥');await page.getByRole('button',{name:'暫停試煉',exact:true}).click();await page.waitForFunction(()=>Boolean(document.querySelector('.arena-save .lucide-check')));
+ const saved=await page.evaluate(key=>JSON.parse(localStorage.getItem(key)),key);assert.equal(saved.adventure.battle.arena.combat.mastery,2);assert.equal(saved.adventure.battle.arena.combat.resonance.vitality,2);assert.equal(saved.equipped.weapon,'oath-blade');assert.equal(saved.receipts.length,189);await page.reload();await page.locator('.scene-resume').waitFor();assert.deepEqual(await page.evaluate(key=>JSON.parse(localStorage.getItem(key)).adventure.battle,key),saved.adventure.battle);
+ assert.deepEqual(errors,[]);console.log('PASS '+engine+': earned Lv.12 warrior II, resonance II, purchased weapon art, mastery/talent UI, live lane telegraph, direct movement, pause and reload');
+}catch(e){console.log('ERRORS',errors);await page.screenshot({path:out+'/failure.png'});throw e;}finally{await page.waitForLoadState('networkidle').catch(()=>{});await context.unrouteAll({behavior:'wait'});await context.close();await browser.close();await transport?.dispose();}

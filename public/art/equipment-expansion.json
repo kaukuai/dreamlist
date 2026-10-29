@@ -1,0 +1,22 @@
+{
+  "tool": "image_gen",
+  "date": "2026-10-29",
+  "source": "exec-a6969811-41d7-49a8-b48c-5a8c2d2b43bd.png",
+  "sourceSha256": "7634f55811366cf0aa93e9ec4765e4fd38928db8a04b139ba564a44cc6c57c13",
+  "sha256": "3ffc41b90306e8a55bdfbbd4163d20fdb71972590143a17755ef4f87162e1b73",
+  "columns": 4,
+  "rows": 3,
+  "items": [
+    "workshop-hammer",
+    "echo-lute",
+    "moon-scepter",
+    "oath-blade",
+    "meteor-staff",
+    "hawk-bow",
+    "moon-vestments",
+    "voyager-hood",
+    "scholar-boots",
+    "starglass-pendant"
+  ],
+  "notes": "Original generated artwork, WebP encoding only. Last two cells are decorative journal/map, not purchasable items."
+}

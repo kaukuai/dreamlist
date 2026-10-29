@@ -123,3 +123,15 @@ npm run dev -- --hostname 127.0.0.1
 ## 2026-10-29：NPC／換裝／商店
 
 先讀 NPC_GROWTH_REVIEW.md。六NPC新增可選話題、真實條件的職業指引、十二份前後篇委託；初識六份不變，sideQuests是加法欄位。新NPC頭髮／衣裝以CG為準。地圖／戰鬥／試穿使用sprite-appearance與真正equipped；不要只換快取鍵而沒畫外觀。星露商店在手札與奧里對話可進，購買後需穿戴。瀏覽器營地入口收起、舊資料與Sites保留。維持免登入本機保存與既有收據。每輪用實際流程反覆驗證，不能宣稱模擬試玩已證明留存／商業性。
+
+## 2026-10-29：序章與卷外篇
+
+先讀 PROLOGUE_EXPANSION_REVIEW.md。本輪沿用 `dreamlist:browser-preview:v1` 加 `opening`，包含頁碼／已讀／指引收起／六項實作完成狀態。舊進度自動略過首次序章；手札仍可重看。不要清除舊資料來顯示序章。可用「更多選單→重看故事序章」。免登入／本機保存／原Sites延續不變。
+
+`lib/opening-model.ts`／`app/opening-prologue.tsx`／`app/opening.css` 負責五幕故事與可選指引。四張原創CG與metadata在 `public/art/prologue`，新裝備圖集metadata在 `public/art/equipment-expansion.json`。序章是CG動態分鏡，沒有配音／長篇影片。手動與系統減少動態、缺圖重試、保存錯誤均有路徑。
+
+故事新增 echo-01～03，需完成bell-09；12主線／卷外篇、6羈絆、4稱號。volumeOneEpisodes單獨保留原九篇結局判定與選擇回顧。新敵人是原種類的敘事變體，三張可走場景沒有虛增。23件裝備、24天賦、七職業精修（Lv5且全部基礎技能R2；第一階進化為精修II）由原實際收據／AP／錢包延續。精修和共鳴在即時戰鬥開局快照，舊戰況缺欄位沿原行為。長條共享laneHalfWidth與旋轉形狀；守望者環形、星靈雙圈、Boss半血節奏／從容模式均在固定步長回放。
+
+選用瀏覽器腳本新增 tests/opening.browser.mjs（五幕／五尺寸／重載／略過重看／缺圖／舊檔）和 tests/growth-combat.browser.mjs（真收據條件的Lv12戰士II／共鳴／新裝備／實際長條預警／暫停重載）。既有mobile/NPC腳本首次以UI略過序章；已讀測試fixture用opening API，而非繞過production新手流程。正式build測試比開發熱更新穩定；同時過多瀏覽器會讓模擬移動受CPU影響逾時，應依實際位置條件等待。
+
+本輪本機驗證76項通過（18＋19preview/opening/growth＋4vercel＋9adventure＋26field）、TS、改動模組ESLint、兩套build。正式打包Chromium：opening／growth-combat／npc-cycle／mobile-play均完整通過；WebKit opening通過，完整field-validation音訊／生活／戰鬥／續存／首次領獎exit0。全repo舊island-game lint基線仍未修，不宣稱全repo lint通過。發布版本標記 `prologue-echoes-rpg-v4`；推送後仍需核對原域名的實際SHA與正確Vercel專案status。

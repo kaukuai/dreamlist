@@ -78,7 +78,7 @@ test('original scene atlases are present, versioned and every crop fits its sour
  for(const frame of Object.values(sceneryFrames)){const asset=art.assets.find(a=>a.file===frame.sheet+'.webp'),[x,y,w,h]=frame.box;assert.ok(asset&&x>=0&&y>=0&&w>0&&h>0&&x+w<=asset.width&&y+h<=asset.height);}
 });
 
-test('all thirteen owned equipment appearances, every level step and NPC identity palettes remain distinct',async()=>{
+test('all twenty-three owned equipment appearances, every level step and NPC identity palettes remain distinct',async()=>{
  const {appearanceKey}=await import('../lib/sprite-appearance.ts');const{equipment}=await import('../lib/character-model.ts');const{npcPalette,spriteWeapon}=await import('../lib/sprite-catalog.ts');
  const base={level:1,avatarColor:'mint',equipped:{weapon:null,head:null,offhand:null,outfit:null,boots:null,charm:null}},original=appearanceKey(base);
  for(const item of equipment){const worn={...base,equipped:{...base.equipped,[item.slot]:item.id}};assert.notEqual(appearanceKey(worn),original,item.id);assert.equal(appearanceKey(base),original,'preview cannot mutate actual gear');}

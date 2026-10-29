@@ -102,3 +102,11 @@ npm run build
 ## 2026-10-28：分層世界與全螢幕手機 RPG
 
 最新要求取代舊固定頁首／底部分頁與簡略方塊人物方向。先讀 WORLD_RPG_RESEARCH.md：瀏覽器版採單一 Canvas 的分層場景、LPC 完整步態與腳底排序，養成入口收進角落旅人手札。晨鐘鎮、星頁書庫、月痕林為三個可走動區域，含溪橋與八段探索文字；原 v1 存檔只加 zone／visitedZones，生活成長與獎勵不重置。CG 角色／任務／對話保留，素材署名可由手札開啟。仍非完整大型商業 RPG，不宣稱實體手機或 ChatGPT 原生 App 已驗收。
+
+### 2026-10-29：序章與星頁餘響
+
+免登入試看版新增五幕原創 CG 序章，手動翻頁、跳過、續讀與手札重看；讀完後可自由選擇六項實作指引。已有遊玩進度不強制重看。內容與驗證紀錄見 [PROLOGUE_EXPANSION_REVIEW.md](./PROLOGUE_EXPANSION_REVIEW.md)。
+
+第一卷後續三篇《星頁餘響》接續匿名信伏筆，連同原篇章共12主線／卷外篇、6羈絆。商店23裝備、天賦24節點、7職業自動精修；即時試煉加入長條／雙圈／環形差異與Boss半血節奏。現實生活成長仍是XP來源，沿用原本本機進度。
+
+`npm run test:preview` 現在含序章／養成／戰況快照檢查。選用瀏覽器驗證 `tests/opening.browser.mjs`、`tests/growth-combat.browser.mjs` 使用與既有NPC測試相同的 `PLAYWRIGHT_MODULE`、`CHROMIUM_MODULE` 或WebKit環境參數；不要將它們加入正式app依賴。

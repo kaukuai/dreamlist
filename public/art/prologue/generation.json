@@ -1,0 +1,43 @@
+{
+  "date": "2026-10-29",
+  "tool": "image_gen",
+  "notes": "Original text-generated opening CG. WebP encoding only; no competitor artwork or image inputs. Original PNG files retained in author workspace.",
+  "assets": [
+    {
+      "file": "town.webp",
+      "source": "exec-f8723790-0e3c-48a7-a30e-14386f5d7cdf.png",
+      "sourceSha256": "c7973509446eac17bd0f45003860e47df00a023494ac8907a4394c76fd8481e6",
+      "sha256": "d57467b7b47f693750b03c883497fa9b8e71dfad007d074448cc63de194ed5cb",
+      "width": 1024,
+      "height": 1536,
+      "bytes": 414562
+    },
+    {
+      "file": "library.webp",
+      "source": "exec-9d289919-711a-4d40-92c6-5d51b76d4d40.png",
+      "sourceSha256": "387e4fd40bfdc4fcf3d9fee6baa03ef06e821515a66af6675f1d30381193d75e",
+      "sha256": "f24f1bad27115163c64dcc109e44a2ee0eaea208adea3821febe49dafa094edc",
+      "width": 1024,
+      "height": 1536,
+      "bytes": 426302
+    },
+    {
+      "file": "letter.webp",
+      "source": "exec-47c9abad-a43e-43c1-8096-033ee43b22ef.png",
+      "sourceSha256": "e6d84712255cdb0166aa726c901b3ab27ad93808985ce58b4d1a061a595ef829",
+      "sha256": "9d14f701d144999629feb90d3238597974116f2edf6604fb6b995da665c48f5d",
+      "width": 1024,
+      "height": 1536,
+      "bytes": 501368
+    },
+    {
+      "file": "promise.webp",
+      "source": "exec-544ad933-48fd-47a8-bf9a-57e7b29a661f.png",
+      "sourceSha256": "3e33a041eeba0999a8ae3d064c3b2e7f2eb868b46d6c51bacf73d447eab1b6b9",
+      "sha256": "4fb5e85a9a562e348e795e9a59eebd3afd6ddf0af636cc356cb59b47e0bc357a",
+      "width": 1024,
+      "height": 1536,
+      "bytes": 381920
+    }
+  ]
+}
