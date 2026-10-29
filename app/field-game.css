@@ -341,3 +341,27 @@
 
 .world-art-loading:has(button) {align-content:center;gap:18px;z-index:8;}
 .world-art-loading>button {justify-self:center;min-height:44px;padding:10px 22px;border:1px solid #c4b486;background:#2e453d;color:#eddfbb;border-radius:4px;}
+
+/* The combat scene, actors and telegraphs share one world camera. DOM markers
+   retain accessible names and test coordinates without duplicating visible art. */
+.illustrated-battle .arena-render-marker {width:1px!important;height:1px!important;opacity:0;pointer-events:none;}
+.illustrated-battle .arena-topline {color:#d7d8c9;text-shadow:0 1px 3px #07191f;}
+.illustrated-battle .arena-enemy-bar {padding:11px 14px 13px;background:linear-gradient(90deg,#12242be8,#14282ad1);border:1px solid #cab67c45;border-radius:3px;box-shadow:0 4px 18px #07121d30;}
+.illustrated-battle .arena-enemy-bar>span {font-size:12px;letter-spacing:.04em;color:#f1e4c5;}
+.illustrated-battle .arena-enemy-bar>div {height:4px;border-radius:0;background:#d8d3bb1a;}
+.illustrated-battle .arena-enemy-bar i {background:linear-gradient(90deg,#8c6662,#d7ac7a);}
+.illustrated-battle .arena-vitals {left:23px;right:23px;background:linear-gradient(90deg,#142729ce,#14272982);padding:8px 10px;border-left:2px solid #a9c5ac;border-radius:2px;}
+.illustrated-battle .arena-intent {font-size:10px;padding:6px 10px;color:#f4e6c5;background:#182b30c9;}
+.illustrated-battle .arena-intent.urgent {background:#603c30e8;color:#fff0c8;border-left:2px solid #f2bc87;}
+.arena-hazard-label {position:absolute;transform:translate(-50%,-100%);color:#ffe0af;text-shadow:0 1px 3px #281c18;font-size:10px;white-space:nowrap;pointer-events:none;background:#57342dcc;padding:2px 6px;border-radius:2px;z-index:3;}
+.illustrated-battle .arena-feedback {font:700 23px/1 Georgia,serif;text-shadow:1px 1px 0 #29332f,-1px -1px 0 #29332f,0 3px 5px #111b1d;}
+.battle-art-status {position:absolute;top:16%;left:50%;transform:translateX(-50%);z-index:55;background:#172a2fe8;border:1px solid #b5a57a66;padding:14px 20px;display:flex;gap:12px;align-items:center;color:#e9dab8;font-size:12px;white-space:nowrap;}
+.battle-art-status button {min-height:44px;color:#f1dfad;border:1px solid #b5a57a;padding:5px 12px;}
+.scene-minimap canvas {width:82px;height:82px;display:block;border:2px solid #c0ac7799;border-radius:50%;background:#233b34;box-shadow:0 0 0 3px #182d2d70,0 3px 12px #0c1d253d;}
+.field-map-preview {height:auto!important;aspect-ratio:3/2;overflow:hidden;}
+.field-map-preview:before {display:none!important;}
+.field-map-preview canvas {display:block;width:100%;height:100%;image-rendering:pixelated;}
+.field-map-dialog {display:flex!important;flex-direction:column;align-items:stretch;}
+.field-map-dialog>* {flex-shrink:0;}
+.field-map-preview canvas {position:absolute;inset:0;pointer-events:none;}
+.scene-minimap canvas {pointer-events:none;}

@@ -383,3 +383,8 @@ monster-pumpking.png
 License: CC-BY-SA 3.0
 Authors: Charles Sanchez (CharlesGabriel)
 Source: https://opengameart.org/sites/default/files/lpc_base_assets.zip
+Original environment update (2026-10-28):
+The newer landmarks, interiors, terrain, sanctuary and enemy plates are original
+image_gen artwork. Provenance: /art/scenery/generation.json
+Details: /art/scenery/README.md
+LPC character layers and their attribution above remain in use.

@@ -54,15 +54,25 @@ export function moveField(position: Point, direction: Point, dt: number, zone:Zo
   if (walkable(vertical,zone)) result = vertical;
   return result;
 }
-/** Grid BFS provides tap-to-walk around obstacles instead of sliding through buildings. */
+// Immutable scenery permits sharing grid edge checks across repeated route requests.
+const routeEdges=new Map<ZoneId,Map<string,boolean>>();
+/** Grid BFS validates the whole edge and leaves room for a five-pixel waypoint tolerance. */
 export function fieldPath(from: Point, destination: Point,zone:ZoneId="town"): Point[] {
   const cell = 16, columns = 76, rows = 51;
+  let edges=routeEdges.get(zone);if(!edges){edges=new Map();routeEdges.set(zone,edges);}
   const toCell = (point: Point) => ({x: Math.round(point.x / cell), y: Math.round(point.y / cell)});
-  const start = toCell(from), requested = toCell(destination);
+  const clear = (p:Point) => walkable(p,zone) && [{x:5,y:0},{x:-5,y:0},{x:0,y:5},{x:0,y:-5}].every(d=>walkable({x:p.x+d.x,y:p.y+d.y},zone));
+  const segment = (a:Point,b:Point,padded=false) => {const steps=Math.max(1,Math.ceil(distance(a,b)/2));for(let i=1;i<=steps;i++){const p={x:a.x+(b.x-a.x)*i/steps,y:a.y+(b.y-a.y)*i/steps};if(!(padded?clear(p):walkable(p,zone)))return false;}return true;};
+  const gridEdge=(a:Point,b:Point)=>{const key=`${a.x},${a.y}>${b.x},${b.y}`;let valid=edges.get(key);if(valid===undefined){valid=segment({x:a.x*cell,y:a.y*cell},{x:b.x*cell,y:b.y*cell},true);edges.set(key,valid);}return valid;};
+  const requested = toCell(destination), origin=toCell(from);
+  const starts:Point[]=[];
+  for(let y=origin.y-3;y<=origin.y+3;y++)for(let x=origin.x-3;x<=origin.x+3;x++){const p={x:x*cell,y:y*cell};if(clear(p)&&segment(from,p))starts.push({x,y});}
+  const start=starts.sort((a,b)=>distance({x:a.x*cell,y:a.y*cell},from)-distance({x:b.x*cell,y:b.y*cell},from))[0];
+  if(!start)return [];
   let end = requested;
-  if (!walkable({x: end.x * cell, y: end.y * cell},zone)) {
+  if (!clear({x: end.x * cell, y: end.y * cell})) {
     const possible: {x: number; y: number}[] = [];
-    for (let y = 0; y < rows; y++) for (let x = 0; x < columns; x++) if (walkable({x: x * cell, y: y * cell},zone)) possible.push({x, y});
+    for (let y = 0; y < rows; y++) for (let x = 0; x < columns; x++) if (clear({x: x * cell, y: y * cell})) possible.push({x, y});
     end = possible.sort((a, b) => distance(a, requested) - distance(b, requested))[0];
   }
   const key = (point: Point) => point.y * columns + point.x;
@@ -72,13 +82,14 @@ export function fieldPath(from: Point, destination: Point,zone:ZoneId="town"): P
     if (key(current) === key(end)) break;
     for (const offset of [{x: 1, y: 0}, {x: -1, y: 0}, {x: 0, y: 1}, {x: 0, y: -1}]) {
       const next = {x: current.x + offset.x, y: current.y + offset.y};
-      if (!previous.has(key(next)) && walkable({x: next.x * cell, y: next.y * cell},zone)) {previous.set(key(next), current);queue.push(next);}
+      if (!previous.has(key(next)) && gridEdge(current,next)) {previous.set(key(next), current);queue.push(next);}
     }
   }
   if (!previous.has(key(end))) return [];
   const path: Point[] = [];
   for (let node: Point | null = end; node && key(node) !== key(start); node = previous.get(key(node)) ?? null) path.unshift({x: node.x * cell, y: node.y * cell});
-  if (walkable(destination,zone)) path.push(destination);
+  path.unshift({x:start.x*cell,y:start.y*cell});
+  if (walkable(destination,zone) && segment(path.at(-1)!,destination)) path.push(destination);
   return path;
 }
 export function nearbyPlace(position: Point, places: readonly FieldPlace[] = placesIn("town")) {

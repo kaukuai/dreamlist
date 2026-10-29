@@ -4,6 +4,8 @@
 
 Vercel 原專案 `kaukuai-dreamlist.vercel.app` 現在以**免登入試看版**為目標，不需要 Google 或 Turso。角色、任務、裝備與天賦只保存在目前瀏覽器；重新整理保留，更換裝置／網域或清除網站資料則有不同進度。詳見 [VERCEL_DEPLOYMENT.md](VERCEL_DEPLOYMENT.md)。Vercel 使用 `npm run build:vercel`；本機／Sites 仍使用下方原流程。建置成功不等於正式網域已更新。
 
+本輪場景與戰鬥美術更新見 [SCENE_ART_DIRECTION.md](SCENE_ART_DIRECTION.md)：原創地標／室內陳設、實際區域小地圖、鐘亭戰場與六種敵人姿態，保留原本進度。
+
 ## 目前可以玩
 
 瀏覽器版目前直接從可走動的晨鐘鎮開始：點地面、搖桿或鍵盤移動，靠近六位 NPC 交談，敲響共鳴石、選故事修練，再親自走位、閃避並使用職業戰技完成試煉。生活行動一次只呈現當前一步，可以放下手機實際去做。原創探索／戰鬥配樂與行動／環境聲需自行開啟，三類音量可獨立調整。玩法研究、來源與原型界線見 [PLAY_EXPERIENCE_RESEARCH.md](PLAY_EXPERIENCE_RESEARCH.md)。

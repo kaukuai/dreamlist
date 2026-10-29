@@ -29,3 +29,26 @@ test('area transition, exploration notes and restored shrine persist without lif
 test('legacy placement that overlaps new scenery is rehomed while discoveries remain',()=>{
  const p={x:200,y:280,discovered:['echo'],bellSequence:['bell-low'],bellSolved:false};normalizeField(p);assert.ok(worldWalkable(p));assert.deepEqual(p.discovered,['echo']);assert.deepEqual(p.bellSequence,['bell-low']);assert.equal(p.zone,'town');
 });
+
+test('battle camera keeps touch coordinates and circular telegraphs aligned across phone and desktop sizes',async()=>{
+ const {arenaView,arenaToScreen,screenToArena,arenaSafeRadius}=await import('../lib/arena-view.ts');
+ const {createArena,stepArena,emptyArenaInput}=await import('../lib/arena-engine.ts');
+ for(const [width,height]of [[320,640],[390,844],[428,926],[844,390],[1440,1000]])for(const playerX of [34,300,566]){
+  const view=arenaView(width,height,playerX),p={x:playerX,y:420},screen=arenaToScreen(view,p),back=screenToArena(view,screen);
+  assert.ok(screen.x>=0&&screen.x<=width,'hero must remain in view');assert.ok(Math.abs(back.x-p.x)<.001&&Math.abs(back.y-p.y)<.001);
+  const horizontal=arenaToScreen(view,{x:p.x+82,y:p.y}),vertical=arenaToScreen(view,{x:p.x,y:p.y+82});
+  assert.ok(Math.abs(horizontal.x-screen.x-(vertical.y-screen.y))<.001,'hazard circles must not stretch with aspect ratio');
+ }
+ const original=createArena({hp:100,maxHp:100,foeHp:100,foeMaxHp:100,attack:10,armor:0,healing:0,profession:'wanderer',focus:3},20);
+ original.hazards=[{id:1,kind:'ring',x:300,y:300,radius:185,remaining:.01}];original.y=300;original.nextHazard=10;
+ const safe=structuredClone(original);safe.x=300+arenaSafeRadius;stepArena(safe,emptyArenaInput());assert.equal(safe.hp,100);
+ const danger=structuredClone(original);danger.x=300+arenaSafeRadius+1;stepArena(danger,emptyArenaInput());assert.ok(danger.hp<100);
+});
+
+test('routes from offset positions cannot cut through narrow lamp posts or fountain corners',()=>{
+ for(const [from,to]of [[{x:390,y:645},{x:715,y:490}],[{x:856,y:656},{x:745,y:380}],[{x:650,y:306},{x:715,y:490}],[{x:553,y:306},{x:715,y:490}]]){
+  assert.ok(worldWalkable(from));let p={...from};const route=fieldPath(p,to);assert.ok(route.length);
+  for(const target of route){let ticks=0;while(distance(p,target)>5&&ticks++<150){const d=distance(p,target);p=moveField(p,{x:(target.x-p.x)/d,y:(target.y-p.y)/d},1/60);assert.ok(worldWalkable(p));}assert.ok(ticks<150,'route must not get stuck on a thin obstacle');}
+  assert.ok(distance(p,to)<10);
+ }
+});

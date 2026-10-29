@@ -1,4 +1,5 @@
 import type {ProfessionId} from "./character-model.ts";
+import {arenaSafeRadius} from "./arena-view.ts";
 
 // Fixed-step simulation is shared by the responsive renderer and persisted replay.
 // The client submits controls, never a claimed win or arbitrary HP checkpoint.
@@ -91,7 +92,7 @@ export function stepArena(state: ArenaState, input: ArenaInput) {
     hazard.remaining -= dt;
     if (hazard.remaining > 0) continue;
     const separation = Math.hypot(state.x - hazard.x, state.y - hazard.y);
-    if (separation <= hazard.radius && (hazard.kind !== "ring" || separation > 83) && state.invulnerable <= 0) {
+    if (separation <= hazard.radius && (hazard.kind !== "ring" || separation > arenaSafeRadius) && state.invulnerable <= 0) {
       const amount = Math.max(1, Math.round((state.enemyAttack * 1.3 - state.armor) * (state.assist ? .55 : 1)));
       state.hp = Math.max(0, state.hp - amount);state.invulnerable = .55;event(state, "hurt", state.x, state.y, amount);
     }

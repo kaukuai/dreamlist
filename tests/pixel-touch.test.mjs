@@ -70,3 +70,10 @@ test('short direction tap survives a delayed paint and pending movement cancels 
  assert.equal(axes.at(-1).x,1);paint();assert.equal(axes.at(-1).x,1,'one late paint cannot swallow a tap');paint();paint();paint();assert.equal(axes.at(-1).x,0);
  fire(element,'click');doc.hidden=true;fire(doc,'visibilitychange');assert.equal(axes.at(-1).x,0);assert.equal(callbacks.size,0);off();
 });
+
+test('original scene atlases are present, versioned and every crop fits its source',async()=>{
+ const {sceneryFrames}=await import('../app/scenery-art.ts');
+ const art=JSON.parse(readFileSync(new URL('../public/art/scenery/generation.json',import.meta.url)));
+ for(const asset of art.assets){const bytes=readFileSync(new URL('../public/art/scenery/'+asset.file,import.meta.url));assert.equal(createHash('sha256').update(bytes).digest('hex'),asset.sha256);assert.equal(bytes.toString('ascii',8,12),'WEBP');assert.ok(asset.width>0&&asset.height>0);}
+ for(const frame of Object.values(sceneryFrames)){const asset=art.assets.find(a=>a.file===frame.sheet+'.webp'),[x,y,w,h]=frame.box;assert.ok(asset&&x>=0&&y>=0&&w>0&&h>0&&x+w<=asset.width&&y+h<=asset.height);}
+});

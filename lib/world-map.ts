@@ -1,7 +1,7 @@
 /** One world-space definition drives rendered objects, foot collisions and navigation. */
 export type ZoneId = "town" | "woods" | "library";
 export type WorldPoint = {x: number; y: number};
-export type WorldProp = WorldPoint & {id: string; kind: "house" | "tower" | "tree" | "pine" | "fountain" | "shelf" | "table" | "ruin" | "barrel" | "fire" | "bench" | "planter"; width?: number; height?: number; title?: string};
+export type WorldProp = WorldPoint & {id: string; kind: "house" | "tower" | "tree" | "pine" | "fountain" | "shelf" | "table" | "ruin" | "barrel" | "fire" | "bench" | "planter" | "lamp"; width?: number; height?: number; title?: string};
 export const zoneInfo = {
   town: {name: "晨鐘鎮", subtitle: "暮光廣場", description: "鐘樓、書庫與林間的岔路", spawn: {x: 580, y: 605}},
   woods: {name: "月痕林", subtitle: "溪橋古道", description: "越過溪橋，尋找舊鐘亭留下的三段記錄", spawn: {x: 144, y: 480}},
@@ -22,6 +22,7 @@ export const worldProps: Record<ZoneId, WorldProp[]> = {
   {id:"plaza-flowers-west",kind:"planter",x:464,y:656,width:64},
   {id:"plaza-flowers-east",kind:"planter",x:728,y:656,width:64},
   {id:"work-barrel",kind:"barrel",x:1072,y:320},
+  ...[[427,336],[807,336],[441,635],[793,635],[1024,478]].map(([x,y],i)=>({id:`town-lamp-${i}`,kind:"lamp" as const,x,y})),
   ...trees("town",[[82,200],[390,192],[812,176],[1134,208],[102,432],[296,464],[812,536],[932,536],[1134,590],[336,738],[80,736],[780,752],[1136,744]])
  ],
  woods: [
@@ -41,6 +42,7 @@ export const worldProps: Record<ZoneId, WorldProp[]> = {
 export function solidProp(prop: WorldProp, p: WorldPoint) {
  const {x,y,kind}=prop;
  if(kind==="tree"||kind==="pine") return Math.abs(p.x-x)<12 && Math.abs(p.y-y+5)<12;
+ if(kind==="lamp") return Math.abs(p.x-x)<7 && Math.abs(p.y-y)<7;
  if(kind==="fountain") return Math.hypot((p.x-x)/1.15,p.y-(y-43))<43;
  if(kind==="barrel"||kind==="fire") return Math.abs(p.x-x)<16 && Math.abs(p.y-y+10)<16;
  const width=prop.width??96;

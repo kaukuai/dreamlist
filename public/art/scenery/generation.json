@@ -1,0 +1,58 @@
+{
+  "date": "2026-10-28",
+  "tool": "image_gen",
+  "direction": "原創精緻像素風格環境，青灰石材、青綠屋瓦、古銅與暖木；所有素材由文字生成，沒有使用競品截圖作為輸入。",
+  "encoding": "原始圖保留於作者工作區。發布檔只以 sharp 轉為 WebP quality 90 / alphaQuality 100，未裁改或重畫；裁切、比例、光影在遊戲 Canvas 執行。",
+  "assets": [
+    {
+      "file": "landmarks.webp",
+      "source": "exec-ed41f6a3-1633-42e2-877f-8273c592bd95.png",
+      "sourceSha256": "15c94afb9ccf2910833c1f5ab876cc3190a84e55f009a5dc3087282114e5fab4",
+      "sha256": "13f0de2e292efcd85f7cf302b29c4c8f5a1a4d98904c18a393df4b998128d73d",
+      "width": 1536,
+      "height": 1024,
+      "bytes": 696798,
+      "description": "六個獨立地標：書庫、鐘樓、旅舍、噴泉、橡樹與符文遺跡，透明圖集。"
+    },
+    {
+      "file": "interiors.webp",
+      "source": "exec-09c33bb9-7207-4cf7-80f8-deb7961a0e0c.png",
+      "sourceSha256": "4f8559402219a9a052af5eb7a06180b380aa4f083bed9beba884c303eb01e309",
+      "sha256": "dd28f28d99cadc68ca77e48e644b9e5952dfb9d7b423a4886c57260b39c1198b",
+      "width": 1536,
+      "height": 1024,
+      "bytes": 566920,
+      "description": "六個獨立陳設：書架、星圖書桌、彩窗、路燈、長椅與花台，透明圖集。"
+    },
+    {
+      "file": "terrain.webp",
+      "source": "exec-ea6d0eb7-fe6d-431c-9422-f5b110cde03e.png",
+      "sourceSha256": "cfb577fd8b5dca6ee03493ba68a615b7cc6dd0098cff8a5d7ce14203971b0ef1",
+      "sha256": "3635b821dda15de46c857dc4f8cd4cd176ddda7fd530850a992f61a4178354ed",
+      "width": 1254,
+      "height": 1254,
+      "bytes": 693412,
+      "description": "四象限地表：草地、石板、森林泥地、木地板。"
+    },
+    {
+      "file": "sanctuary.webp",
+      "source": "exec-4ece61ca-e5bd-491b-88c9-e06a3088243f.png",
+      "sourceSha256": "097acaf32e9c250d243c2f0c450e0e91cd794126d90a73cad3ced8fad42d2570",
+      "sha256": "04a6393873efb698c5327f194874cb309d5da06529e411acba34f514a7097abe",
+      "width": 1024,
+      "height": 1536,
+      "bytes": 663010,
+      "description": "鐘亭森林遺跡戰場。可走區使用開放地板，拱門與植物位在舞台邊緣。"
+    },
+    {
+      "file": "enemies.webp",
+      "source": "exec-1d7c27a4-590a-46d7-8da7-7cfc16422ada.png",
+      "sourceSha256": "1fc3a9dbca4738337ca612e65a9bba77d39c6871dde278e9502c7e46d76cee85",
+      "sha256": "ba898f3636042ce045e2cda876c2b5b4ac7f0f61ae7d2775cecc1ae4f14edc9c",
+      "width": 1024,
+      "height": 1536,
+      "bytes": 644158,
+      "description": "六種敵人各三幀姿態：燈靈、棘獸、石衛、星儀、巡衛、無聲王冠。"
+    }
+  ]
+}

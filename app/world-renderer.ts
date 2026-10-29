@@ -1,17 +1,19 @@
-import {worldProps,groundAt,sortByFeet,type ZoneId,type WorldProp,type WorldPoint} from "@/lib/world-map";
+import {worldProps,sortByFeet,type ZoneId,type WorldProp,type WorldPoint} from "@/lib/world-map";
 import {fieldPlaces,FIELD} from "@/lib/field-engine";
 import {spriteLayers,spriteLooks,spriteRows,type SpriteAction,type SpriteIdentity} from "@/lib/sprite-catalog";
 import type {Facing} from "@/lib/pixel-actors";
 import manifest from "@/public/art/lpc/manifest.json";
-const images=new Map<string,HTMLImageElement>(),grounds=new Map<ZoneId,HTMLCanvasElement>();
+import {loadScenery,drawScenery} from "./scenery-art";
+import {detailedGround} from "./world-terrain";
+import {paintAtmosphere,paintWorldLights} from "./world-atmosphere";
+const images=new Map<string,HTMLImageElement>();
 const records=new Map(manifest.assets.map(asset=>[asset.file,asset]));
 let loading:Promise<void>|null=null;
 export function loadWorldArt(){
- if(!loading)loading=Promise.all(manifest.assets.map(asset=>new Promise<void>((resolve,reject)=>{const img=new Image();img.onload=()=>resolve();img.onerror=()=>reject(new Error(`無法載入場景素材 ${asset.file}`));images.set(asset.file,img);img.src="/art/lpc/"+asset.file;}))).then(()=>{}).catch(error=>{loading=null;throw error;});
+ if(!loading)loading=Promise.all([loadScenery(), ...manifest.assets.map(asset=>new Promise<void>((resolve,reject)=>{const img=new Image();img.onload=()=>resolve();img.onerror=()=>reject(new Error(`無法載入場景素材 ${asset.file}`));images.set(asset.file,img);img.src="/art/lpc/"+asset.file;}))]).then(()=>{}).catch(error=>{loading=null;throw error;});
  return loading;
 }
 function tile(ctx:CanvasRenderingContext2D,file:string,sx:number,sy:number,w:number,h:number,x:number,y:number,dw=w,dh=h){const img=images.get(file);if(img?.complete&&img.naturalWidth)ctx.drawImage(img,sx,sy,w,h,Math.round(x),Math.round(y),dw,dh);}
-function repeat(ctx:CanvasRenderingContext2D,file:string,sx:number,sy:number,x:number,y:number,w:number,h:number){for(let py=0;py<h;py+=32)for(let px=0;px<w;px+=32)tile(ctx,file,sx,sy,Math.min(32,w-px),Math.min(32,h-py),x+px,y+py);}
 function composeSprite(ctx:CanvasRenderingContext2D,identity:SpriteIdentity,x:number,y:number,direction:Facing,frame:number,action:SpriteAction="walk",tier=0){
  const row=spriteRows[direction],body=records.get(`body-${spriteLooks[identity]?.body??"m"}-${action}.png`);
  const bodyInfo=body as {feet?:number[][]}|undefined,foot=bodyInfo?.feet?.[row]?.[frame]??62;
@@ -46,68 +48,25 @@ export function drawMonster(ctx:CanvasRenderingContext2D,kind:string,x:number,y:
  if(kind==="guardian")ctx.filter="saturate(0) brightness(.8)";else if(kind==="crown")ctx.filter="hue-rotate(220deg)";
  ctx.drawImage(img,(frame%3)*cellW,0,cellW,cellH,x-w/2,y-h,w,h);ctx.restore();
 }
-export function groundCanvas(zone:ZoneId){
- const old=grounds.get(zone);if(old)return old;const canvas=document.createElement("canvas");canvas.width=FIELD.width;canvas.height=FIELD.height;const ctx=canvas.getContext("2d")!;ctx.imageSmoothingEnabled=false;
- ctx.fillStyle=zone==="library"?"#17262a":"#47652d";ctx.fillRect(0,0,FIELD.width,FIELD.height);
- for(let y=0;y<FIELD.height;y+=32)for(let x=0;x<FIELD.width;x+=32){
-  const ground=groundAt({x:x+16,y:y+16},zone),seed=(x/32*17+y/32*31)%3;
-  if(zone==="library"&&(x<224||x>=992||y<128||y>=736))continue;
-  if(ground==="wood"){
-   ctx.fillStyle=seed===0?"#876749":seed===1?"#806044":"#795b42";ctx.fillRect(x,y,32,32);ctx.fillStyle="#5b4938";ctx.fillRect(x,y,32,1);ctx.fillRect(x+(y%64?8:24),y,1,32);ctx.fillStyle="#a1805855";ctx.fillRect(x+4,y+12,17,1);
-  }else if(ground==="stone")tile(ctx,"tile-castlefloors.png",(seed%3)*32+160,160,32,32,x,y);
-  else if(ground==="dirt")tile(ctx,"tile-dirt.png",seed*32,160,32,32,x,y);
-  else if(ground==="water")tile(ctx,"tile-water.png",seed*32,160,32,32,x,y);
-  else if(ground==="bridge"){tile(ctx,"tile-water.png",32,160,32,32,x,y);ctx.fillStyle="#806344";ctx.fillRect(x,y,32,32);ctx.fillStyle="#b99761";for(let n=0;n<32;n+=8)ctx.fillRect(x,y+n,32,6);}
-  else tile(ctx,"tile-grass.png",seed*32,160,32,32,x,y);
- }
- if(zone==="town"){
-  for(const row of [{x:192,y:288,w:64,h:96},{x:576,y:208,w:64,h:96},{x:896,y:288,w:64,h:96},{x:272,y:640,w:160,h:64},{x:816,y:640,w:128,h:64},{x:800,y:448,w:352,h:64}])repeat(ctx,"tile-dirt.png",32,160,row.x,row.y,row.w,row.h);
- }else if(zone==="library"){
-  ctx.fillStyle="#273946";ctx.fillRect(224,128,768,64);repeat(ctx,"tile-house.png",32,32,224,144,768,64);ctx.fillStyle="#4b4237";ctx.fillRect(224,208,768,8);ctx.fillRect(224,208,8,528);ctx.fillRect(984,208,8,528);ctx.fillRect(224,728,768,8);
-  ctx.fillStyle="#b89a6560";ctx.fillRect(488,528,224,176);ctx.strokeStyle="#c2a36b";ctx.strokeRect(496,536,208,160);
- }
- grounds.set(zone,canvas);return canvas;
-}
+export const groundCanvas = detailedGround;
 export function drawProp(ctx:CanvasRenderingContext2D,prop:WorldProp,lit=false){
  const {x,y,kind}=prop;
- if(kind==="tree"||kind==="pine"){
-  tile(ctx,"tile-trunk.png",0,0,64,96,x-32,y-80);tile(ctx,"tile-treetop.png",kind==="pine"?0:96,kind==="pine"?96:0,96,96,x-48,y-142);return;
- }
+ if(kind==="tree"||kind==="pine"){drawScenery(ctx,"oak",x-73,y+6,146,144);return;}
  if(kind==="house"||kind==="tower"){
-  const w=prop.width??160,h=prop.height??192,top=y-h;
-  ctx.fillStyle="#15251e40";ctx.fillRect(x+10,y-16,w+12,28);
-  repeat(ctx,"tile-house.png",32,32,x+8,y-96,w-16,96);
-  tile(ctx,"tile-house.png",96,0,32,64,x+w/2-16,y-64);
-  tile(ctx,"tile-house.png",256,0,32,64,x+24,y-80);tile(ctx,"tile-house.png",256,0,32,64,x+w-56,y-80);
-  ctx.save();ctx.beginPath();ctx.moveTo(x-8,y-94);ctx.lineTo(x+24,top+16);ctx.lineTo(x+w-24,top+16);ctx.lineTo(x+w+8,y-94);ctx.closePath();ctx.clip();repeat(ctx,"tile-house.png",32,128,x-8,top,w+32,h-92);ctx.restore();
-  ctx.fillStyle="#383745";ctx.fillRect(x-8,y-98,w+16,5);ctx.fillStyle="#909088";ctx.fillRect(x+24,top+12,w-48,4);
-  if(kind==="tower"){ctx.fillStyle="#282c3c";ctx.fillRect(x+w/2-19,top+34,38,40);ctx.strokeStyle="#c0af76";ctx.lineWidth=2;ctx.strokeRect(x+w/2-17,top+36,34,36);ctx.beginPath();ctx.arc(x+w/2,top+54,12,0,Math.PI*2);ctx.stroke();ctx.beginPath();ctx.moveTo(x+w/2,top+44);ctx.lineTo(x+w/2,top+54);ctx.lineTo(x+w/2+7,top+58);ctx.stroke();if(lit){ctx.fillStyle="#f4d69466";ctx.fillRect(x+w/2-16,top+36,32,36);}}
-  return;
+  const w=prop.width??160;drawScenery(ctx,kind==="tower"?"tower":prop.id==="bookhouse"?"archive":"inn",x-5,y+3,w+10,prop.height??208);return;
  }
- if(kind==="bench"||kind==="planter"){
-  const w=prop.width??64;ctx.fillStyle="#3a3b2f";ctx.fillRect(x+4,y-7,5,8);ctx.fillRect(x+w-9,y-7,5,8);ctx.fillStyle="#95754d";ctx.fillRect(x,y-18,w,12);ctx.fillStyle="#b39860";ctx.fillRect(x,y-18,w,2);ctx.fillRect(x,y-11,w,1);
-  if(kind==="planter"){ctx.fillStyle="#3f6433";ctx.fillRect(x+3,y-26,w-6,10);for(let n=0;n<w-12;n+=9){ctx.fillStyle=n%2?"#dcc491":"#b6848b";ctx.fillRect(x+6+n,y-29-(n%3),3,4);}}else{ctx.fillStyle="#95754d";ctx.fillRect(x,y-35,w,6);ctx.fillRect(x+3,y-32,3,14);ctx.fillRect(x+w-6,y-32,3,14);}return;
- }
- if(kind==="fountain"){
-  ctx.fillStyle="#223b3155";ctx.beginPath();ctx.ellipse(x+5,y-10,62,19,0,0,Math.PI*2);ctx.fill();
-  ctx.fillStyle="#646d70";ctx.beginPath();ctx.ellipse(x,y-34,55,28,0,0,Math.PI*2);ctx.fill();ctx.fillStyle="#bac0a4";ctx.beginPath();ctx.ellipse(x,y-40,53,25,0,0,Math.PI*2);ctx.fill();ctx.fillStyle="#477b83";ctx.beginPath();ctx.ellipse(x,y-42,44,17,0,0,Math.PI*2);ctx.fill();ctx.fillStyle="#91c4be";ctx.fillRect(x-27,y-44,22,2);ctx.fillRect(x+10,y-39,20,2);ctx.fillStyle="#a4aa92";ctx.fillRect(x-7,y-85,14,48);ctx.fillStyle="#ced2ae";ctx.fillRect(x-12,y-88,24,8);ctx.fillStyle="#7d9690";ctx.fillRect(x-3,y-85,4,45);return;
- }
- if(kind==="shelf"){
-  ctx.fillStyle="#372f30";ctx.fillRect(x,y-80,prop.width??128,80);ctx.fillStyle="#8c6846";ctx.fillRect(x-3,y-82,(prop.width??128)+6,5);
-  for(let row=0;row<3;row++){for(let n=0;n<(prop.width??128)-8;n+=8){ctx.fillStyle=["#a87553","#7d8f75","#6a7d90","#b49b69"][(n/8+row)%4];ctx.fillRect(x+5+n,y-72+row*23,5,17-(n%3));}ctx.fillStyle="#b28858";ctx.fillRect(x,y-52+row*23,prop.width??128,3);}return;
- }
- if(kind==="table"){
-  ctx.fillStyle="#332e29";ctx.fillRect(x+7,y-40,7,40);ctx.fillRect(x+(prop.width??96)-14,y-40,7,40);ctx.fillStyle="#9d7d53";ctx.fillRect(x,y-62,prop.width??96,38);ctx.fillStyle="#c1a06d";ctx.fillRect(x+2,y-61,(prop.width??96)-4,3);ctx.fillStyle="#ded4a2";ctx.fillRect(x+23,y-54,28,18);ctx.fillStyle="#6a604c";ctx.fillRect(x+36,y-54,1,18);return;
- }
- if(kind==="ruin"){
-  repeat(ctx,"tile-castlefloors_outside.png",32,32,x,y-64,144,64);ctx.fillStyle="#626e69";repeat(ctx,"tile-house.png",32,32,x+8,y-112,22,80);repeat(ctx,"tile-house.png",32,32,x+114,y-112,22,80);ctx.fillStyle="#c2c6a477";ctx.fillRect(x+8,y-112,3,80);ctx.fillRect(x+114,y-112,3,80);ctx.fillStyle="#adb49a";ctx.fillRect(x+5,y-117,28,9);ctx.fillRect(x+111,y-117,28,9);ctx.fillStyle=lit?"#d4c27d":"#7a8779";ctx.fillRect(x+57,y-81,28,43);ctx.fillStyle=lit?"#f9e6a2":"#42584f";ctx.fillRect(x+66,y-71,10,22);return;
- }
+ if(kind==="fountain"){drawScenery(ctx,"fountain",x-64,y-10,128,110);return;}
+ if(kind==="bench"||kind==="planter"){drawScenery(ctx,kind,x-3,y+2,(prop.width??64)+6,kind==="bench"?48:38);return;}
+ if(kind==="shelf"){drawScenery(ctx,"shelf",x-3,y+2,(prop.width??128)+6,115);return;}
+ if(kind==="table"){drawScenery(ctx,"table",x-3,y+1,(prop.width??96)+6,75);return;}
+ if(kind==="ruin"){drawScenery(ctx,"shrine",x-3,y+4,150,160);if(lit){ctx.save();ctx.globalCompositeOperation="screen";ctx.fillStyle="#baf9d82e";ctx.beginPath();ctx.ellipse(x+75,y-50,21,38,0,0,Math.PI*2);ctx.fill();ctx.restore();}return;}
+ if(kind==="lamp"){drawScenery(ctx,"lamp",x-13,y+3,42,87);return;}
  if(kind==="fire"){
   ctx.fillStyle="#473a32";ctx.fillRect(x-14,y-8,30,5);ctx.fillRect(x-8,y-12,7,12);ctx.fillStyle="#bc7b48";ctx.fillRect(x-7,y-23,15,17);ctx.fillStyle="#e9b76c";ctx.fillRect(x-3,y-28,7,20);return;
  }
  tile(ctx,"tile-barrel.png",0,0,32,32,x-16,y-32);
 }
-export type WorldFrame={zone:ZoneId;camera:WorldPoint;zoom:number;player:WorldPoint;identity:SpriteIdentity;direction:Facing;frame:number;tier:number;discovered:string[];bellSolved:boolean;destination:WorldPoint|null;time:number;footprints:{x:number;y:number;at:number}[];focus?:string};
+export type WorldFrame={zone:ZoneId;camera:WorldPoint;zoom:number;player:WorldPoint;identity:SpriteIdentity;direction:Facing;frame:number;tier:number;discovered:string[];bellSolved:boolean;destination:WorldPoint|null;time:number;footprints:{x:number;y:number;at:number}[];focus?:string;reducedMotion?:boolean};
 export function paintWorld(ctx:CanvasRenderingContext2D,width:number,height:number,state:WorldFrame){
  ctx.imageSmoothingEnabled=false;ctx.fillStyle="#1b3026";ctx.fillRect(0,0,width,height);ctx.save();ctx.scale(state.zoom,state.zoom);ctx.translate(-Math.round(state.camera.x),-Math.round(state.camera.y));ctx.drawImage(groundCanvas(state.zone),0,0);
  for(const f of state.footprints){const age=state.time-f.at;if(age<1600){ctx.fillStyle=`rgba(40,45,32,${(1-age/1600)*.22})`;ctx.fillRect(Math.round(f.x)-2,Math.round(f.y)-1,4,2);}}
@@ -120,16 +79,29 @@ export function paintWorld(ctx:CanvasRenderingContext2D,width:number,height:numb
    draws.push({y:place.y,draw:()=>{drawSprite(ctx,id,place.x,place.y,direction,0);if(near||state.focus===place.id){ctx.font="10px sans-serif";ctx.textAlign="center";ctx.fillStyle="#142b24bb";ctx.fillRect(place.x-24,place.y-66,48,15);ctx.fillStyle="#efe2ba";ctx.fillText(place.name,place.x,place.y-55);if(state.focus===place.id){ctx.fillStyle="#ead28b";ctx.fillText("!",place.x,place.y-76);}}}});
   }else draws.push({y:place.y,draw:()=>{
    if(place.kind==="exit"){ctx.fillStyle="#d6c89b";ctx.font="12px sans-serif";ctx.textAlign="center";ctx.fillText(place.to==="woods"?"›":"⌃",place.x,place.y-9);return;}
-   if(place.kind==="lore"){ctx.fillStyle="#624f38";ctx.fillRect(place.x-2,place.y-19,4,19);ctx.fillRect(place.x-14,place.y-37,28,24);ctx.fillStyle="#d2c395";ctx.fillRect(place.x-11,place.y-34,22,18);ctx.fillStyle="#857b5e";for(let line=0;line<3;line++)ctx.fillRect(place.x-7,place.y-30+line*4,14-line*2,1);if(!state.discovered.includes(place.id)){ctx.fillStyle="#e9d9a0";ctx.fillRect(place.x-1,place.y-37,2,3);}return;}
-   if(place.kind==="bell"){ctx.fillStyle="#3e514e";ctx.fillRect(place.x-9,place.y-27,18,25);ctx.fillStyle=state.bellSolved?"#e5cd85":"#b1b499";ctx.fillRect(place.x-8,place.y-29,16,4);ctx.fillRect(place.x-2,place.y-21,4,12);return;}
+   if(place.kind==="lore"){
+    ctx.fillStyle="#2c3028";ctx.fillRect(place.x-2,place.y-18,5,18);ctx.fillStyle="#876a46";ctx.fillRect(place.x-1,place.y-17,2,17);
+    ctx.fillStyle="#332d24";ctx.fillRect(place.x-15,place.y-40,31,26);ctx.fillStyle="#a17c4e";ctx.fillRect(place.x-14,place.y-40,28,2);ctx.fillRect(place.x-15,place.y-39,2,24);
+    ctx.fillStyle=state.discovered.includes(place.id)?"#b8b08d":"#d4c39b";ctx.fillRect(place.x-11,place.y-36,22,17);ctx.fillStyle="#a8936c";ctx.fillRect(place.x-11,place.y-20,22,1);
+    ctx.fillStyle="#756b54";for(let line=0;line<4;line++)ctx.fillRect(place.x-7,place.y-33+line*3,14-line%2*3,1);ctx.fillStyle="#d6b06d";ctx.fillRect(place.x-1,place.y-38,2,2);return;
+   }
+   if(place.kind==="bell"){
+    ctx.fillStyle="#243b3355";ctx.beginPath();ctx.ellipse(place.x,place.y,16,6,0,0,Math.PI*2);ctx.fill();
+    ctx.fillStyle="#455a58";ctx.beginPath();ctx.moveTo(place.x-12,place.y);ctx.lineTo(place.x-11,place.y-30);ctx.lineTo(place.x-4,place.y-39);ctx.lineTo(place.x+9,place.y-35);ctx.lineTo(place.x+13,place.y);ctx.closePath();ctx.fill();
+    ctx.fillStyle="#87918a";ctx.beginPath();ctx.moveTo(place.x-11,place.y-30);ctx.lineTo(place.x-4,place.y-39);ctx.lineTo(place.x+9,place.y-35);ctx.lineTo(place.x+7,place.y-29);ctx.closePath();ctx.fill();
+    ctx.fillStyle="#a8b4a370";ctx.fillRect(place.x-10,place.y-29,2,24);ctx.fillStyle="#283f40";ctx.fillRect(place.x+7,place.y-29,3,29);
+    ctx.strokeStyle=state.bellSolved?"#f1de9b":"#bdc9af";ctx.lineWidth=1;ctx.beginPath();ctx.moveTo(place.x,place.y-27);ctx.lineTo(place.x-4,place.y-21);ctx.lineTo(place.x+3,place.y-17);ctx.lineTo(place.x-2,place.y-11);ctx.stroke();
+    ctx.fillStyle="#6a7a4b";ctx.fillRect(place.x-13,place.y-3,7,3);ctx.fillRect(place.x+6,place.y-2,8,2);return;
+   }
    if(place.kind==="shrine")return;
    const glow=place.kind==="echo"?"#d0ead6":"#a7d7cb";ctx.fillStyle=glow;const phase=Math.sin(state.time/650)*.2+.8;ctx.globalAlpha=phase;
-   if(place.kind==="portal"){ctx.strokeStyle=glow;ctx.lineWidth=3;ctx.beginPath();ctx.ellipse(place.x,place.y-23,14,25,0,0,Math.PI*2);ctx.stroke();ctx.fillStyle="#508e8066";ctx.fill();}else{ctx.fillRect(place.x-1,place.y-14,2,13);ctx.fillRect(place.x-5,place.y-9,10,2);}ctx.globalAlpha=1;
+   if(place.kind==="portal"){drawScenery(ctx,"shrine",place.x-43,place.y+9,86,105);ctx.strokeStyle=glow;ctx.lineWidth=1;ctx.beginPath();ctx.ellipse(place.x,place.y-23,11,22,0,0,Math.PI*2);ctx.stroke();ctx.fillStyle="#508e8066";ctx.fill();}else{ctx.fillRect(place.x-1,place.y-14,2,13);ctx.fillRect(place.x-5,place.y-9,10,2);}ctx.globalAlpha=1;
   }});
  }
  draws.push({y:state.player.y,draw:()=>drawSprite(ctx,state.identity,Math.round(state.player.x),Math.round(state.player.y),state.direction,state.frame,"walk",state.tier)});
  for(const entry of sortByFeet(draws))entry.draw();
+ paintWorldLights(ctx,state);
  // A shared dusk grade and light are applied to the scene and actors together.
  ctx.fillStyle=state.zone==="library"?"#efc8890b":"#15283919";ctx.fillRect(0,0,FIELD.width,FIELD.height);ctx.restore();
- if(state.zone!=="library"){const shade=ctx.createRadialGradient(width*.5,height*.45,Math.min(width,height)*.25,width*.5,height*.5,Math.max(width,height)*.7);shade.addColorStop(0,"transparent");shade.addColorStop(1,"#10231f70");ctx.fillStyle=shade;ctx.fillRect(0,0,width,height);}
+ paintAtmosphere(ctx,width,height,state);
 }
